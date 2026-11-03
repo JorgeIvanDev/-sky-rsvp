@@ -20,4 +20,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run recovery phrase and encrypted vault tests
-        run: node --test wallet/vault.test.mjs
+        run: node --test wallet/*.test.mjs
