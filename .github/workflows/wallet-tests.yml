@@ -1,0 +1,23 @@
+name: Wallet security tests
+on:
+  push:
+    paths:
+      - 'wallet/**'
+      - '.github/workflows/wallet-tests.yml'
+  pull_request:
+    paths:
+      - 'wallet/**'
+      - '.github/workflows/wallet-tests.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run recovery phrase and encrypted vault tests
+        run: node --test wallet/vault.test.mjs
