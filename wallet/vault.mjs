@@ -39,3 +39,12 @@ export async function decryptPhrase(vault,password,words){
  if(!await validPhrase(phrase,words))throw Error('Invalid recovery phrase');
  return phrase;
 }
+
+/** BIP-39 seed derivation. Sensitive: never log, transmit, or persist raw seed. */
+export async function phraseToSeed(phrase,passphrase='',words){
+ if(!words||!await validPhrase(phrase,words))throw Error('Invalid recovery phrase');
+ const password=utf8.encode(phrase.normalize('NFKD'));
+ const salt=utf8.encode(('mnemonic'+passphrase.normalize('NFKD')));
+ const material=await crypto.subtle.importKey('raw',password,'PBKDF2',false,['deriveBits']);
+ return new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:2048,hash:'SHA-512'},material,512));
+}
