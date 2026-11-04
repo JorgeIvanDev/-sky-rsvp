@@ -1,0 +1,26 @@
+// Prototype only. No public endpoint or database grants are provided.
+// The caller must authenticate the recipient, enforce distributed rate limits,
+// and atomically consume the challenge in a trusted transactional store.
+export const CHALLENGE_TTL_MS = 5 * 60_000;
+export const MAX_ATTEMPTS = 3;
+
+export function validateChallengeRecord(record, {now, recipientId, inviteId, nonce}) {
+  if (!record || typeof record !== 'object') return 'missing';
+  if (typeof now !== 'number' || !Number.isFinite(now)) return 'invalid_time';
+  if (!recipientId || !inviteId || !nonce) return 'invalid_request';
+  if (record.recipientId !== recipientId || record.inviteId !== inviteId || record.nonce !== nonce) return 'mismatch';
+  if (!Number.isSafeInteger(record.issuedAt) || record.issuedAt > now || now - record.issuedAt > CHALLENGE_TTL_MS) return 'expired';
+  if (record.consumedAt != null) return 'replayed';
+  if (!Number.isSafeInteger(record.attempts) || record.attempts < 0 || record.attempts >= MAX_ATTEMPTS) return 'rate_limited';
+  return null;
+}
+
+// This is a policy check, NOT proof of motion or genuine human participation.
+// A production verifier must require trusted evidence, and perform the check
+// and single-use state transition atomically inside the server-side transaction.
+export function evaluateParticipation(record, request) {
+  const error = validateChallengeRecord(record, request);
+  if (error) return {ok:false, reason:error};
+  if (request.evidenceVerified !== true) return {ok:false, reason:'unverified_evidence'};
+  return {ok:true};
+}
