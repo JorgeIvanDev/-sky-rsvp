@@ -38,3 +38,9 @@ test('reject embedded newline in nonce',()=>assert.equal(validateChallengeRecord
 test('reject embedded NUL in recipient',()=>assert.equal(validateChallengeRecord(record,{...request,recipientId:'recipient'+String.fromCharCode(0)+'A'}),'invalid_request'));
 test('reject DEL control in invitation',()=>assert.equal(validateChallengeRecord(record,{...request,inviteId:'invite'+String.fromCharCode(127)+'A'}),'invalid_request'));
 test('reject whitespace-only identity',()=>assert.equal(validateChallengeRecord(record,{...request,nonce:'   '}),'invalid_request'));
+
+test('one attempt is the maximum per challenge',()=>{
+ assert.equal(MAX_ATTEMPTS,1);
+ assert.equal(validateChallengeRecord({...record,attempts:1},request),'rate_limited');
+ assert.equal(validateChallengeRecord({...record,attempts:0},request),null);
+});
