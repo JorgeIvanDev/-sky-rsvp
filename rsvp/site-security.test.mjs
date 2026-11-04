@@ -20,3 +20,11 @@ test('invite creation and sharing require a completed attempt',()=>{
  assert.match(html,/\$\('makeInvite'\)\.onclick=\(\)=>\{if\(!challengeAttempted\)/);
  assert.match(html,/\$\('shareInviteLink'\)\.onclick=async\(\)=>\{if\(!challengeAttempted\|\|!latestInviteUrl\)return;/);
 });
+
+// Avoid first-value-wins parsing when a URL contains competing invite payloads.
+test('ambiguous invitation URLs fail closed rather than selecting an arbitrary payload',()=>{
+ assert.match(html,/fragmentValues=new URLSearchParams\(location\.hash\.slice\(1\)\)\.getAll\('invite'\)/);
+ assert.match(html,/legacyValues=query\.getAll\('invite'\)/);
+ assert.match(html,/fragmentValues\.length>1\|\|legacyValues\.length>1\|\|fragmentValues\.length&&legacyValues\.length/);
+ assert.match(html,/throw Error\('Ambiguous invitation link'\)/);
+});
