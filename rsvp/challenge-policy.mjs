@@ -2,7 +2,9 @@
 // The caller must authenticate the recipient, enforce distributed rate limits,
 // and atomically consume the challenge in a trusted transactional store.
 export const CHALLENGE_TTL_MS = 5 * 60_000;
-export const MAX_ATTEMPTS = 3;
+// A challenge allows one genuine attempt; accessibility alternatives are separate modes.
+// The trusted server must count attempts atomically before evaluating evidence.
+export const MAX_ATTEMPTS = 1;
 
 export function validateChallengeRecord(record, request) {
   if (!request || typeof request !== 'object') return 'invalid_request';
