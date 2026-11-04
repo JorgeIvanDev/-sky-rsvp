@@ -44,3 +44,22 @@ test('one attempt is the maximum per challenge',()=>{
  assert.equal(validateChallengeRecord({...record,attempts:1},request),'rate_limited');
  assert.equal(validateChallengeRecord({...record,attempts:0},request),null);
 });
+
+test('fail closed for malformed or non-finite attempt counters',()=>{
+ for(const attempts of [null,undefined,'0',NaN,Infinity,-Infinity,0.5,Number.MAX_SAFE_INTEGER+1]){
+  assert.equal(validateChallengeRecord({...record,attempts},request),'rate_limited');
+ }
+});
+test('fail closed for malformed issuance timestamps',()=>{
+ for(const issuedAt of [null,undefined,'yesterday',NaN,Infinity,now+0.5,Number.MAX_SAFE_INTEGER+1]){
+  assert.equal(validateChallengeRecord({...record,issuedAt},request),'expired');
+ }
+});
+test('only literal boolean true counts as verified evidence',()=>{
+ for(const evidenceVerified of [undefined,null,1,'true',{},false]){
+  assert.deepEqual(evaluateParticipation(record,{...request,evidenceVerified}),{ok:false,reason:'unverified_evidence'});
+ }
+});
+test('replay is denied even when evidence is marked verified',()=>{
+ assert.deepEqual(evaluateParticipation({...record,consumedAt:now-1},request),{ok:false,reason:'replayed'});
+});
