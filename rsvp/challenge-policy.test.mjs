@@ -25,3 +25,11 @@ test('reject undefined request without throwing',()=>assert.equal(evaluatePartic
 test('reject numeric recipient identity',()=>assert.equal(validateChallengeRecord(record,{...request,recipientId:123}),'invalid_request'));
 test('reject object invitation identity',()=>assert.equal(validateChallengeRecord(record,{...request,inviteId:{}}),'invalid_request'));
 test('reject non-string nonce',()=>assert.equal(validateChallengeRecord(record,{...request,nonce:42}),'invalid_request'));
+
+test('reject fractional current timestamp',()=>assert.equal(validateChallengeRecord(record,{...request,now:now+0.5}),'invalid_time'));
+test('reject negative current timestamp',()=>assert.equal(validateChallengeRecord(record,{...request,now:-1}),'invalid_time'));
+test('reject unsafe integer current timestamp',()=>assert.equal(validateChallengeRecord(record,{...request,now:Number.MAX_SAFE_INTEGER+1}),'invalid_time'));
+test('reject negative issuance timestamp',()=>assert.equal(validateChallengeRecord({...record,issuedAt:-1},request),'expired'));
+test('reject oversized nonce',()=>assert.equal(validateChallengeRecord(record,{...request,nonce:'x'.repeat(257)}),'invalid_request'));
+test('reject oversized recipient',()=>assert.equal(validateChallengeRecord(record,{...request,recipientId:'x'.repeat(257)}),'invalid_request'));
+test('reject whitespace-padded invitation identity',()=>assert.equal(validateChallengeRecord(record,{...request,inviteId:' invite-A '}),'invalid_request'));
