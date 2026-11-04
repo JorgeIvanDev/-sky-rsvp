@@ -4,10 +4,12 @@
 export const CHALLENGE_TTL_MS = 5 * 60_000;
 export const MAX_ATTEMPTS = 3;
 
-export function validateChallengeRecord(record, {now, recipientId, inviteId, nonce}) {
+export function validateChallengeRecord(record, request) {
+  if (!request || typeof request !== 'object') return 'invalid_request';
+  const {now, recipientId, inviteId, nonce} = request;
   if (!record || typeof record !== 'object') return 'missing';
   if (typeof now !== 'number' || !Number.isFinite(now)) return 'invalid_time';
-  if (!recipientId || !inviteId || !nonce) return 'invalid_request';
+  if (![recipientId, inviteId, nonce].every(value => typeof value === 'string' && value.length > 0)) return 'invalid_request';
   if (record.recipientId !== recipientId || record.inviteId !== inviteId || record.nonce !== nonce) return 'mismatch';
   if (!Number.isSafeInteger(record.issuedAt) || record.issuedAt > now || now - record.issuedAt > CHALLENGE_TTL_MS) return 'expired';
   if (record.consumedAt != null) return 'replayed';
@@ -21,6 +23,6 @@ export function validateChallengeRecord(record, {now, recipientId, inviteId, non
 export function evaluateParticipation(record, request) {
   const error = validateChallengeRecord(record, request);
   if (error) return {ok:false, reason:error};
-  if (request.evidenceVerified !== true) return {ok:false, reason:'unverified_evidence'};
+  if (!request || request.evidenceVerified !== true) return {ok:false, reason:'unverified_evidence'};
   return {ok:true};
 }
