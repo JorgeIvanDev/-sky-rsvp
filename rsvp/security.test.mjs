@@ -45,3 +45,15 @@ test('reject API URLs with credentials, query strings, or fragments',()=>{
   assert.throws(()=>createRsvpClient(url,'public-key'),/HTTPS required/);
  }
 });
+
+test('secret-bearing RSVP requests never follow redirects or send browser credentials',async()=>{
+ const calls=[];
+ const fetcher=async(url,options)=>{calls.push({url,options});return {ok:true,status:204};};
+ const client=createRsvpClient('https://example.supabase.co','public-key',fetcher);
+ await client.reply('2a861e9d-8752-47b7-bb61-86df31742a39',randomSecret(),'yes');
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].options.redirect,'error');
+ assert.equal(calls[0].options.credentials,'omit');
+ assert.equal(calls[0].options.cache,'no-store');
+ assert.equal(calls[0].options.referrerPolicy,'no-referrer');
+});
