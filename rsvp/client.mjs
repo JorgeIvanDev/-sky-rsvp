@@ -17,7 +17,7 @@ export function createRsvpClient(baseUrl,publishableKey,fetcher=globalThis.fetch
  const endpoint=url.toString().replace(/\/$/,'')+'/rest/v1/rpc/';
  async function call(method,args){
   const response=await fetcher(endpoint+method,{
-   method:'POST',headers:{apikey:publishableKey,'Content-Type':'application/json'},
+   method:'POST',redirect:'error',credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',headers:{apikey:publishableKey,'Content-Type':'application/json'},
    body:JSON.stringify(args)
   });
   if(!response.ok)throw Error('RSVP service unavailable ('+response.status+')');
