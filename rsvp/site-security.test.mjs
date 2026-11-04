@@ -28,3 +28,11 @@ test('ambiguous invitation URLs fail closed rather than selecting an arbitrary p
  assert.match(html,/fragmentValues\.length>1\|\|legacyValues\.length>1\|\|fragmentValues\.length&&legacyValues\.length/);
  assert.match(html,/throw Error\('Ambiguous invitation link'\)/);
 });
+
+// Validate before atob so malformed and oversized payloads fail cheaply.
+test('invite decoder rejects oversized and malformed base64url input before decoding',()=>{
+ assert.match(html,/function decodeInvite\(str\)\{if\(typeof str!=='string'\|\|str\.length>1500/);
+ assert.match(html,/!\/\^\[A-Za-z0-9_-\]\+\$\/\.test\(str\)/);
+ assert.match(html,/str\.length%4===1\)throw Error\('Invalid invite encoding'\)/);
+ assert.match(html,/if\(encoded\.length>1500\)throw Error\('Link too long'\)/);
+});
