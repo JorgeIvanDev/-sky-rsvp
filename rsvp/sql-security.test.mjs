@@ -18,7 +18,7 @@ test('privileged RSVP RPCs remain explicitly inaccessible to public clients',()=
   assert.ok(sql.includes('revoke all on function public.'+signature+' from public;'));
   assert.ok(sql.includes('revoke execute on function public.'+signature+' from anon,authenticated;'));
  }
- assert.doesNotMatch(sql,/\bgrant\s+(?:all|execute|select|insert|update|delete)\b/i);
+ assert.doesNotMatch(sql.replace(/^\s*--.*$/gm,''),/\bgrant\s+(?:all|execute|select|insert|update|delete)\b/i);
 });
 
 test('all three SECURITY DEFINER RPCs pin search_path',()=>{
