@@ -7,8 +7,8 @@ const sql=readFileSync(new URL('../supabase/001_invitation_rsvps.sql',import.met
 const functions=['cnidaria_create_invite(text,text)','cnidaria_reply(uuid,text,text)','cnidaria_get_replies(uuid,text)'];
 // Discover every declared privileged function, so a newly added RPC cannot
 // silently bypass this guard just because its name was not added to a list.
-const declared=[...sql.matchAll(/create\\s+or\\s+replace\\s+function\\s+public\\.(cnidaria_\\w+)\\s*\\(([^)]*)\\)/gi)];
-const signatures=declared.map(([,name,args])=>name+'('+args.split(',').map(a=>a.trim().split(/\\s+/).at(-1)).join(',')+')');
+const declared=[...sql.matchAll(/create\s+or\s+replace\s+function\s+public\.(cnidaria_\w+)\s*\(([^)]*)\)/gi)];
+const signatures=declared.map(([,name,args])=>name+'('+args.split(',').map(a=>a.trim().split(/\s+/).at(-1)).join(',')+')');
 
 
 test('RSVP tables retain RLS and deny direct anonymous/authenticated access',()=>{
