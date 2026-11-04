@@ -8,10 +8,10 @@ export function validateChallengeRecord(record, request) {
   if (!request || typeof request !== 'object') return 'invalid_request';
   const {now, recipientId, inviteId, nonce} = request;
   if (!record || typeof record !== 'object') return 'missing';
-  if (typeof now !== 'number' || !Number.isFinite(now)) return 'invalid_time';
-  if (![recipientId, inviteId, nonce].every(value => typeof value === 'string' && value.length > 0)) return 'invalid_request';
+  if (!Number.isSafeInteger(now) || now < 0) return 'invalid_time';
+  if (![recipientId, inviteId, nonce].every(value => typeof value === 'string' && value.length > 0 && value.length <= 256 && value.trim() === value)) return 'invalid_request';
   if (record.recipientId !== recipientId || record.inviteId !== inviteId || record.nonce !== nonce) return 'mismatch';
-  if (!Number.isSafeInteger(record.issuedAt) || record.issuedAt > now || now - record.issuedAt > CHALLENGE_TTL_MS) return 'expired';
+  if (!Number.isSafeInteger(record.issuedAt) || record.issuedAt < 0 || record.issuedAt > now || now - record.issuedAt > CHALLENGE_TTL_MS) return 'expired';
   if (record.consumedAt != null) return 'replayed';
   if (!Number.isSafeInteger(record.attempts) || record.attempts < 0 || record.attempts >= MAX_ATTEMPTS) return 'rate_limited';
   return null;
