@@ -4,10 +4,12 @@ on:
     paths:
       - 'wallet/**'
       - 'rsvp/**'
+      - 'index.html'
       - '.github/workflows/wallet-tests.yml'
   pull_request:
     paths:
       - 'rsvp/**'
+      - 'index.html'
       - 'wallet/**'
       - '.github/workflows/wallet-tests.yml'
 permissions:
