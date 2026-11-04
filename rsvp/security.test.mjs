@@ -7,7 +7,7 @@ test('RSVP requests never send organizer secret when replying',async()=>{
  const fetcher=async(url,options)=>{calls.push({url,options});return {ok:true,status:200,json:async()=>null}};
  const client=createRsvpClient('https://example.supabase.co','public-key',fetcher);
  const replySecret=randomSecret();
- await client.reply('invite-id',replySecret,'yes');
+ await client.reply('2a861e9d-8752-47b7-bb61-86df31742a39',replySecret,'yes');
  const request=calls[0];
  assert.equal(request.options.method,'POST');
  assert.equal(request.options.headers.apikey,'public-key');
@@ -20,8 +20,8 @@ test('RSVP client fails closed when RPCs are disabled',async()=>{
  const fetcher=async()=>({ok:false,status:403});
  const client=createRsvpClient('https://example.supabase.co','public-key',fetcher);
  await assert.rejects(client.create('Coffee',randomSecret()),/403/);
- await assert.rejects(client.reply('invite-id',randomSecret(),'yes'),/403/);
- await assert.rejects(client.getReplies('invite-id',randomSecret()),/403/);
+ await assert.rejects(client.reply('2a861e9d-8752-47b7-bb61-86df31742a39',randomSecret(),'yes'),/403/);
+ await assert.rejects(client.getReplies('2a861e9d-8752-47b7-bb61-86df31742a39',randomSecret()),/403/);
 });
 
 test('RSVP API requires HTTPS',()=>{
