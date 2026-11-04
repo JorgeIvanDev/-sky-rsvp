@@ -5,6 +5,11 @@ import {readFileSync} from 'node:fs';
 // Static regression guard only: this does not verify grants in a deployed database.
 const sql=readFileSync(new URL('../supabase/001_invitation_rsvps.sql',import.meta.url),'utf8');
 const functions=['cnidaria_create_invite(text,text)','cnidaria_reply(uuid,text,text)','cnidaria_get_replies(uuid,text)'];
+// Discover every declared privileged function, so a newly added RPC cannot
+// silently bypass this guard just because its name was not added to a list.
+const declared=[...sql.matchAll(/create\\s+or\\s+replace\\s+function\\s+public\\.(cnidaria_\\w+)\\s*\\(([^)]*)\\)/gi)];
+const signatures=declared.map(([,name,args])=>name+'('+args.split(',').map(a=>a.trim().split(/\\s+/).at(-1)).join(',')+')');
+
 
 test('RSVP tables retain RLS and deny direct anonymous/authenticated access',()=>{
  for(const table of ['cnidaria_invites','cnidaria_invite_replies']){
@@ -14,7 +19,9 @@ test('RSVP tables retain RLS and deny direct anonymous/authenticated access',()=
 });
 
 test('privileged RSVP RPCs remain explicitly inaccessible to public clients',()=>{
- for(const signature of functions){
+ assert.equal(new Set(signatures).size,signatures.length,'duplicate privileged RPC declarations');
+ assert.deepEqual([...signatures].sort(),[...functions].sort(),'review new privileged RPCs explicitly');
+ for(const signature of signatures){
   assert.ok(sql.includes('revoke all on function public.'+signature+' from public;'));
   assert.ok(sql.includes('revoke execute on function public.'+signature+' from anon,authenticated;'));
  }
@@ -23,7 +30,7 @@ test('privileged RSVP RPCs remain explicitly inaccessible to public clients',()=
 
 test('all three SECURITY DEFINER RPCs pin search_path',()=>{
  const declarations=[...sql.matchAll(/create\s+or\s+replace\s+function\s+public\.cnidaria_\w+\s*\([^]*?\)\s*returns\s+[^]*?\bas\s+\$\$/gi)];
- assert.equal(declarations.length,functions.length);
+ assert.equal(declarations.length,signatures.length);
  for(const declaration of declarations){
   assert.match(declaration[0],/security\s+definer\s+set\s+search_path\s*=\s*''/i);
  }
