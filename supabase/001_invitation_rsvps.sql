@@ -1,5 +1,5 @@
 -- CNIDARIA invitation RSVP prototype, Supabase PostgreSQL.
--- Run in Supabase SQL editor after reviewing. No live integration until applied.
+-- Baseline schema. Fail closed: no public RPC grants until a reviewed, abuse-protected API exists.
 -- SECURITY: public response links are bearer capabilities, NOT verified identities.
 create extension if not exists pgcrypto;
 create table if not exists public.cnidaria_invites (
@@ -59,8 +59,10 @@ end $$;
 revoke all on function public.cnidaria_create_invite(text,text) from public;
 revoke all on function public.cnidaria_reply(uuid,text,text) from public;
 revoke all on function public.cnidaria_get_replies(uuid,text) from public;
-grant execute on function public.cnidaria_create_invite(text,text) to anon,authenticated;
-grant execute on function public.cnidaria_reply(uuid,text,text) to anon,authenticated;
-grant execute on function public.cnidaria_get_replies(uuid,text) to anon,authenticated;
+-- Intentionally DO NOT grant EXECUTE to anon or authenticated.
+-- This revocation also closes earlier deployments that used permissive grants.
+revoke execute on function public.cnidaria_create_invite(text,text) from anon,authenticated;
+revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;
+revoke execute on function public.cnidaria_get_replies(uuid,text) from anon,authenticated;
 -- Before production: add server-side rate limiting / CAPTCHA, abuse monitoring,
 -- retention/deletion policy, and avoid revealing private meetup data in URL.
