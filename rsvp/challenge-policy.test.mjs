@@ -19,3 +19,9 @@ for(const [name,patch,reason] of [
 test('reject unverified evidence',()=>assert.equal(evaluateParticipation(record,{...request,evidenceVerified:false}).reason,'unverified_evidence'));
 test('reject missing identity',()=>assert.equal(evaluateParticipation(record,{...request,recipientId:''}).reason,'invalid_request'));
 test('expiry boundary accepted',()=>assert.equal(validateChallengeRecord({...record,issuedAt:now-CHALLENGE_TTL_MS},request),null));
+
+test('reject null request without throwing',()=>assert.equal(validateChallengeRecord(record,null),'invalid_request'));
+test('reject undefined request without throwing',()=>assert.equal(evaluateParticipation(record,undefined).reason,'invalid_request'));
+test('reject numeric recipient identity',()=>assert.equal(validateChallengeRecord(record,{...request,recipientId:123}),'invalid_request'));
+test('reject object invitation identity',()=>assert.equal(validateChallengeRecord(record,{...request,inviteId:{}}),'invalid_request'));
+test('reject non-string nonce',()=>assert.equal(validateChallengeRecord(record,{...request,nonce:42}),'invalid_request'));
