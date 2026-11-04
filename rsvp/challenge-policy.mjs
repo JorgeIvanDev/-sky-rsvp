@@ -9,7 +9,7 @@ export function validateChallengeRecord(record, request) {
   const {now, recipientId, inviteId, nonce} = request;
   if (!record || typeof record !== 'object') return 'missing';
   if (!Number.isSafeInteger(now) || now < 0) return 'invalid_time';
-  if (![recipientId, inviteId, nonce].every(value => typeof value === 'string' && value.length > 0 && value.length <= 256 && value.trim() === value && !/[\\u0000-\\u001f\\u007f]/.test(value) && value.trim().length > 0)) return 'invalid_request';
+  if (![recipientId, inviteId, nonce].every(value => typeof value === 'string' && value.length > 0 && value.length <= 256 && value.trim() === value && !/[\u0000-\u001f\u007f]/.test(value) && value.trim().length > 0)) return 'invalid_request';
   if (record.recipientId !== recipientId || record.inviteId !== inviteId || record.nonce !== nonce) return 'mismatch';
   if (!Number.isSafeInteger(record.issuedAt) || record.issuedAt < 0 || record.issuedAt > now || now - record.issuedAt > CHALLENGE_TTL_MS) return 'expired';
   if (record.consumedAt != null) return 'replayed';
