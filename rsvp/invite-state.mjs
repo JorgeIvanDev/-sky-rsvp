@@ -18,17 +18,14 @@ export function privateOrganizerRecord(id,ownerSecret){
 
 export function shareableInviteUrl(baseUrl,invite){
  const {id}=publicInviteRecord(invite.id,invite.title);
- const url=new URL(baseUrl);
- if(url.protocol!=='https:')throw Error('HTTPS required');
+ const source=new URL(baseUrl);
+ if(source.protocol!=='https:'||source.username||source.password)throw Error('HTTPS required');
+ // Allowlist only the legacy public invite payload; never copy unknown query keys,
+ // fragments, organizer secrets, auth tokens, or credentials into shared URLs.
+ const url=new URL(source.pathname,source.origin);
+ const payload=source.searchParams.getAll('data');
+ if(payload.length===1)url.searchParams.set('data',payload[0]);
  url.searchParams.set('rsvp',id);
- // A new URL is built without copying the organizer capability.
- url.searchParams.delete('ownerSecret');
- url.searchParams.delete('owner_secret');
- // Never allow a capability accidentally included in a public URL to survive.
- for(const [key] of [...url.searchParams]){
-  if(/secret|token|private.?key|password|credential/i.test(key))url.searchParams.delete(key);
- }
- if(url.hash && /secret|token|private.?key|password|credential/i.test(url.hash))url.hash='';
  return url.toString();
 }
 
