@@ -24,6 +24,11 @@ export function shareableInviteUrl(baseUrl,invite){
  // A new URL is built without copying the organizer capability.
  url.searchParams.delete('ownerSecret');
  url.searchParams.delete('owner_secret');
+ // Never allow a capability accidentally included in a public URL to survive.
+ for(const [key] of [...url.searchParams]){
+  if(/secret|token|private.?key|password|credential/i.test(key))url.searchParams.delete(key);
+ }
+ if(url.hash && /secret|token|private.?key|password|credential/i.test(url.hash))url.hash='';
  return url.toString();
 }
 
