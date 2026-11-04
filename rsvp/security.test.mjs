@@ -27,3 +27,21 @@ test('RSVP client fails closed when RPCs are disabled',async()=>{
 test('RSVP API requires HTTPS',()=>{
  assert.throws(()=>createRsvpClient('http://example.com','key'),/HTTPS required/);
 });
+
+test('invalid RSVP input is rejected before any network request',()=>{
+ let calls=0;
+ const fetcher=async()=>{calls++;throw Error('Network should not be reached');};
+ const client=createRsvpClient('https://example.supabase.co','public-key',fetcher);
+ assert.throws(()=>client.create('',randomSecret()),/Invalid invitation title/);
+ assert.throws(()=>client.create('Coffee','bad'),/Invalid RSVP secret/);
+ assert.throws(()=>client.reply('not-a-uuid',randomSecret(),'yes'),/Invalid invitation ID/);
+ assert.throws(()=>client.reply('2a861e9d-8752-47b7-bb61-86df31742a39',randomSecret(),'yes<script>'),/Invalid RSVP choice/);
+ assert.throws(()=>client.getReplies('2a861e9d-8752-47b7-bb61-86df31742a39','bad'),/Invalid RSVP secret/);
+ assert.equal(calls,0);
+});
+
+test('reject API URLs with credentials, query strings, or fragments',()=>{
+ for(const url of ['https://user:pass@example.com','https://example.com/?apikey=secret','https://example.com/#secret']){
+  assert.throws(()=>createRsvpClient(url,'public-key'),/HTTPS required/);
+ }
+});
