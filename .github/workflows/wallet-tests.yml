@@ -7,6 +7,7 @@ on:
       - '.github/workflows/wallet-tests.yml'
   pull_request:
     paths:
+      - 'rsvp/**'
       - 'wallet/**'
       - '.github/workflows/wallet-tests.yml'
 permissions:
