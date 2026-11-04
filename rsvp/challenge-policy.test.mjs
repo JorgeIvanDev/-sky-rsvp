@@ -34,7 +34,7 @@ test('reject oversized nonce',()=>assert.equal(validateChallengeRecord(record,{.
 test('reject oversized recipient',()=>assert.equal(validateChallengeRecord(record,{...request,recipientId:'x'.repeat(257)}),'invalid_request'));
 test('reject whitespace-padded invitation identity',()=>assert.equal(validateChallengeRecord(record,{...request,inviteId:' invite-A '}),'invalid_request'));
 
-test('reject embedded newline in nonce',()=>assert.equal(validateChallengeRecord(record,{...request,nonce:'random\\nnonce'}),'invalid_request'));
-test('reject embedded NUL in recipient',()=>assert.equal(validateChallengeRecord(record,{...request,recipientId:'recipient\\0A'}),'invalid_request'));
-test('reject DEL control in invitation',()=>assert.equal(validateChallengeRecord(record,{...request,inviteId:'invite\\x7fA'}),'invalid_request'));
+test('reject embedded newline in nonce',()=>assert.equal(validateChallengeRecord(record,{...request,nonce:'random'+String.fromCharCode(10)+'nonce'}),'invalid_request'));
+test('reject embedded NUL in recipient',()=>assert.equal(validateChallengeRecord(record,{...request,recipientId:'recipient'+String.fromCharCode(0)+'A'}),'invalid_request'));
+test('reject DEL control in invitation',()=>assert.equal(validateChallengeRecord(record,{...request,inviteId:'invite'+String.fromCharCode(127)+'A'}),'invalid_request'));
 test('reject whitespace-only identity',()=>assert.equal(validateChallengeRecord(record,{...request,nonce:'   '}),'invalid_request'));
