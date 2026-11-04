@@ -30,3 +30,14 @@ test('RSVP choices are limited and have clear user messages',()=>{
  assert.match(formatRsvpStatus('maybe'),/update/);
  assert.throws(()=>validateChoice('maybe<script>'),/Invalid RSVP choice/);
 });
+
+test('share URL allowlist drops arbitrary keys, fragments, and URL credentials',()=>{
+ const url=shareableInviteUrl('https://example.com/invite?data=hello&apiKey=private&session=private&ownerSecret=private#access_token=private',{id,title:'Coffee'});
+ assert.equal(url,'https://example.com/invite?data=hello&rsvp='+id);
+ assert.equal(url.includes('private'),false);
+ assert.throws(()=>shareableInviteUrl('https://user:pass@example.com/',{id,title:'Coffee'}),/HTTPS required/);
+});
+test('duplicate legacy payloads are not silently chosen',()=>{
+ const url=shareableInviteUrl('https://example.com/?data=one&data=two',{id,title:'Coffee'});
+ assert.equal(new URL(url).searchParams.has('data'),false);
+});
