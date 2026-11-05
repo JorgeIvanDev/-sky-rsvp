@@ -35,3 +35,17 @@ test('all three SECURITY DEFINER RPCs pin search_path',()=>{
   assert.match(declaration[0],/security\s+definer\s+set\s+search_path\s*=\s*''/i);
  }
 });
+
+test('RPC revocations follow definitions so default EXECUTE cannot be restored by later CREATE',()=>{
+ for(const signature of signatures){
+  const name=signature.slice(0,signature.indexOf('('));
+  const createPattern=new RegExp('\\bcreate\\s+or\\s+replace\\s+function\\s+public\\.'+name+'\\s*\\(','gi');
+  const declarations=[...sql.matchAll(createPattern)];
+  assert.equal(declarations.length,1,'exactly one definition required for '+name);
+  const declarationAt=declarations[0].index;
+  const revokePublic='revoke all on function public.'+signature+' from public;';
+  const revokeRoles='revoke execute on function public.'+signature+' from anon,authenticated;';
+  assert.ok(sql.lastIndexOf(revokePublic)>declarationAt,'PUBLIC revocation must follow '+name);
+  assert.ok(sql.lastIndexOf(revokeRoles)>declarationAt,'role revocation must follow '+name);
+ }
+});
