@@ -6,6 +6,7 @@ export class ReferenceChallengeStore {
   constructor(challenges = []) {
     for (const challenge of challenges) {
       if (!challenge || typeof challenge !== 'object' ||
+          !['id', 'recipientId', 'inviteId', 'nonce', 'expiresAt'].every(key => own(challenge, key)) ||
           ![challenge.id, challenge.recipientId, challenge.inviteId, challenge.nonce].every(
             x => typeof x === 'string' && x.length > 0) ||
           !Number.isSafeInteger(challenge.expiresAt) || challenge.expiresAt < 0 ||
