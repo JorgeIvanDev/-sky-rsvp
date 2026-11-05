@@ -115,3 +115,22 @@ test('inherited request identity and clock fields cannot validate participation'
   assert.deepEqual(evaluateParticipation(record,inherited),{ok:false,reason:'invalid_request'});
  }
 });
+
+test('throwing request getters fail closed without crashing',()=>{
+ for(const field of ['now','recipientId','inviteId','nonce']){
+  const candidate={...request};
+  Object.defineProperty(candidate,field,{get(){throw Error('untrusted getter')}});
+  assert.deepEqual(evaluateParticipation(record,candidate),{ok:false,reason:'invalid_request'});
+ }
+ const candidate={...request};
+ Object.defineProperty(candidate,'evidenceVerified',{get(){throw Error('untrusted evidence')}});
+ assert.deepEqual(evaluateParticipation(record,candidate),{ok:false,reason:'unverified_evidence'});
+});
+
+test('throwing record getters fail closed without crashing',()=>{
+ for(const field of ['recipientId','inviteId','nonce','issuedAt','consumedAt','attempts']){
+  const candidate={...record};
+  Object.defineProperty(candidate,field,{get(){throw Error('untrusted getter')}});
+  assert.deepEqual(evaluateParticipation(candidate,request),{ok:false,reason:'invalid_record'});
+ }
+});
