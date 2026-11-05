@@ -58,3 +58,10 @@ test('commented-out permission revocations cannot satisfy the security guard',()
  assert.equal(stripped.trim(),'');
  assert.ok(sql.includes('revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;'));
 });
+
+test('RSVP migration cannot introduce permissive RLS policies or disable RLS',()=>{
+ // Fail closed: privileged server mediation is required until reviewed APIs exist.
+ assert.doesNotMatch(sql,/\bcreate\s+(?:or\s+replace\s+)?policy\b/i);
+ assert.doesNotMatch(sql,/\balter\s+table\s+(?:if\s+exists\s+)?public\.cnidaria_(?:invites|invite_replies)\s+disable\s+row\s+level\s+security\b/i);
+ assert.doesNotMatch(sql,/\balter\s+table\s+(?:if\s+exists\s+)?public\.cnidaria_(?:invites|invite_replies)\s+no\s+force\s+row\s+level\s+security\b/i);
+});
