@@ -71,7 +71,11 @@ test('RSVP migration cannot introduce permissive RLS policies or disable RLS',()
  assert.doesNotMatch(sql,/\balter\s+table\s+(?:if\s+exists\s+)?public\.cnidaria_(?:invites|invite_replies)\s+no\s+force\s+row\s+level\s+security\b/i);
 });
 
-test('embedded revocation text is not an executable standalone statement',()=>{\n assert.equal(hasStandaloneStatement("select 'revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;'",'revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;'),false);\n});\n\ntest('block-commented revocations and inline comments cannot spoof security assertions',()=>{
+test('embedded revocation text is not an executable standalone statement',()=>{
+ assert.equal(hasStandaloneStatement("select 'revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;'",'revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;'),false);
+});
+
+test('block-commented revocations and inline comments cannot spoof security assertions',()=>{
  const fake='/* revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated; */';
  assert.equal(stripSqlComments(fake).trim(),'');
  assert.equal(stripSqlComments('select 1; -- revoke all on public.cnidaria_invites from anon,authenticated;').trim(),'select 1;');
