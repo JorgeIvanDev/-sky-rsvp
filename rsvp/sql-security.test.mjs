@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
 // Static regression guard only: this does not verify grants in a deployed database.
-const sql=readFileSync(new URL('../supabase/001_invitation_rsvps.sql',import.meta.url),'utf8');
+// Ignore standalone SQL comments: a commented-out REVOKE must never satisfy this guard.
+const sql=readFileSync(new URL('../supabase/001_invitation_rsvps.sql',import.meta.url),'utf8')
+ .replace(/^\s*--.*$/gm,'');
 const functions=['cnidaria_create_invite(text,text)','cnidaria_reply(uuid,text,text)','cnidaria_get_replies(uuid,text)'];
 // Discover every declared privileged function, so a newly added RPC cannot
 // silently bypass this guard just because its name was not added to a list.
@@ -48,4 +50,11 @@ test('RPC revocations follow definitions so default EXECUTE cannot be restored b
   assert.ok(sql.lastIndexOf(revokePublic)>declarationAt,'PUBLIC revocation must follow '+name);
   assert.ok(sql.lastIndexOf(revokeRoles)>declarationAt,'role revocation must follow '+name);
  }
+});
+
+test('commented-out permission revocations cannot satisfy the security guard',()=>{
+ const commented='-- revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;';
+ const stripped=commented.replace(/^\s*--.*$/gm,'');
+ assert.equal(stripped.trim(),'');
+ assert.ok(sql.includes('revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;'));
 });
