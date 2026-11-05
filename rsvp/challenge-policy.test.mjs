@@ -100,3 +100,8 @@ test('inherited identity, issuance, and attempt fields cannot validate a challen
   assert.deepEqual(evaluateParticipation(candidate,request),{ok:false,reason});
  }
 });
+
+test('inherited evidence flag cannot authorize participation',()=>{
+ const inherited=Object.assign(Object.create({evidenceVerified:true}),{now,recipientId:request.recipientId,inviteId:request.inviteId,nonce:request.nonce});
+ assert.deepEqual(evaluateParticipation(record,inherited),{ok:false,reason:'unverified_evidence'});
+});
