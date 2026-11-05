@@ -9,6 +9,8 @@ const stripSqlComments = source => source
  .replace(/\/\*[\s\S]*?\*\//g,'')
  .replace(/--[^\r\n]*/g,'');
 const sql=stripSqlComments(readFileSync(new URL('../supabase/001_invitation_rsvps.sql',import.meta.url),'utf8'));
+// Match complete standalone SQL statements, not arbitrary substrings in function bodies.
+const hasStandaloneStatement=(source,statement)=>source.split(/\r?\n/).some(line=>line.trim().toLowerCase()===statement.toLowerCase());
 const functions=['cnidaria_create_invite(text,text)','cnidaria_reply(uuid,text,text)','cnidaria_get_replies(uuid,text)'];
 // Discover every declared privileged function, so a newly added RPC cannot
 // silently bypass this guard just because its name was not added to a list.
@@ -18,8 +20,8 @@ const signatures=declared.map(([,name,args])=>name+'('+args.split(',').map(a=>a.
 
 test('RSVP tables retain RLS and deny direct anonymous/authenticated access',()=>{
  for(const table of ['cnidaria_invites','cnidaria_invite_replies']){
-  assert.ok(sql.includes('alter table public.'+table+' enable row level security;'));
-  assert.ok(sql.includes('revoke all on public.'+table+' from anon,authenticated;'));
+  assert.ok(hasStandaloneStatement(sql,'alter table public.'+table+' enable row level security;'));
+  assert.ok(hasStandaloneStatement(sql,'revoke all on public.'+table+' from anon,authenticated;'));
  }
 });
 
@@ -27,8 +29,8 @@ test('privileged RSVP RPCs remain explicitly inaccessible to public clients',()=
  assert.equal(new Set(signatures).size,signatures.length,'duplicate privileged RPC declarations');
  assert.deepEqual([...signatures].sort(),[...functions].sort(),'review new privileged RPCs explicitly');
  for(const signature of signatures){
-  assert.ok(sql.includes('revoke all on function public.'+signature+' from public;'));
-  assert.ok(sql.includes('revoke execute on function public.'+signature+' from anon,authenticated;'));
+  assert.ok(hasStandaloneStatement(sql,'revoke all on function public.'+signature+' from public;'));
+  assert.ok(hasStandaloneStatement(sql,'revoke execute on function public.'+signature+' from anon,authenticated;'));
  }
  assert.doesNotMatch(sql,/\bgrant\s+(?:all|execute|select|insert|update|delete)\b/i);
 });
@@ -69,7 +71,7 @@ test('RSVP migration cannot introduce permissive RLS policies or disable RLS',()
  assert.doesNotMatch(sql,/\balter\s+table\s+(?:if\s+exists\s+)?public\.cnidaria_(?:invites|invite_replies)\s+no\s+force\s+row\s+level\s+security\b/i);
 });
 
-test('block-commented revocations and inline comments cannot spoof security assertions',()=>{
+test('embedded revocation text is not an executable standalone statement',()=>{\n assert.equal(hasStandaloneStatement("select 'revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;'",'revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated;'),false);\n});\n\ntest('block-commented revocations and inline comments cannot spoof security assertions',()=>{
  const fake='/* revoke execute on function public.cnidaria_reply(uuid,text,text) from anon,authenticated; */';
  assert.equal(stripSqlComments(fake).trim(),'');
  assert.equal(stripSqlComments('select 1; -- revoke all on public.cnidaria_invites from anon,authenticated;').trim(),'select 1;');
