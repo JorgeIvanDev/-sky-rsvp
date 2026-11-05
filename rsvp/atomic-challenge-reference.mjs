@@ -4,8 +4,17 @@ export class ReferenceChallengeStore {
   #records = new Map();
   constructor(challenges = []) {
     for (const challenge of challenges) {
-      if (!challenge || typeof challenge.id !== 'string' || this.#records.has(challenge.id)) throw Error('Invalid challenge');
-      this.#records.set(challenge.id, { ...challenge, consumed: false, unlocked: false });
+      if (!challenge || typeof challenge !== 'object' ||
+          ![challenge.id, challenge.recipientId, challenge.inviteId, challenge.nonce].every(
+            x => typeof x === 'string' && x.length > 0) ||
+          !Number.isSafeInteger(challenge.expiresAt) || challenge.expiresAt < 0 ||
+          this.#records.has(challenge.id)) throw Error('Invalid challenge');
+      // Store only validated fields; never retain caller-controlled mutable objects.
+      this.#records.set(challenge.id, {
+        recipientId: challenge.recipientId, inviteId: challenge.inviteId,
+        nonce: challenge.nonce, expiresAt: challenge.expiresAt,
+        revoked: challenge.revoked === true, consumed: false, unlocked: false
+      });
     }
   }
   // No await inside the critical section: JavaScript executes this transition synchronously.
