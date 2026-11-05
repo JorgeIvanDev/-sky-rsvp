@@ -134,3 +134,21 @@ test('throwing record getters fail closed without crashing',()=>{
   assert.deepEqual(evaluateParticipation(candidate,request),{ok:false,reason:'invalid_record'});
  }
 });
+
+test('hostile Proxy ownership traps fail closed without crashing',()=>{
+ const throwingOwnKeys={getOwnPropertyDescriptor(){throw Error('untrusted ownership trap')}};
+ const hostileRequest=new Proxy({...request},throwingOwnKeys);
+ assert.deepEqual(evaluateParticipation(record,hostileRequest),{ok:false,reason:'invalid_request'});
+ const hostileRecord=new Proxy({...record},throwingOwnKeys);
+ assert.deepEqual(evaluateParticipation(hostileRecord,request),{ok:false,reason:'invalid_record'});
+});
+
+test('hostile Proxy evidence ownership trap fails closed',()=>{
+ const hostileRequest=new Proxy({...request},{
+  getOwnPropertyDescriptor(target,key){
+   if(key==='evidenceVerified') throw Error('untrusted evidence ownership');
+   return Reflect.getOwnPropertyDescriptor(target,key);
+  }
+ });
+ assert.deepEqual(evaluateParticipation(record,hostileRequest),{ok:false,reason:'unverified_evidence'});
+});
