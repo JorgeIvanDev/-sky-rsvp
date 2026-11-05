@@ -10,6 +10,7 @@ on:
       - 'rsvp/**'
       - 'supabase/**'
       - '.github/workflows/rsvp-security.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
