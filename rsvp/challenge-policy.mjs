@@ -28,6 +28,6 @@ export function validateChallengeRecord(record, request) {
 export function evaluateParticipation(record, request) {
   const error = validateChallengeRecord(record, request);
   if (error) return {ok:false, reason:error};
-  if (!request || request.evidenceVerified !== true) return {ok:false, reason:'unverified_evidence'};
+  if (!request || !Object.hasOwn(request, 'evidenceVerified') || request.evidenceVerified !== true) return {ok:false, reason:'unverified_evidence'};
   return {ok:true};
 }
