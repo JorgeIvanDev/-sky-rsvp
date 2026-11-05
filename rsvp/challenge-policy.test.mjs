@@ -105,3 +105,13 @@ test('inherited evidence flag cannot authorize participation',()=>{
  const inherited=Object.assign(Object.create({evidenceVerified:true}),{now,recipientId:request.recipientId,inviteId:request.inviteId,nonce:request.nonce});
  assert.deepEqual(evaluateParticipation(record,inherited),{ok:false,reason:'unverified_evidence'});
 });
+
+test('inherited request identity and clock fields cannot validate participation',()=>{
+ for(const field of ['now','recipientId','inviteId','nonce']){
+  const own={...request};
+  delete own[field];
+  const inherited=Object.assign(Object.create({[field]:request[field]}),own);
+  assert.equal(validateChallengeRecord(record,inherited),'invalid_request');
+  assert.deepEqual(evaluateParticipation(record,inherited),{ok:false,reason:'invalid_request'});
+ }
+});
