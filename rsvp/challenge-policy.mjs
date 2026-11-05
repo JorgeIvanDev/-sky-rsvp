@@ -8,6 +8,8 @@ export const MAX_ATTEMPTS = 1;
 
 export function validateChallengeRecord(record, request) {
   if (!request || typeof request !== 'object') return 'invalid_request';
+  // Never accept identity or clock values inherited through a prototype chain.
+  if (!['now', 'recipientId', 'inviteId', 'nonce'].every(key => Object.hasOwn(request, key))) return 'invalid_request';
   const {now, recipientId, inviteId, nonce} = request;
   if (!record || typeof record !== 'object') return 'missing';
   if (!Number.isSafeInteger(now) || now < 0) return 'invalid_time';
