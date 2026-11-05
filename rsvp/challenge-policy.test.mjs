@@ -72,3 +72,21 @@ test('consumption marker must be explicitly null to be unused',()=>{
  assert.equal(validateChallengeRecord(withoutMarker,request),'replayed');
  assert.equal(validateChallengeRecord({...record,consumedAt:null},request),null);
 });
+
+test('inherited consumption marker cannot masquerade as an unused own field',()=>{
+ const inherited=Object.create({consumedAt:null});
+ Object.assign(inherited,{recipientId:record.recipientId,inviteId:record.inviteId,nonce:record.nonce,issuedAt:record.issuedAt,attempts:0});
+ assert.equal(validateChallengeRecord(inherited,request),'replayed');
+ assert.deepEqual(evaluateParticipation(inherited,request),{ok:false,reason:'replayed'});
+});
+
+test('evidence does not override missing or exhausted challenge state',()=>{
+ const cases=[
+  [{...record,attempts:1},'rate_limited'],
+  [{...record,consumedAt:now},'replayed'],
+  [{...record,issuedAt:now-CHALLENGE_TTL_MS-1},'expired'],
+ ];
+ for(const [candidate,reason] of cases){
+  assert.deepEqual(evaluateParticipation(candidate,{...request,evidenceVerified:true}),{ok:false,reason});
+ }
+});
