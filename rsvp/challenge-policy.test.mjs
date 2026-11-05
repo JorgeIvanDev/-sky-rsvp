@@ -63,3 +63,12 @@ test('only literal boolean true counts as verified evidence',()=>{
 test('replay is denied even when evidence is marked verified',()=>{
  assert.deepEqual(evaluateParticipation({...record,consumedAt:now-1},request),{ok:false,reason:'replayed'});
 });
+
+test('consumption marker must be explicitly null to be unused',()=>{
+ for(const consumedAt of [undefined,false,0,'',{},NaN]){
+  assert.equal(validateChallengeRecord({...record,consumedAt},request),'replayed');
+ }
+ const {consumedAt,...withoutMarker}=record;
+ assert.equal(validateChallengeRecord(withoutMarker,request),'replayed');
+ assert.equal(validateChallengeRecord({...record,consumedAt:null},request),null);
+});
