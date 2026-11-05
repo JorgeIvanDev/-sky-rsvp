@@ -90,3 +90,13 @@ test('evidence does not override missing or exhausted challenge state',()=>{
   assert.deepEqual(evaluateParticipation(candidate,{...request,evidenceVerified:true}),{ok:false,reason});
  }
 });
+
+test('inherited identity, issuance, and attempt fields cannot validate a challenge',()=>{
+ for(const [field,reason] of [['recipientId','mismatch'],['inviteId','mismatch'],['nonce','mismatch'],['issuedAt','expired'],['attempts','rate_limited']]){
+  const own={...record};
+  delete own[field];
+  const candidate=Object.assign(Object.create({[field]:record[field]}),own);
+  assert.equal(validateChallengeRecord(candidate,request),reason);
+  assert.deepEqual(evaluateParticipation(candidate,request),{ok:false,reason});
+ }
+});
