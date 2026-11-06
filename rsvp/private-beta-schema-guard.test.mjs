@@ -14,15 +14,15 @@ test('private beta RSVP tables remain fail-closed to browser roles', () => {
     assert.match(sql, new RegExp('alter\\s+table\\s+public\\.' + name + '\\s+force\\s+row\\s+level\\s+security\\s*;', 'i'));
     assert.match(sql, new RegExp('revoke\\s+all\\s+on\\s+table\\s+public\\.' + name + '\\s+from\\s+public\\s*,\\s*anon\\s*,\\s*authenticated\\s*;', 'i'));
   }
-  assert.doesNotMatch(sql, /\\bcreate\\s+policy\\b/i, 'no browser-readable beta policies before authorization review');
-  assert.doesNotMatch(sql, /\\bgrant\\s+(?:all|select|insert|update|delete)\\b/i, 'no new table grants');
-  assert.doesNotMatch(sql, /\\bcreate\\s+(?:or\\s+replace\\s+)?function\\b/i, 'no RPC introduced in storage migration');
+  assert.doesNotMatch(sql, /\bcreate\s+policy\b/i, 'no browser-readable beta policies before authorization review');
+  assert.doesNotMatch(sql, /\bgrant\s+(?:all|select|insert|update|delete)\b/i, 'no new table grants');
+  assert.doesNotMatch(sql, /\bcreate\s+(?:or\s+replace\s+)?function\b/i, 'no RPC introduced in storage migration');
 });
 
 test('one receipt and one consumed challenge per recipient remain enforced', () => {
-  assert.match(sql, /unique\\s*\\(invite_id,\\s*recipient_id\\)/i);
-  assert.match(sql, /unique\\s*\\(recipient_id,\\s*idempotency_hash\\)/i);
-  assert.match(sql, /unique\\s*\\(challenge_id\\)/i);
-  assert.match(sql, /foreign\\s+key\\s*\\(challenge_id,\\s*recipient_id,\\s*invite_id\\)/i);
-  assert.match(sql, /foreign\\s+key\\s*\\(recipient_id,\\s*invite_id\\)/i);
+  assert.match(sql, /unique\s*\(invite_id,\s*recipient_id\)/i);
+  assert.match(sql, /unique\s*\(recipient_id,\s*idempotency_hash\)/i);
+  assert.match(sql, /unique\s*\(challenge_id\)/i);
+  assert.match(sql, /foreign\s+key\s*\(challenge_id,\s*recipient_id,\s*invite_id\)/i);
+  assert.match(sql, /foreign\s+key\s*\(recipient_id,\s*invite_id\)/i);
 });
