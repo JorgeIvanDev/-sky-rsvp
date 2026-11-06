@@ -28,3 +28,12 @@ test('hostile objects, extra authority claims and malformed time fail closed',()
  assert.equal(authorizeRsvpPreflight({...valid(),now:NaN}),false);
  assert.equal(authorizeRsvpPreflight({...valid(),now:Infinity}),false);
 });
+
+test('hostile top-level envelopes fail closed without throwing',()=>{
+ assert.equal(authorizeRsvpPreflight(undefined),false);
+ assert.equal(authorizeRsvpPreflight(null),false);
+ assert.equal(authorizeRsvpPreflight({ ...valid(), admin:true }),false);
+ assert.equal(authorizeRsvpPreflight(Object.create({ ...valid() })),false);
+ assert.equal(authorizeRsvpPreflight({ ...valid(), get principal(){ throw Error('getter'); } }),false);
+ assert.equal(authorizeRsvpPreflight(new Proxy(valid(), {ownKeys(){ throw Error('proxy'); }})),false);
+});
