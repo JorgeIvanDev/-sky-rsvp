@@ -36,3 +36,20 @@ test('challenge proof cannot predate issuance or originate in the future', () =>
   assert.match(sql, /v_challenge\.verified_at < v_challenge\.issued_at/);
   assert.match(sql, /v_challenge\.verified_at > v_now/);
 });
+
+test('expiry is rechecked after lock waits using a fresh clock', () => {
+  const recipientLock = sql.indexOf('select * into v_recipient');
+  const receipt = sql.indexOf('select * into v_receipt');
+  const challengeLock = sql.indexOf('select * into v_challenge');
+  const update = sql.indexOf('update public.cnidaria_beta_challenges');
+  const freshTimes = [...sql.matchAll(/v_now := clock_timestamp\(\);/g)].map(m => m.index);
+  assert.equal(freshTimes.length, 2, 'refresh time after both row locks');
+  assert.ok(recipientLock < freshTimes[0] && freshTimes[0] < receipt,
+    'expired invitation must not yield retry receipt after recipient lock wait');
+  assert.ok(challengeLock < freshTimes[1] && freshTimes[1] < update,
+    'challenge expiry must be checked after challenge lock wait');
+  const secondExpiry = sql.indexOf('expires_at > v_now', freshTimes[0]);
+  const thirdExpiry = sql.indexOf('expires_at > v_now', freshTimes[1]);
+  assert.ok(secondExpiry > freshTimes[0] && secondExpiry < receipt);
+  assert.ok(thirdExpiry > freshTimes[1] && thirdExpiry < update);
+});
