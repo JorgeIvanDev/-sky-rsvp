@@ -27,6 +27,9 @@ jobs:
       - name: Atomic one-attempt challenge regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/atomic-challenge-*.test.mjs
+      - name: All-migrations public grant regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/all-migrations-permissions.test.mjs
       - name: RSVP SQL permissions regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/sql-security.test.mjs
