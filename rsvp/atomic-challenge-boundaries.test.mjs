@@ -20,9 +20,11 @@ test('invalid timestamps and malformed expiry never spend an attempt', () => {
     assert.deepEqual(store.snapshot('c'), {consumed:false, unlocked:false});
   }
   for (const expiresAt of [undefined, null, '500', Infinity, 0.5]) {
-    const store = new ReferenceChallengeStore([{...challenge(), expiresAt}]);
-    assert.equal(store.consume(request()).ok, false);
-    assert.deepEqual(store.snapshot('c'), {consumed:false, unlocked:false});
+    // Malformed stored records are rejected before any attempt can exist.
+    assert.throws(
+      () => new ReferenceChallengeStore([{...challenge(), expiresAt}]),
+      /Invalid challenge/
+    );
   }
 });
 
