@@ -49,3 +49,6 @@ jobs:
       - name: Internal atomic RSVP SQL structural regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/internal-atomic-rsvp-migration.test.mjs
+      - name: Trusted-server RSVP handler security regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/private-rsvp-handler.test.mjs
