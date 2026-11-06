@@ -30,3 +30,9 @@ test('expired invitations are rejected before retry receipt is returned', () => 
   assert.ok(expiry < recipient && expiry < receipt, 'expiry gate must precede both new submissions and retries');
   assert.match(sql, /from public\.cnidaria_invites\s+where id = p_invite_id and expires_at > v_now/i);
 });
+
+test('challenge proof cannot predate issuance or originate in the future', () => {
+  assert.match(sql, /v_challenge\.issued_at > v_now/);
+  assert.match(sql, /v_challenge\.verified_at < v_challenge\.issued_at/);
+  assert.match(sql, /v_challenge\.verified_at > v_now/);
+});
