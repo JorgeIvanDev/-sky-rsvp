@@ -43,6 +43,16 @@ begin
     raise exception 'RSVP unavailable' using errcode = 'P0001';
   end if;
 
+  -- Recheck after waiting on the recipient lock: the initial expiry check
+  -- may have passed before a concurrent submission held this lock.
+  v_now := clock_timestamp();
+  if not exists (
+    select 1 from public.cnidaria_invites
+    where id = p_invite_id and expires_at > v_now
+  ) then
+    raise exception 'RSVP unavailable' using errcode = 'P0001';
+  end if;
+
   -- A retry may return the original receipt, but cannot change its choice.
   select * into v_receipt from public.cnidaria_beta_rsvp_receipts
     where invite_id = p_invite_id and recipient_id = p_recipient_id;
@@ -59,6 +69,15 @@ begin
   select * into v_challenge from public.cnidaria_beta_challenges
     where id = p_challenge_id and recipient_id = p_recipient_id
       and invite_id = p_invite_id for update;
+  -- A competing transaction can hold the challenge lock until its
+  -- expiry. Evaluate its timestamps against the actual post-lock time.
+  v_now := clock_timestamp();
+  if not exists (
+    select 1 from public.cnidaria_invites
+    where id = p_invite_id and expires_at > v_now
+  ) then
+    raise exception 'RSVP unavailable' using errcode = 'P0001';
+  end if;
   if not found or v_challenge.revoked_at is not null
      or v_challenge.consumed_at is not null
      or v_challenge.verified_at is null
