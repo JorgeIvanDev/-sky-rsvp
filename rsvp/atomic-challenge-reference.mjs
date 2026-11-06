@@ -5,11 +5,12 @@ export class ReferenceChallengeStore {
   #records = new Map();
   constructor(challenges = []) {
     for (const challenge of challenges) {
-      if (!challenge || typeof challenge !== 'object' ||
-          !['id', 'recipientId', 'inviteId', 'nonce', 'expiresAt'].every(key => own(challenge, key))) throw Error('Invalid challenge');
       let id, recipientId, inviteId, nonce, expiresAt, revoked;
-      try { ({id, recipientId, inviteId, nonce, expiresAt, revoked} = challenge); }
-      catch { throw Error('Invalid challenge'); }
+      try {
+        if (!challenge || typeof challenge !== 'object' ||
+            !['id', 'recipientId', 'inviteId', 'nonce', 'expiresAt'].every(key => own(challenge, key))) throw Error('Invalid challenge');
+        ({id, recipientId, inviteId, nonce, expiresAt, revoked} = challenge);
+      } catch { throw Error('Invalid challenge'); }
       if (![id, recipientId, inviteId, nonce].every(x => typeof x === 'string' && x.length > 0) ||
           !Number.isSafeInteger(expiresAt) || expiresAt < 0 || this.#records.has(id)) throw Error('Invalid challenge');
       this.#records.set(id, {
