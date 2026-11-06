@@ -12,7 +12,7 @@ function record(value, fields) {
     const output = Object.create(null);
     for (const field of fields) {
       const d = Object.getOwnPropertyDescriptor(descriptors, field);
-      if (!d || !Object.hasOwn(d.value, 'value')) return null;
+      if (!d || !Object.hasOwn(d, 'value')) return null;
       output[field] = d.value.value;
     }
     return output;
