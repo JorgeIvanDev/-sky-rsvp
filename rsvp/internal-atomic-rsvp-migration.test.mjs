@@ -21,3 +21,12 @@ test('recipient and challenge remain serialized and revocation checked', () => {
   assert.equal((sql.match(/for update;/gi) || []).length, 2);
   assert.match(sql, /v_challenge\.consumed_at is not null/i);
 });
+
+test('expired invitations are rejected before retry receipt is returned', () => {
+  const expiry = sql.indexOf('expires_at > v_now');
+  const receipt = sql.indexOf('select * into v_receipt');
+  const recipient = sql.indexOf('select * into v_recipient');
+  assert.ok(expiry > 0, 'expiry gate must exist');
+  assert.ok(expiry < recipient && expiry < receipt, 'expiry gate must precede both new submissions and retries');
+  assert.match(sql, /from public\.cnidaria_invites\s+where id = p_invite_id and expires_at > v_now/i);
+});
