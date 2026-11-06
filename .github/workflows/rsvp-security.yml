@@ -33,6 +33,9 @@ jobs:
       - name: Direct RSVP payload security regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/rsvp-submit-policy.test.mjs
+      - name: Private beta storage fail-closed regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/private-beta-schema-guard.test.mjs
       - name: RSVP SQL permissions regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/sql-security.test.mjs
