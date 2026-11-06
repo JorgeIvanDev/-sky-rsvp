@@ -6,15 +6,15 @@ export class ReferenceChallengeStore {
   constructor(challenges = []) {
     for (const challenge of challenges) {
       if (!challenge || typeof challenge !== 'object' ||
-          !['id', 'recipientId', 'inviteId', 'nonce', 'expiresAt'].every(key => own(challenge, key)) ||
-          ![challenge.id, challenge.recipientId, challenge.inviteId, challenge.nonce].every(
-            x => typeof x === 'string' && x.length > 0) ||
-          !Number.isSafeInteger(challenge.expiresAt) || challenge.expiresAt < 0 ||
-          this.#records.has(challenge.id)) throw Error('Invalid challenge');
-      this.#records.set(challenge.id, {
-        recipientId: challenge.recipientId, inviteId: challenge.inviteId,
-        nonce: challenge.nonce, expiresAt: challenge.expiresAt,
-        revoked: challenge.revoked === true, consumed: false, unlocked: false
+          !['id', 'recipientId', 'inviteId', 'nonce', 'expiresAt'].every(key => own(challenge, key))) throw Error('Invalid challenge');
+      let id, recipientId, inviteId, nonce, expiresAt, revoked;
+      try { ({id, recipientId, inviteId, nonce, expiresAt, revoked} = challenge); }
+      catch { throw Error('Invalid challenge'); }
+      if (![id, recipientId, inviteId, nonce].every(x => typeof x === 'string' && x.length > 0) ||
+          !Number.isSafeInteger(expiresAt) || expiresAt < 0 || this.#records.has(id)) throw Error('Invalid challenge');
+      this.#records.set(id, {
+        recipientId, inviteId, nonce, expiresAt,
+        revoked: revoked === true, consumed: false, unlocked: false
       });
     }
   }
