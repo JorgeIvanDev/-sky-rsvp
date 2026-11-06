@@ -17,7 +17,11 @@ const read = (obj, keys) => {
     return out;
   } catch { return null; }
 };
-export function authorizeRsvpPreflight({principal, recipient, challenge, submission, now} = {}) {
+export function authorizeRsvpPreflight(input) {
+  // Never destructure an untrusted envelope: getters and Proxy traps may throw.
+  const envelope = read(input, ['principal', 'recipient', 'challenge', 'submission', 'now']);
+  if (!envelope) return false;
+  const {principal, recipient, challenge, submission, now} = envelope;
   const p = read(principal, ['userId']);
   const r = read(recipient, ['id', 'inviteId', 'userId', 'revoked']);
   const c = read(challenge, ['id', 'inviteId', 'recipientId', 'issuedAt', 'expiresAt', 'verifiedAt', 'consumedAt', 'revokedAt']);
