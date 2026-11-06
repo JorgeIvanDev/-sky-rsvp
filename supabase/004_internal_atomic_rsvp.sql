@@ -62,6 +62,8 @@ begin
   if not found or v_challenge.revoked_at is not null
      or v_challenge.consumed_at is not null
      or v_challenge.verified_at is null
+     or v_challenge.issued_at is null
+     or v_challenge.expires_at is null
      or v_challenge.issued_at > v_now
      or v_challenge.verified_at < v_challenge.issued_at
      or v_challenge.verified_at > v_now
