@@ -19,3 +19,17 @@ test('reject forged roles, injected filters, and hostile objects without throwin
  }
  assert.equal(allow(new Proxy(valid(), {ownKeys(){throw Error('hostile')}})), false);
 });
+
+test('accepts plain own data properties and rejects accessor or symbol smuggling', () => {
+ const good = valid();
+ assert.equal(allow(good), true, 'plain string, null and number descriptors are valid');
+ const accessor = valid();
+ Object.defineProperty(accessor.query, 'limit', { enumerable: true, get: () => 20 });
+ assert.equal(allow(accessor), false);
+ const hidden = valid();
+ Object.defineProperty(hidden.query, 'filter', { value: 'all', enumerable: false });
+ assert.equal(allow(hidden), false);
+ const symbol = valid();
+ symbol.query[Symbol('scope')] = 'all';
+ assert.equal(allow(symbol), false);
+});
