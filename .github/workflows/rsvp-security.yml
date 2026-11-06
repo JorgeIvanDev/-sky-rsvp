@@ -45,3 +45,7 @@ jobs:
       - name: Beta recipient revocation regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/beta-recipient-revocation.test.mjs
+
+      - name: Internal atomic RSVP SQL structural regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/internal-atomic-rsvp-migration.test.mjs
