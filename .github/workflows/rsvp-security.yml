@@ -30,6 +30,9 @@ jobs:
       - name: All-migrations public grant regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/all-migrations-permissions.test.mjs
+      - name: Direct RSVP payload security regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/rsvp-submit-policy.test.mjs
       - name: RSVP SQL permissions regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/sql-security.test.mjs
