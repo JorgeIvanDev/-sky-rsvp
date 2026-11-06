@@ -24,6 +24,9 @@ jobs:
           node-version: '22'
       - name: Challenge policy regression tests
         run: node --test --test-reporter=spec rsvp/challenge-policy.test.mjs
+      - name: Atomic one-attempt challenge regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/atomic-challenge-*.test.mjs
       - name: RSVP SQL permissions regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/sql-security.test.mjs
