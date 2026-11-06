@@ -25,6 +25,15 @@ begin
     raise exception 'RSVP unavailable' using errcode = 'P0001';
   end if;
 
+  -- Reject expired invitations before both new submissions and idempotent retries.
+  -- A valid recipient/challenge alone must not resurrect an expired invite.
+  if not exists (
+    select 1 from public.cnidaria_invites
+    where id = p_invite_id and expires_at > v_now
+  ) then
+    raise exception 'RSVP unavailable' using errcode = 'P0001';
+  end if;
+
   -- Serialize all attempts for this recipient, including competing keys.
   select * into v_recipient from public.cnidaria_beta_recipients
     where id = p_recipient_id and invite_id = p_invite_id
