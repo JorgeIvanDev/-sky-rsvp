@@ -66,3 +66,6 @@ jobs:
       - name: Trusted HTTP route bridge regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/trusted-http-router.test.mjs
+      - name: Composed private event API end-to-end boundary tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/private-event-api.test.mjs
