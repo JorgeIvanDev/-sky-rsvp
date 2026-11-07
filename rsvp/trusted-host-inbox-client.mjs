@@ -19,11 +19,14 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
     const body = await response.json();
     if (!body || !Array.isArray(body.responses) || body.responses.length > limit)
       throw new Error('Inbox unavailable');
+    const seenReceipts = new Set();
     const rows = body.responses.map(row => {
       if (!row || typeof row.receiptId !== 'string' || !row.receiptId.trim() ||
           !['yes', 'maybe', 'no'].includes(row.choice) ||
           typeof row.savedAt !== 'string' || !Number.isFinite(Date.parse(row.savedAt)))
         throw new Error('Inbox unavailable');
+      if (seenReceipts.has(row.receiptId)) throw new Error('Inbox unavailable');
+      seenReceipts.add(row.receiptId);
       return Object.freeze({ receiptId: row.receiptId, choice: row.choice, savedAt: row.savedAt });
     });
     return Object.freeze(rows);
