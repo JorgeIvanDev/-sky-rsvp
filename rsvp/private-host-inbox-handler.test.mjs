@@ -49,3 +49,15 @@ test('blank host identity fails closed before rate limit or database access',asy
   assert.deepEqual(calls,['auth']);
  }
 });
+
+test('malformed private inbox receipt identifiers and timestamps fail closed',async()=>{
+ for(const patch of [
+  {receiptId:''},
+  {receiptId:'   '},
+  {savedAt:'not-a-date'},
+  {savedAt:''}
+ ]){
+  const {handler}=setup({readResponses:async()=>[{receiptId:'receipt',choice:'yes',savedAt:'2026-11-06T23:00:00Z',...patch}]});
+  assert.deepEqual(await handler({method:'GET',query}),{status:403,body:{error:'Inbox unavailable'}});
+ }
+});
