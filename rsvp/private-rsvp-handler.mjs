@@ -11,7 +11,7 @@ export function createPrivateRsvpHandler({ authenticate, authorizeRecipient, rat
     try {
       if (!request || request.method !== 'POST') return denied;
       const identity = await authenticate(request);
-      if (!identity || typeof identity.userId !== 'string') return denied;
+      if (!identity || typeof identity.userId !== 'string' || !identity.userId.trim()) return denied;
       // Rate limit before parsing/authorization; keyed by server-verified identity and
       // server-observed network signals, never a client-supplied recipient ID alone.
       if (await rateLimit(identity, request) !== true) return denied;
