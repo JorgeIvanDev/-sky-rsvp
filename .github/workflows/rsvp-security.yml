@@ -62,3 +62,7 @@ jobs:
       - name: Trusted browser host inbox regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/trusted-host-inbox-client.test.mjs
+
+      - name: Trusted HTTP route bridge regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/trusted-http-router.test.mjs
