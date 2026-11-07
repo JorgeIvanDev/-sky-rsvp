@@ -55,3 +55,15 @@ test('blank authenticated principal fails closed before rate limit and DB access
   assert.deepEqual(calls,['auth']);
  }
 });
+
+test('blank receipt identifiers and invalid saved timestamps fail closed',async()=>{
+ for (const receipt of [
+  {receiptId:' ',choice:'yes',savedAt:'2026-11-06T23:00:00Z'},
+  {receiptId:'receipt',choice:'yes',savedAt:'not-a-date'},
+  {receiptId:'receipt',choice:'yes',savedAt:''}
+ ]) {
+  const {handler}=make({submitAtomic:async()=>receipt});
+  assert.deepEqual(await handler({method:'POST',body:input}),
+   {status:403,body:{error:'RSVP unavailable'}});
+ }
+});
