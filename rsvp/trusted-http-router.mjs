@@ -50,7 +50,7 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
             url.searchParams.getAll('inviteId').length !== 1 || url.searchParams.getAll('limit').length !== 1)
           return deny();
         const limit = url.searchParams.get('limit');
-        if (!/^[1-9]\d?$/.test(limit)) return deny();
+        if (!/^[1-9]\d?$/.test(limit) || Number(limit) > 50) return deny();
         input = { method: 'GET', headers: request.headers, rawRequest: request,
           query: { inviteId: url.searchParams.get('inviteId'), limit: Number(limit) } };
       }
