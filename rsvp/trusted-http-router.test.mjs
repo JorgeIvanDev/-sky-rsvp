@@ -40,11 +40,11 @@ test('fails closed on malformed JSON, exceptions, and non-success handlers', asy
 test('accepts valid numeric Content-Length and one/two digit inbox limits', async () => {
   const router = make();
   assert.equal((await router(post('{}', { 'Content-Length': '2' }))).status, 200);
-  for (const limit of ['1', '9', '10', '25', '99']) {
+  for (const limit of ['1', '9', '10', '25', '50']) {
     const response = await router(new Request('https://example.test/api/host-inbox?inviteId=abc&limit=' + limit));
     assert.equal(response.status, 200, 'limit ' + limit);
   }
-  for (const limit of ['0', '100', '1a', '-1']) {
+  for (const limit of ['0', '51', '99', '100', '1a', '-1']) {
     const response = await router(new Request('https://example.test/api/host-inbox?inviteId=abc&limit=' + limit));
     assert.equal(response.status, 403, 'limit ' + limit);
   }
