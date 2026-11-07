@@ -8,7 +8,7 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
         !Number.isSafeInteger(limit) || limit < 1 || limit > 50)
       throw new TypeError('Invalid inbox query');
     const token = await getAccessToken();
-    if (typeof token !== 'string' || !token.trim() || /[\r\n]/.test(token))
+    if (typeof token !== 'string' || token.length > 8192 || !/^[\x21-\x7e]+$/.test(token))
       throw new Error('Host authentication required');
     const response = await fetcher(endpoint + '?inviteId=' + encodeURIComponent(inviteId) + '&limit=' + limit, {
       method: 'GET', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
