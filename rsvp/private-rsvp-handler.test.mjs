@@ -48,7 +48,7 @@ test('malformed receipt and thrown dependency fail closed',async()=>{
 });
 
 test('blank authenticated principal fails closed before rate limit and DB access',async()=>{
- for (const userId of ['', ' ', '\\t']) {
+ for (const userId of ['', ' ', '\t']) {
   const {handler,calls}=make({authenticate:async()=>{calls.push('auth');return {userId};}});
   assert.deepEqual(await handler({method:'POST',body:input}),
    {status:403,body:{error:'RSVP unavailable'}});
