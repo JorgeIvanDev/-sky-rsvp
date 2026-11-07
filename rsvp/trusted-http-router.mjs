@@ -1,0 +1,59 @@
+// Trusted server runtime bridge: mount this behind /api on a server with verified
+// authentication, private database dependencies, and server-side rate limiting.
+// This module does not expose database credentials or a public Supabase RPC.
+export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
+  if (typeof submitRsvp !== 'function' || typeof getHostInbox !== 'function')
+    throw new TypeError('Trusted handlers required');
+  const deny = () => new Response(JSON.stringify({ error: 'Unavailable' }), {
+    status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+  });
+  return async function route(request) {
+    try {
+      if (!(request instanceof Request)) return deny();
+      const url = new URL(request.url);
+      const path = url.pathname;
+      if (path !== '/api/rsvp' && path !== '/api/host-inbox') return deny();
+      let input;
+      if (path === '/api/rsvp') {
+        if (request.method !== 'POST' ||
+            request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json')
+          return deny();
+        // Cap before JSON parsing, including streamed requests without Content-Length.
+        const declared = request.headers.get('content-length');
+        if (declared !== null && (!/^\\d+$/.test(declared) || Number(declared) > 8192)) return deny();
+        const reader = request.body?.getReader();
+        if (!reader) return deny();
+        const chunks = [];
+        let size = 0;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            size += value.byteLength;
+            if (size > 8192) { await reader.cancel(); return deny(); }
+            chunks.push(value);
+          }
+        } finally { reader.releaseLock(); }
+        const bytes = new Uint8Array(size);
+        let offset = 0;
+        for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+        input = { method: 'POST', headers: request.headers, body: JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)), rawRequest: request };
+      } else {
+        if (request.method !== 'GET' || [...url.searchParams.keys()].some(k => !['inviteId', 'limit'].includes(k)) ||
+            url.searchParams.getAll('inviteId').length !== 1 || url.searchParams.getAll('limit').length !== 1)
+          return deny();
+        const limit = url.searchParams.get('limit');
+        if (!/^[1-9]\\d?$/.test(limit)) return deny();
+        input = { method: 'GET', headers: request.headers, rawRequest: request,
+          query: { inviteId: url.searchParams.get('inviteId'), limit: Number(limit) } };
+      }
+      // Auth implementations must validate the bearer token cryptographically using
+      // rawRequest; do not treat headers or request.body as verified identity.
+      const result = await (path === '/api/rsvp' ? submitRsvp(input) : getHostInbox(input));
+      if (!result || result.status !== 200 || !result.body) return deny();
+      return new Response(JSON.stringify(result.body), {
+        status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+      });
+    } catch { return deny(); }
+  };
+}
