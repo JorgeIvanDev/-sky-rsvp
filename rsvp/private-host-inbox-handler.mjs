@@ -9,7 +9,7 @@ export function createPrivateHostInboxHandler({ authenticate, rateLimit, loadInv
     try {
       if (!request || request.method !== 'GET') return denied;
       const principal = await authenticate(request);
-      if (!principal || typeof principal.userId !== 'string') return denied;
+      if (!principal || typeof principal.userId !== 'string' || !principal.userId.trim()) return denied;
       if (await rateLimit(principal, request) !== true) return denied;
       // Query is constructed from the server's parsed URL, not client JSON.
       const query = request.query;
