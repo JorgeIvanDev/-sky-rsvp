@@ -24,9 +24,9 @@ export function createPrivateHostInboxHandler({ authenticate, rateLimit, loadInv
       const rows = await readResponses({ hostUserId: principal.userId, inviteId: query.inviteId, limit: query.limit });
       if (!Array.isArray(rows) || rows.length > query.limit) return denied;
       const responses = rows.map(row => {
-        if (!row || typeof row !== 'object' || typeof row.receiptId !== 'string' ||
+        if (!row || typeof row !== 'object' || typeof row.receiptId !== 'string' || !row.receiptId.trim() ||
             typeof row.choice !== 'string' || !['yes', 'maybe', 'no'].includes(row.choice) ||
-            typeof row.savedAt !== 'string') throw new TypeError('Invalid private response');
+            typeof row.savedAt !== 'string' || !Number.isFinite(Date.parse(row.savedAt))) throw new TypeError('Invalid private response');
         return { receiptId: row.receiptId, choice: row.choice, savedAt: row.savedAt };
       });
       return { status: 200, body: { responses } };
