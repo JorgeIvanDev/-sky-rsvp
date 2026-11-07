@@ -53,3 +53,15 @@ test('rejects untrusted payload and malformed server receipts', async () => {
  await assert.rejects(submit(input),/RSVP unavailable/);
  assert.equal(calls,1);
 });
+
+test('rejects malformed bearer credentials without transmitting an RSVP', async () => {
+ let calls=0;
+ for (const token of [' token', 'token ', 'a b', 'a\\tb', 'a\\nb', 'é', 'x'.repeat(8193)]) {
+   const submit=createTrustedRsvpClient({
+     getAccessToken:async()=>token,
+     fetcher:async()=>{calls++;throw Error('must not send');}
+   });
+   await assert.rejects(submit(input),/authentication required/);
+ }
+ assert.equal(calls,0);
+});
