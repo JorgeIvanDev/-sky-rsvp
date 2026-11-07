@@ -20,8 +20,9 @@ export function createPrivateRsvpHandler({ authenticate, authorizeRecipient, rat
       // submitAtomic must use a private DB connection, invoke the locked SQL transaction,
       // and bind p_user_id ONLY from authenticate(), never from request.body.
       const receipt = await submitAtomic({ ...input, userId: identity.userId });
-      if (!receipt || typeof receipt.receiptId !== 'string' ||
-          receipt.choice !== input.choice || typeof receipt.savedAt !== 'string') return denied;
+      if (!receipt || typeof receipt.receiptId !== 'string' || !receipt.receiptId.trim() ||
+          receipt.choice !== input.choice || typeof receipt.savedAt !== 'string' ||
+          !Number.isFinite(Date.parse(receipt.savedAt))) return denied;
       return { status: 200, body: { receiptId: receipt.receiptId, choice: receipt.choice, savedAt: receipt.savedAt } };
     } catch {
       return denied;
