@@ -20,7 +20,7 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
           return deny();
         // Cap before JSON parsing, including streamed requests without Content-Length.
         const declared = request.headers.get('content-length');
-        if (declared !== null && (!/^\\d+$/.test(declared) || Number(declared) > 8192)) return deny();
+        if (declared !== null && (!/^\d+$/.test(declared) || Number(declared) > 8192)) return deny();
         const reader = request.body?.getReader();
         if (!reader) return deny();
         const chunks = [];
@@ -43,7 +43,7 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
             url.searchParams.getAll('inviteId').length !== 1 || url.searchParams.getAll('limit').length !== 1)
           return deny();
         const limit = url.searchParams.get('limit');
-        if (!/^[1-9]\\d?$/.test(limit)) return deny();
+        if (!/^[1-9]\d?$/.test(limit)) return deny();
         input = { method: 'GET', headers: request.headers, rawRequest: request,
           query: { inviteId: url.searchParams.get('inviteId'), limit: Number(limit) } };
       }
