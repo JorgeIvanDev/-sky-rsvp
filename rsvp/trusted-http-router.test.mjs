@@ -49,3 +49,13 @@ test('accepts valid numeric Content-Length and one/two digit inbox limits', asyn
     assert.equal(response.status, 403, 'limit ' + limit);
   }
 });
+
+test('rejects Content-Length mismatches before trusted handler invocation', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; });
+  assert.equal((await router(post('{}', { 'Content-Length': '1' }))).status, 403);
+  assert.equal((await router(post('{}', { 'Content-Length': '3' }))).status, 403);
+  assert.equal(calls, 0);
+  assert.equal((await router(post('{}', { 'Content-Length': '2' }))).status, 200);
+  assert.equal(calls, 1);
+});
