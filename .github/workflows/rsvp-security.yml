@@ -52,3 +52,6 @@ jobs:
       - name: Trusted-server RSVP handler security regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/private-rsvp-handler.test.mjs
+      - name: Trusted host inbox handler security regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/private-host-inbox-handler.test.mjs
