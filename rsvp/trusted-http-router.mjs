@@ -34,6 +34,9 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
             chunks.push(value);
           }
         } finally { reader.releaseLock(); }
+        // Reject declared/actual length disagreement before invoking trusted handlers.
+        // Never allow a truncated or padded body to reach the RSVP transaction.
+        if (declared !== null && Number(declared) !== size) return deny();
         const bytes = new Uint8Array(size);
         let offset = 0;
         for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
