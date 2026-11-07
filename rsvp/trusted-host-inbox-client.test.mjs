@@ -46,3 +46,15 @@ test('rejects failed responses, malformed data and excess rows', async () => {
     await assert.rejects(client(id, 1), /Inbox unavailable/);
   }
 });
+
+
+test('rejects duplicate receipt IDs instead of showing ambiguous host responses', async () => {
+  const client = createTrustedHostInboxClient({
+    getAccessToken: async () => 'token',
+    fetcher: async () => ({
+      ok: true, status: 200,
+      json: async () => ({ responses: [row, { ...row, choice: 'no' }] })
+    })
+  });
+  await assert.rejects(client(id, 2), /Inbox unavailable/);
+});
