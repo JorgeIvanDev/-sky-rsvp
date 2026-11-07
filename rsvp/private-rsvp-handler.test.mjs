@@ -46,3 +46,12 @@ test('malformed receipt and thrown dependency fail closed',async()=>{
  const {handler:broken}=make({authenticate:async()=>{throw Error('secret');}});
  assert.deepEqual(await broken({method:'POST',body:input}),{status:403,body:{error:'RSVP unavailable'}});
 });
+
+test('blank authenticated principal fails closed before rate limit and DB access',async()=>{
+ for (const userId of ['', ' ', '\\t']) {
+  const {handler,calls}=make({authenticate:async()=>{calls.push('auth');return {userId};}});
+  assert.deepEqual(await handler({method:'POST',body:input}),
+   {status:403,body:{error:'RSVP unavailable'}});
+  assert.deepEqual(calls,['auth']);
+ }
+});
