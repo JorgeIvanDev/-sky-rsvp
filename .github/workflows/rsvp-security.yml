@@ -80,3 +80,7 @@ jobs:
       - name: Private PostgreSQL event API wiring tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/postgres-event-api.test.mjs
+
+      - name: Private host inbox SQL authorization tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/private-host-inbox-migration.test.mjs
