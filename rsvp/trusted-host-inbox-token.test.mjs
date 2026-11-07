@@ -6,7 +6,7 @@ const inviteId = '123e4567-e89b-42d3-a456-426614174000';
 
 test('malformed host bearer credentials never reach the network', async () => {
   let calls = 0;
-  for (const token of ['', ' token', 'token ', 'a b', 'a\\tb', 'a\\nb', 'é', 'x'.repeat(8193)]) {
+  for (const token of ['', ' token', 'token ', 'a b', 'a\tb', 'a\nb', 'é', 'x'.repeat(8193)]) {
     const read = createTrustedHostInboxClient({
       getAccessToken: async () => token,
       fetcher: async () => { calls++; throw Error('must not send'); }
