@@ -66,12 +66,21 @@ test('rejects URL credentials, fragments and RSVP query parameters before handle
   for (const url of [
     'https://example.test/api/rsvp?recipient=spoofed',
     'https://example.test/api/rsvp?choice=yes',
-    'https://user:pass@example.test/api/rsvp',
     'https://example.test/api/rsvp#receipt',
   ]) {
     assert.equal((await router(new Request(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }))).status, 403, url);
   }
-  assert.equal((await router(new Request('https://user:pass@example.test/api/host-inbox?inviteId=abc&limit=1'))).status, 403);
+  // Node's Request constructor itself rejects credential-bearing URLs. Simulate
+  // a runtime-provided Request with an unsafe URL to exercise router defense.
+  const withCredentials = (url, init) => {
+    const request = new Request(url.replace('user:pass@', ''), init);
+    Object.defineProperty(request, 'url', { value: url });
+    return request;
+  };
+  assert.equal((await router(withCredentials('https://user:pass@example.test/api/rsvp', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+  }))).status, 403);
+  assert.equal((await router(withCredentials('https://user:pass@example.test/api/host-inbox?inviteId=abc&limit=1'))).status, 403);
   assert.equal(calls, 0);
   assert.equal((await router(post('{}'))).status, 200);
   assert.equal(calls, 1);
