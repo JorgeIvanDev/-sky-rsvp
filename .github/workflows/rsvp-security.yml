@@ -58,3 +58,7 @@ jobs:
       - name: Trusted browser RSVP submission regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/trusted-client.test.mjs
+
+      - name: Trusted browser host inbox regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/trusted-host-inbox-client.test.mjs
