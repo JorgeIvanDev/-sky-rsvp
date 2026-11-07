@@ -30,7 +30,7 @@ function makeApi({ authenticated = true, allowed = true } = {}) {
 function request() {
   return new Request('https://example.test/api/rsvp', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...body, userId: recipientId })
+    body: JSON.stringify(body)
   });
 }
 test('trusted event API binds server identity and writes through private SQL', async () => {
@@ -51,4 +51,14 @@ test('denied recipient and unauthenticated requests never reach database', async
 });
 test('missing private database fails closed at construction', () => {
   assert.throws(() => createPostgresEventApi({ db: {} }), TypeError);
+});
+
+test('client-supplied userId is rejected before any database write', async () => {
+  const { api, calls } = makeApi();
+  const forged = new Request('https://example.test/api/rsvp', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...body, userId: recipientId })
+  });
+  assert.equal((await api(forged)).status, 403);
+  assert.equal(calls.length, 0);
 });
