@@ -59,3 +59,20 @@ test('rejects Content-Length mismatches before trusted handler invocation', asyn
   assert.equal((await router(post('{}', { 'Content-Length': '2' }))).status, 200);
   assert.equal(calls, 1);
 });
+
+test('rejects URL credentials, fragments and RSVP query parameters before handler invocation', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; }, async () => { calls++; return { status: 200, body: { responses: [] } }; });
+  for (const url of [
+    'https://example.test/api/rsvp?recipient=spoofed',
+    'https://example.test/api/rsvp?choice=yes',
+    'https://user:pass@example.test/api/rsvp',
+    'https://example.test/api/rsvp#receipt',
+  ]) {
+    assert.equal((await router(new Request(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }))).status, 403, url);
+  }
+  assert.equal((await router(new Request('https://user:pass@example.test/api/host-inbox?inviteId=abc&limit=1'))).status, 403);
+  assert.equal(calls, 0);
+  assert.equal((await router(post('{}'))).status, 200);
+  assert.equal(calls, 1);
+});
