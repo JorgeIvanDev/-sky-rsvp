@@ -13,6 +13,10 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
       const url = new URL(request.url);
       const path = url.pathname;
       if (path !== '/api/rsvp' && path !== '/api/host-inbox') return deny();
+      // These endpoints never accept URL credentials or fragments. RSVP identity
+      // and intent must come from verified auth and the validated JSON body.
+      if (url.username || url.password || url.hash) return deny();
+      if (path === '/api/rsvp' && url.search) return deny();
       let input;
       if (path === '/api/rsvp') {
         if (request.method !== 'POST' ||
