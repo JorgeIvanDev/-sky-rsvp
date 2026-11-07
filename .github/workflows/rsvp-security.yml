@@ -73,3 +73,7 @@ jobs:
       - name: Node private API listener boundary tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/node-event-listener.test.mjs
+
+      - name: Private PostgreSQL atomic writer regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/postgres-atomic-writer.test.mjs
