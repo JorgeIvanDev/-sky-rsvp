@@ -41,3 +41,11 @@ test('invalid database output and dependency errors never leak',async()=>{
  const b=setup({loadInvite:async()=>{throw Error('database secret');}});
  assert.equal((await b.handler({method:'GET',query})).status,403);
 });
+
+test('blank host identity fails closed before rate limit or database access',async()=>{
+ for(const userId of ['', ' ', '\t']){
+  const {handler,calls}=setup({authenticate:async()=>{calls.push('auth');return {userId};}});
+  assert.deepEqual(await handler({method:'GET',query}),{status:403,body:{error:'Inbox unavailable'}});
+  assert.deepEqual(calls,['auth']);
+ }
+});
