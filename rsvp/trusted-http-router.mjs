@@ -56,7 +56,11 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
         const bytes = new Uint8Array(size);
         let offset = 0;
         for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-        input = { method: 'POST', headers: request.headers, body: JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)), rawRequest: request };
+        const payload = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
+        // Only a JSON object represents a submission. Arrays, null and scalar
+        // payloads must not reach an authorization-sensitive RSVP handler.
+        if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) return deny();
+        input = { method: 'POST', headers: request.headers, body: payload, rawRequest: request };
       } else {
         if (request.method !== 'GET' || [...url.searchParams.keys()].some(k => !['inviteId', 'limit'].includes(k)) ||
             url.searchParams.getAll('inviteId').length !== 1 || url.searchParams.getAll('limit').length !== 1)
