@@ -61,3 +61,18 @@ test('malformed private inbox receipt identifiers and timestamps fail closed',as
   assert.deepEqual(await handler({method:'GET',query}),{status:403,body:{error:'Inbox unavailable'}});
  }
 });
+
+test('host inbox refuses unsafe receipt IDs and ambiguous timestamp encodings', async () => {
+ for (const patch of [
+  {receiptId:'receipt with spaces'},
+  {receiptId:'<script>'},
+  {receiptId:'r'.repeat(129)},
+  {savedAt:'2026-11-06T23:00:00'},
+  {savedAt:'2026-11-06T18:00:00-05:00'},
+  {savedAt:'2026-11-06'},
+  {savedAt:'2026-11-06T23:00:00.1234Z'}
+ ]) {
+  const {handler}=setup({readResponses:async()=>[{receiptId:'receipt',choice:'yes',savedAt:'2026-11-06T23:00:00Z',...patch}]});
+  assert.deepEqual(await handler({method:'GET',query}),{status:403,body:{error:'Inbox unavailable'}});
+ }
+});
