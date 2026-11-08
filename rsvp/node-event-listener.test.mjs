@@ -37,3 +37,18 @@ test('bridges a relative private API request without trusting host', async () =>
   assert.equal(called, 1);
   assert.equal(res.headers['cache-control'], 'no-store');
 });
+
+test('rejects conflicting message framing and encoded bodies before routing', async () => {
+  for (const headers of [
+    { 'content-length': '2', 'transfer-encoding': 'chunked' },
+    { 'content-encoding': 'gzip' },
+    { 'content-encoding': 'br' }
+  ]) {
+    const { res, called } = await invoke('POST', '/api/rsvp', headers, '{}');
+    assert.equal(res.status, 403, JSON.stringify(headers));
+    assert.equal(called, 0);
+  }
+  const accepted = await invoke('POST', '/api/rsvp', { 'content-encoding': 'identity' }, '{}');
+  assert.equal(accepted.res.status, 200);
+  assert.equal(accepted.called, 1);
+});
