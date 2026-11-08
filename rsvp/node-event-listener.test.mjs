@@ -66,3 +66,12 @@ test('rejects duplicate wire-level auth and framing headers before trusted routi
   assert.equal(allowed.res.status, 200);
   assert.equal(allowed.called, 1);
 });
+
+test('rejects malformed raw wire header names before private routing', async () => {
+  for (const name of ['Authorization ', ' Authorization', 'Authorization\t', 'Auth\u00e9rization', 'Bad Header', 'X-Header\nInjected']) {
+    const { res, called } = await invoke('GET', '/api/host-inbox', {},
+      '', [name, 'value']);
+    assert.equal(res.status, 403, JSON.stringify(name));
+    assert.equal(called, 0, JSON.stringify(name));
+  }
+});
