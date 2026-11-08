@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { createNodeEventListener } from './node-event-listener.mjs';
 
-async function invoke(method, path, headers = {}, body = '') {
-  const req = Object.assign(new EventEmitter(), { method, url: path, headers,
+async function invoke(method, path, headers = {}, body = '', rawHeaders) {
+  const req = Object.assign(new EventEmitter(), { method, url: path, headers, rawHeaders,
     async *[Symbol.asyncIterator]() { if (body) yield Buffer.from(body); } });
   const res = { headersSent: false, status: null, payload: '',
     writeHead(status, responseHeaders) { this.status = status; this.headers = responseHeaders; this.headersSent = true; },
@@ -51,4 +51,18 @@ test('rejects conflicting message framing and encoded bodies before routing', as
   const accepted = await invoke('POST', '/api/rsvp', { 'content-encoding': 'identity' }, '{}');
   assert.equal(accepted.res.status, 200);
   assert.equal(accepted.called, 1);
+});
+
+test('rejects duplicate wire-level auth and framing headers before trusted routing', async () => {
+  for (const name of ['Authorization', 'Cookie', 'Content-Length',
+    'Transfer-Encoding', 'Content-Type', 'Content-Encoding']) {
+    const { res, called } = await invoke('GET', '/api/host-inbox', {},
+      '', [name, 'first', name.toLowerCase(), 'second']);
+    assert.equal(res.status, 403, name);
+    assert.equal(called, 0, name);
+  }
+  const allowed = await invoke('GET', '/api/host-inbox', { authorization: 'Bearer valid' },
+    '', ['Authorization', 'Bearer valid', 'Accept', 'application/json']);
+  assert.equal(allowed.res.status, 200);
+  assert.equal(allowed.called, 1);
 });
