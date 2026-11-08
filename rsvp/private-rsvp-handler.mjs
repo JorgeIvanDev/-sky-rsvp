@@ -24,7 +24,9 @@ export function createPrivateRsvpHandler({ authenticate, authorizeRecipient, rat
           !/^[A-Za-z0-9_-]{1,128}$/.test(receipt.receiptId) ||
           receipt.choice !== input.choice || typeof receipt.savedAt !== 'string' ||
           !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(receipt.savedAt) ||
-          !Number.isFinite(Date.parse(receipt.savedAt))) return denied;
+          (!Number.isFinite(Date.parse(receipt.savedAt)) ||
+           new Date(receipt.savedAt).toISOString().slice(0, 19) !==
+             receipt.savedAt.slice(0, 19))) return denied;
       return { status: 200, body: { receiptId: receipt.receiptId, choice: receipt.choice, savedAt: receipt.savedAt } };
     } catch {
       return denied;
