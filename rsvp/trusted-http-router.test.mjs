@@ -151,3 +151,14 @@ test('accepts only unambiguous UTF-8 JSON media types before RSVP handler', asyn
   }
   assert.equal(calls, 3);
 });
+
+test('rejects non-object JSON RSVP payloads before invoking trusted handler', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; });
+  for (const payload of ['null', '[]', '[{"choice":"yes"}]', 'true', '42', '"yes"']) {
+    assert.equal((await router(post(payload))).status, 403, payload);
+  }
+  assert.equal(calls, 0);
+  assert.equal((await router(post('{"choice":"yes"}'))).status, 200);
+  assert.equal(calls, 1);
+});
