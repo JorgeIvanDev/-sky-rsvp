@@ -174,3 +174,19 @@ test('rejects cross-origin RSVP browser submissions before trusted handler invoc
   assert.equal((await router(post('{}'))).status, 200);
   assert.equal(calls, 2);
 });
+
+test('rejects cross-origin private host inbox requests before trusted reader invocation', async () => {
+  let calls = 0;
+  const router = make(undefined, async () => {
+    calls++;
+    return { status: 200, body: { responses: [] } };
+  });
+  const url = 'https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25';
+  for (const origin of ['https://evil.test', 'null', 'http://example.test', 'https://example.test.evil.test']) {
+    assert.equal((await router(new Request(url, { headers: { Origin: origin } }))).status, 403, origin);
+  }
+  assert.equal(calls, 0);
+  assert.equal((await router(new Request(url, { headers: { Origin: 'https://example.test' } }))).status, 200);
+  assert.equal((await router(new Request(url))).status, 200);
+  assert.equal(calls, 2);
+});
