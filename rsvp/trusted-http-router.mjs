@@ -19,6 +19,9 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
       if (path === '/api/rsvp' && url.search) return deny();
       // Fail closed on request encodings the router does not decode. A GET inbox
       // request must not carry an ambiguous body or transfer framing.
+      // Never forward ambiguous HTTP framing to trusted RSVP handlers. Proxies
+      // must normalize transfer framing before this application boundary.
+      if (request.headers.has('transfer-encoding')) return deny();
       const encoding = request.headers.get('content-encoding');
       if (encoding !== null && encoding.trim().toLowerCase() !== 'identity') return deny();
       if (path === '/api/host-inbox' && (request.body !== null || request.headers.has('transfer-encoding') ||
