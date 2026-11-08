@@ -27,7 +27,7 @@ export function createPrivateHostInboxHandler({ authenticate, rateLimit, loadInv
         if (!row || typeof row !== 'object' || typeof row.receiptId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(row.receiptId) ||
             typeof row.choice !== 'string' || !['yes', 'maybe', 'no'].includes(row.choice) ||
             typeof row.savedAt !== 'string' ||
-            !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,3})?Z$/.test(row.savedAt) ||
+            !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(row.savedAt) ||
             !Number.isFinite(Date.parse(row.savedAt))) throw new TypeError('Invalid private response');
         return { receiptId: row.receiptId, choice: row.choice, savedAt: row.savedAt };
       });
