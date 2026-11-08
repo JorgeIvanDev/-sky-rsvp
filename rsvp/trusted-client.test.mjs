@@ -91,3 +91,26 @@ test('rejects unsafe, oversized or whitespace receipt identifiers', async () => 
    await assert.rejects(submit(input), /RSVP unavailable/);
  }
 });
+
+test('rejects impossible UTC calendar dates without rejecting valid fractional precision', async () => {
+ for (const savedAt of ['2026-02-30T03:00:00Z', '2026-11-31T03:00:00Z',
+   '2026-13-01T03:00:00Z', '2026-02-29T03:00:00Z']) {
+   const submit = createTrustedRsvpClient({
+     getAccessToken: async () => 'token',
+     fetcher: async () => ({ok:true,status:200,json:async()=>({
+       receiptId:'receipt-1',choice:'yes',savedAt
+     })})
+   });
+   await assert.rejects(submit(input), /RSVP unavailable/);
+ }
+ for (const savedAt of ['2024-02-29T03:00:00Z', '2026-11-07T03:00:00.1Z',
+   '2026-11-07T03:00:00.12Z', '2026-11-07T03:00:00.123Z']) {
+   const submit = createTrustedRsvpClient({
+     getAccessToken: async () => 'token',
+     fetcher: async () => ({ok:true,status:200,json:async()=>({
+       receiptId:'receipt-1',choice:'yes',savedAt
+     })})
+   });
+   assert.equal((await submit(input)).savedAt, savedAt);
+ }
+});
