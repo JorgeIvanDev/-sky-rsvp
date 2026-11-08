@@ -65,3 +65,17 @@ test('rejects malformed bearer credentials without transmitting an RSVP', async 
  }
  assert.equal(calls,0);
 });
+
+test('rejects ambiguous or non-UTC receipt timestamps from the trusted endpoint', async () => {
+ for (const savedAt of ['2026-11-07', 'Sat, 07 Nov 2026 03:00:00 GMT',
+   '2026-11-07T03:00:00+01:00', '2026-11-07T03:00:00',
+   '2026-11-07T03:00:00.1234Z', 'not-a-date']) {
+   const submit = createTrustedRsvpClient({
+     getAccessToken: async () => 'token',
+     fetcher: async () => ({ok:true,status:200,json:async()=>({
+       receiptId:'receipt-1',choice:'yes',savedAt
+     })})
+   });
+   await assert.rejects(submit(input), /RSVP unavailable/);
+ }
+});
