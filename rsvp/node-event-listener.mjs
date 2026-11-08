@@ -15,6 +15,13 @@ export function createNodeEventListener(route) {
       // Do not trust Host or X-Forwarded-* headers when constructing a Request URL.
       const url = new URL(req.url, 'http://localhost');
       if (url.origin !== 'http://localhost' || url.username || url.password || url.hash) return deny();
+      // Reject ambiguous HTTP message framing before creating a Fetch Request.
+      // A proxy and Node must never disagree about the request body boundary.
+      const rawHeaders = req.headers || {};
+      if (rawHeaders['content-length'] !== undefined &&
+          rawHeaders['transfer-encoding'] !== undefined) return deny();
+      if (rawHeaders['content-encoding'] !== undefined &&
+          String(rawHeaders['content-encoding']).toLowerCase() !== 'identity') return deny();
       const headers = new Headers();
       for (const [name, value] of Object.entries(req.headers || {})) {
         if (Array.isArray(value)) return deny(); // ambiguous duplicate headers
