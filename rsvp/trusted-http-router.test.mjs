@@ -129,3 +129,22 @@ test('rejects transfer-encoded RSVP framing before handler invocation', async ()
   assert.equal((await router(post('{}'))).status, 200);
   assert.equal(calls, 1);
 });
+
+test('accepts only unambiguous UTF-8 JSON media types before RSVP handler', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; });
+  for (const type of [
+    'application/json; charset=iso-8859-1',
+    'application/json; charset=utf-8; charset=latin1',
+    'application/json; profile=unsafe',
+    'application/json; charset=',
+    'application/json; charset=utf-16'
+  ]) {
+    assert.equal((await router(post('{}', { 'Content-Type': type }))).status, 403, type);
+  }
+  assert.equal(calls, 0);
+  for (const type of ['application/json', 'application/json; charset=utf-8', 'application/json; charset="UTF-8"']) {
+    assert.equal((await router(post('{}', { 'Content-Type': type }))).status, 200, type);
+  }
+  assert.equal(calls, 3);
+});
