@@ -28,8 +28,11 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
           (request.headers.has('content-length') && request.headers.get('content-length') !== '0'))) return deny();
       let input;
       if (path === '/api/rsvp') {
-        if (request.method !== 'POST' ||
-            request.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'application/json')
+        // Require an unambiguous UTF-8 JSON media type. Do not accept arbitrary
+        // parameters (including conflicting charsets) that proxies may parse differently.
+        const contentType = request.headers.get('content-type');
+        if (request.method !== 'POST' || !contentType ||
+            !/^application\/json(?:\s*;\s*charset\s*=\s*(?:utf-8|\"utf-8\"))?\s*$/i.test(contentType))
           return deny();
         // Cap before JSON parsing, including streamed requests without Content-Length.
         const declared = request.headers.get('content-length');
