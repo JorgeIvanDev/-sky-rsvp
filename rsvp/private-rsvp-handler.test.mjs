@@ -67,3 +67,18 @@ test('blank receipt identifiers and invalid saved timestamps fail closed',async(
    {status:403,body:{error:'RSVP unavailable'}});
  }
 });
+
+test('trusted transaction receipt rejects unsafe identifiers and non-UTC timestamps', async () => {
+ const invalid = [
+  {receiptId:'<script>',choice:'yes',savedAt:'2026-11-06T23:00:00Z'},
+  {receiptId:'a'.repeat(129),choice:'yes',savedAt:'2026-11-06T23:00:00Z'},
+  {receiptId:'receipt',choice:'yes',savedAt:'2026-11-06T23:00:00+01:00'},
+  {receiptId:'receipt',choice:'yes',savedAt:'2026-11-06'},
+  {receiptId:'receipt',choice:'yes',savedAt:'2026-11-06T23:00:00'},
+ ];
+ for (const receipt of invalid) {
+  const {handler} = make({submitAtomic:async()=>receipt});
+  assert.deepEqual(await handler({method:'POST',body:input}),
+   {status:403,body:{error:'RSVP unavailable'}});
+ }
+});
