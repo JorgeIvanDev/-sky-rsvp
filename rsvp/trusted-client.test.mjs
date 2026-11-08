@@ -79,3 +79,15 @@ test('rejects ambiguous or non-UTC receipt timestamps from the trusted endpoint'
    await assert.rejects(submit(input), /RSVP unavailable/);
  }
 });
+
+test('rejects unsafe, oversized or whitespace receipt identifiers', async () => {
+ for (const receiptId of ['', ' ', ' receipt', 'receipt\nnext', '<script>', 'a'.repeat(129), 'é']) {
+   const submit = createTrustedRsvpClient({
+     getAccessToken: async () => 'token',
+     fetcher: async () => ({ok:true,status:200,json:async()=>({
+       receiptId, choice:'yes', savedAt:'2026-11-07T03:00:00Z'
+     })})
+   });
+   await assert.rejects(submit(input), /RSVP unavailable/);
+ }
+});
