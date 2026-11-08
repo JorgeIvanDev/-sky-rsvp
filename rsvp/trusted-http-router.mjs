@@ -24,6 +24,10 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
       // browser must not be able to invoke its authenticated reader either.
       const origin = request.headers.get('origin');
       if (origin !== null && origin !== url.origin) return deny();
+      // Fetch Metadata is browser-controlled. Reject cross-site navigation/fetches
+      // even when Origin is absent (notably credentialed GET requests).
+      const fetchSite = request.headers.get('sec-fetch-site');
+      if (fetchSite !== null && !['same-origin', 'none'].includes(fetchSite)) return deny();
       // Fail closed on request encodings the router does not decode. A GET inbox
       // request must not carry an ambiguous body or transfer framing.
       // Never forward ambiguous HTTP framing to trusted RSVP handlers. Proxies
