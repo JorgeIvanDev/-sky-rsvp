@@ -162,3 +162,15 @@ test('rejects non-object JSON RSVP payloads before invoking trusted handler', as
   assert.equal((await router(post('{"choice":"yes"}'))).status, 200);
   assert.equal(calls, 1);
 });
+
+test('rejects cross-origin RSVP browser submissions before trusted handler invocation', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; });
+  for (const origin of ['https://evil.test', 'null', 'http://example.test', 'https://example.test.evil.test']) {
+    assert.equal((await router(post('{}', { Origin: origin }))).status, 403, origin);
+  }
+  assert.equal(calls, 0);
+  assert.equal((await router(post('{}', { Origin: 'https://example.test' }))).status, 200);
+  assert.equal((await router(post('{}'))).status, 200);
+  assert.equal(calls, 2);
+});
