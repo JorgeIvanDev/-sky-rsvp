@@ -17,6 +17,13 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
       // and intent must come from verified auth and the validated JSON body.
       if (url.username || url.password || url.hash) return deny();
       if (path === '/api/rsvp' && url.search) return deny();
+      // Browser-originated submissions must be same-origin; never trust an Origin
+      // supplied by an unrelated website even if it can trigger a request.
+      // Non-browser clients may omit Origin, but still require verified auth.
+      if (path === '/api/rsvp') {
+        const origin = request.headers.get('origin');
+        if (origin !== null && origin !== url.origin) return deny();
+      }
       // Fail closed on request encodings the router does not decode. A GET inbox
       // request must not carry an ambiguous body or transfer framing.
       // Never forward ambiguous HTTP framing to trusted RSVP handlers. Proxies
