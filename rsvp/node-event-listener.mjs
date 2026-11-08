@@ -18,6 +18,25 @@ export function createNodeEventListener(route) {
       // Reject ambiguous HTTP message framing before creating a Fetch Request.
       // A proxy and Node must never disagree about the request body boundary.
       const rawHeaders = req.headers || {};
+      // Node may coalesce or discard duplicate wire headers in req.headers.
+      // Reject duplicate security-sensitive headers using the original wire list.
+      // In particular, never let a proxy and the app select different bearer
+      // tokens, cookies, content types, or message boundaries.
+      if (req.rawHeaders !== undefined) {
+        if (!Array.isArray(req.rawHeaders) || req.rawHeaders.length % 2 !== 0) return deny();
+        const sensitive = new Set(['authorization', 'cookie', 'content-length',
+          'transfer-encoding', 'content-type', 'content-encoding']);
+        const seen = new Set();
+        for (let i = 0; i < req.rawHeaders.length; i += 2) {
+          const name = req.rawHeaders[i];
+          if (typeof name !== 'string') return deny();
+          const normalized = name.toLowerCase();
+          if (sensitive.has(normalized)) {
+            if (seen.has(normalized)) return deny();
+            seen.add(normalized);
+          }
+        }
+      }
       if (rawHeaders['content-length'] !== undefined &&
           rawHeaders['transfer-encoding'] !== undefined) return deny();
       if (rawHeaders['content-encoding'] !== undefined &&
