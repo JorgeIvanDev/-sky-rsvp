@@ -97,3 +97,20 @@ test('rejects malformed host inbox invitation IDs before trusted handler invocat
   assert.equal((await router(new Request('https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25'))).status, 200);
   assert.equal(calls, 1);
 });
+
+test('rejects encoded RSVP payloads and framed inbox GETs before trusted handlers', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; }, async () => {
+    calls++; return { status: 200, body: { responses: [] } };
+  });
+  for (const encoding of ['gzip', 'br', 'deflate']) {
+    assert.equal((await router(post('{}', { 'Content-Encoding': encoding }))).status, 403);
+  }
+  const inboxUrl = 'https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25';
+  assert.equal((await router(new Request(inboxUrl, { headers: { 'Content-Length': '2' } }))).status, 403);
+  assert.equal((await router(new Request(inboxUrl, { headers: { 'Transfer-Encoding': 'chunked' } }))).status, 403);
+  assert.equal(calls, 0);
+  assert.equal((await router(post('{}', { 'Content-Encoding': 'identity' }))).status, 200);
+  assert.equal((await router(new Request(inboxUrl))).status, 200);
+  assert.equal(calls, 2);
+});
