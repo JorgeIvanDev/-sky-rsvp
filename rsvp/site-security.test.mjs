@@ -36,3 +36,9 @@ test('invite decoder rejects oversized and malformed base64url input before deco
  assert.match(html,/str\.length%4===1\)throw Error\('Invalid invite encoding'\)/);
  assert.match(html,/if\(encoded\.length>1500\)throw Error\('Link too long'\)/);
 });
+
+test('prototype RSVP does not retain guest PII or claim delivery',()=>{
+ assert.doesNotMatch(html,/localStorage\.setItem\('cnidariaRSVP'/);
+ assert.match(html,/RSVP NOT SENT\. Secure in-app submission is not yet available/);
+ assert.match(html,/no response was saved or delivered/);
+});
