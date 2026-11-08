@@ -190,3 +190,22 @@ test('rejects cross-origin private host inbox requests before trusted reader inv
   assert.equal((await router(new Request(url))).status, 200);
   assert.equal(calls, 2);
 });
+
+test('rejects cross-site Fetch Metadata even without Origin on RSVP and inbox', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; }, async () => {
+    calls++;
+    return { status: 200, body: { responses: [] } };
+  });
+  const inbox = 'https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25';
+  for (const site of ['cross-site', 'same-site', 'invalid']) {
+    assert.equal((await router(post('{}', { 'Sec-Fetch-Site': site }))).status, 403, site);
+    assert.equal((await router(new Request(inbox, { headers: { 'Sec-Fetch-Site': site } }))).status, 403, site);
+  }
+  assert.equal(calls, 0);
+  for (const site of ['same-origin', 'none']) {
+    assert.equal((await router(post('{}', { 'Sec-Fetch-Site': site }))).status, 200, site);
+    assert.equal((await router(new Request(inbox, { headers: { 'Sec-Fetch-Site': site } }))).status, 200, site);
+  }
+  assert.equal(calls, 4);
+});
