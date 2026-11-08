@@ -21,9 +21,11 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
       throw new Error('Inbox unavailable');
     const seenReceipts = new Set();
     const rows = body.responses.map(row => {
-      if (!row || typeof row.receiptId !== 'string' || !row.receiptId.trim() ||
+      if (!row || typeof row.receiptId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(row.receiptId) ||
           !['yes', 'maybe', 'no'].includes(row.choice) ||
-          typeof row.savedAt !== 'string' || !Number.isFinite(Date.parse(row.savedAt)))
+          typeof row.savedAt !== 'string' ||
+          !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(row.savedAt) ||
+          !Number.isFinite(Date.parse(row.savedAt)))
         throw new Error('Inbox unavailable');
       if (seenReceipts.has(row.receiptId)) throw new Error('Inbox unavailable');
       seenReceipts.add(row.receiptId);
