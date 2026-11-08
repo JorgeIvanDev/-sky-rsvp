@@ -20,16 +20,16 @@ test('routes POST to trusted handler without treating body as identity', async (
 test('routes strict host inbox query', async () => {
   let seen;
   const response = await make(undefined, async input => { seen = input; return { status: 200, body: { responses: [] } }; })(
-    new Request('https://example.test/api/host-inbox?inviteId=abc&limit=25'));
+    new Request('https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25'));
   assert.equal(response.status, 200);
-  assert.deepEqual(seen.query, { inviteId: 'abc', limit: 25 });
+  assert.deepEqual(seen.query, { inviteId: '123e4567-e89b-42d3-a456-426614174000', limit: 25 });
 });
 test('rejects oversized streamed body, wrong content type and duplicate parameters', async () => {
   const router = make();
   assert.equal((await router(post(' '.repeat(8193)))).status, 403);
   assert.equal((await router(post('{}', { 'Content-Type': 'text/plain' }))).status, 403);
-  assert.equal((await router(new Request('https://example.test/api/host-inbox?inviteId=a&inviteId=b&limit=2'))).status, 403);
-  assert.equal((await router(new Request('https://example.test/api/host-inbox?inviteId=a&limit=2&admin=true'))).status, 403);
+  assert.equal((await router(new Request('https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&inviteId=123e4567-e89b-42d3-a456-426614174000&limit=2'))).status, 403);
+  assert.equal((await router(new Request('https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=2&admin=true'))).status, 403);
 });
 test('fails closed on malformed JSON, exceptions, and non-success handlers', async () => {
   assert.equal((await make()(post('{'))).status, 403);
@@ -41,11 +41,11 @@ test('accepts valid numeric Content-Length and one/two digit inbox limits', asyn
   const router = make();
   assert.equal((await router(post('{}', { 'Content-Length': '2' }))).status, 200);
   for (const limit of ['1', '9', '10', '25', '50']) {
-    const response = await router(new Request('https://example.test/api/host-inbox?inviteId=abc&limit=' + limit));
+    const response = await router(new Request('https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=' + limit));
     assert.equal(response.status, 200, 'limit ' + limit);
   }
   for (const limit of ['0', '51', '99', '100', '1a', '-1']) {
-    const response = await router(new Request('https://example.test/api/host-inbox?inviteId=abc&limit=' + limit));
+    const response = await router(new Request('https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=' + limit));
     assert.equal(response.status, 403, 'limit ' + limit);
   }
 });
@@ -80,8 +80,20 @@ test('rejects URL credentials, fragments and RSVP query parameters before handle
   assert.equal((await router(withCredentials('https://user:pass@example.test/api/rsvp', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
   }))).status, 403);
-  assert.equal((await router(withCredentials('https://user:pass@example.test/api/host-inbox?inviteId=abc&limit=1'))).status, 403);
+  assert.equal((await router(withCredentials('https://user:pass@example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=1'))).status, 403);
   assert.equal(calls, 0);
   assert.equal((await router(post('{}'))).status, 200);
+  assert.equal(calls, 1);
+});
+
+test('rejects malformed host inbox invitation IDs before trusted handler invocation', async () => {
+  let calls = 0;
+  const router = make(undefined, async () => { calls++; return { status: 200, body: { responses: [] } }; });
+  for (const inviteId of ['abc', 'null', '123e4567-e89b-42d3-a456-42661417400g', '']) {
+    const response = await router(new Request('https://example.test/api/host-inbox?inviteId=' + inviteId + '&limit=25'));
+    assert.equal(response.status, 403, inviteId);
+  }
+  assert.equal(calls, 0);
+  assert.equal((await router(new Request('https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25'))).status, 200);
   assert.equal(calls, 1);
 });
