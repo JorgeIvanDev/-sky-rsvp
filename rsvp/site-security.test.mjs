@@ -37,8 +37,11 @@ test('invite decoder rejects oversized and malformed base64url input before deco
  assert.match(html,/if\(encoded\.length>1500\)throw Error\('Link too long'\)/);
 });
 
-test('prototype RSVP does not retain guest PII or claim delivery',()=>{
+test('prototype does not collect contact details or claim an RSVP was sent',()=>{
  assert.doesNotMatch(html,/localStorage\.setItem\('cnidariaRSVP'/);
- assert.match(html,/RSVP NOT SENT\. Secure in-app submission is not yet available/);
- assert.match(html,/no response was saved or delivered/);
+ assert.doesNotMatch(html,/id="form"|id="email"|id="name"/);
+ assert.doesNotMatch(html,/SAVE RSVP ON THIS DEVICE/);
+ assert.match(html,/Secure in-app RSVP is not available yet/);
+ assert.match(html,/No RSVP has been transmitted by this page/);
+ assert.match(html,/COPY RESPONSE or SHARE RESPONSE/);
 });
