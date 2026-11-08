@@ -23,7 +23,7 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt) ||
         typeof receipt.receiptId !== 'string' || !receipt.receiptId.trim() ||
         receipt.choice !== payload.choice || typeof receipt.savedAt !== 'string' ||
-        !Number.isFinite(Date.parse(receipt.savedAt)))
+        !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(receipt.savedAt) ||\n        !Number.isFinite(Date.parse(receipt.savedAt)))
       throw new Error('RSVP unavailable');
     return Object.freeze({
       receiptId: receipt.receiptId, choice: receipt.choice, savedAt: receipt.savedAt
