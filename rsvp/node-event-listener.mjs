@@ -29,7 +29,10 @@ export function createNodeEventListener(route) {
         const seen = new Set();
         for (let i = 0; i < req.rawHeaders.length; i += 2) {
           const name = req.rawHeaders[i];
-          if (typeof name !== 'string') return deny();
+          // Reject non-token wire header names rather than allowing whitespace or
+          // non-ASCII variants to evade the sensitive-header duplicate check.
+          if (typeof name !== 'string' || !/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(name))
+            return deny();
           const normalized = name.toLowerCase();
           if (sensitive.has(normalized)) {
             if (seen.has(normalized)) return deny();
