@@ -17,6 +17,12 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
       // and intent must come from verified auth and the validated JSON body.
       if (url.username || url.password || url.hash) return deny();
       if (path === '/api/rsvp' && url.search) return deny();
+      // Fail closed on request encodings the router does not decode. A GET inbox
+      // request must not carry an ambiguous body or transfer framing.
+      const encoding = request.headers.get('content-encoding');
+      if (encoding !== null && encoding.trim().toLowerCase() !== 'identity') return deny();
+      if (path === '/api/host-inbox' && (request.body !== null || request.headers.has('transfer-encoding') ||
+          (request.headers.has('content-length') && request.headers.get('content-length') !== '0'))) return deny();
       let input;
       if (path === '/api/rsvp') {
         if (request.method !== 'POST' ||
