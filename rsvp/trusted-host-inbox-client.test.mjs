@@ -58,3 +58,23 @@ test('rejects duplicate receipt IDs instead of showing ambiguous host responses'
   });
   await assert.rejects(client(id, 2), /Inbox unavailable/);
 });
+
+test('rejects unsafe receipt identifiers and ambiguous host inbox timestamps', async () => {
+  const invalidRows = [
+    ...['', ' ', ' receipt', 'receipt\\nnext', '<script>', 'a'.repeat(129), 'é']
+      .map(receiptId => ({ ...row, receiptId })),
+    ...['2026-11-07', '2026-11-07T00:00:00+01:00',
+      '2026-11-07T00:00:00', '2026-11-07T00:00:00.1234Z']
+      .map(savedAt => ({ ...row, savedAt }))
+  ];
+  for (const invalidRow of invalidRows) {
+    const client = createTrustedHostInboxClient({
+      getAccessToken: async () => 'token',
+      fetcher: async () => ({
+        ok: true, status: 200,
+        json: async () => ({ responses: [invalidRow] })
+      })
+    });
+    await assert.rejects(client(id), /Inbox unavailable/);
+  }
+});
