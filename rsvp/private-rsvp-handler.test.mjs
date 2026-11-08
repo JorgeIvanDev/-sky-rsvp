@@ -82,3 +82,15 @@ test('trusted transaction receipt rejects unsafe identifiers and non-UTC timesta
    {status:403,body:{error:'RSVP unavailable'}});
  }
 });
+
+test('trusted transaction rejects normalized impossible dates but accepts leap dates and milliseconds', async () => {
+ for (const savedAt of ['2026-02-30T12:00:00Z', '2025-02-29T12:00:00Z',
+   '2026-04-31T12:00:00.123Z']) {
+  const {handler} = make({submitAtomic:async()=>({receiptId:'receipt',choice:'yes',savedAt})});
+  assert.equal((await handler({method:'POST',body:input})).status,403);
+ }
+ for (const savedAt of ['2024-02-29T12:00:00Z','2026-11-06T23:00:00.123Z']) {
+  const {handler} = make({submitAtomic:async()=>({receiptId:'receipt',choice:'yes',savedAt})});
+  assert.equal((await handler({method:'POST',body:input})).status,200);
+ }
+});
