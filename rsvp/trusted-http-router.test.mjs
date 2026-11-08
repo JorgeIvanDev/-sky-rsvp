@@ -89,7 +89,10 @@ test('rejects URL credentials, fragments and RSVP query parameters before handle
 test('rejects malformed host inbox invitation IDs before trusted handler invocation', async () => {
   let calls = 0;
   const router = make(undefined, async () => { calls++; return { status: 200, body: { responses: [] } }; });
-  for (const inviteId of ['abc', 'null', '123e4567-e89b-42d3-a456-42661417400g', '']) {
+  for (const inviteId of ['abc', 'null', '123e4567-e89b-42d3-a456-42661417400g', '',
+    '123e4567-e89b-02d3-a456-426614174000', // invalid UUID version
+    '123e4567-e89b-42d3-7456-426614174000' // invalid UUID variant
+  ]) {
     const response = await router(new Request('https://example.test/api/host-inbox?inviteId=' + inviteId + '&limit=25'));
     assert.equal(response.status, 403, inviteId);
   }
