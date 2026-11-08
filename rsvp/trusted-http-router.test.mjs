@@ -114,3 +114,18 @@ test('rejects encoded RSVP payloads and framed inbox GETs before trusted handler
   assert.equal((await router(new Request(inboxUrl))).status, 200);
   assert.equal(calls, 2);
 });
+
+test('rejects transfer-encoded RSVP framing before handler invocation', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; });
+  for (const headers of [
+    { 'Transfer-Encoding': 'chunked' },
+    { 'Transfer-Encoding': 'chunked', 'Content-Length': '2' },
+    { 'Transfer-Encoding': 'gzip, chunked' },
+  ]) {
+    assert.equal((await router(post('{}', headers))).status, 403);
+  }
+  assert.equal(calls, 0);
+  assert.equal((await router(post('{}'))).status, 200);
+  assert.equal(calls, 1);
+});
