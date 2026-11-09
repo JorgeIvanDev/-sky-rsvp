@@ -38,7 +38,8 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
           !['yes', 'maybe', 'no'].includes(row.choice) ||
           typeof row.savedAt !== 'string' ||
           !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(row.savedAt) ||
-          !Number.isFinite(Date.parse(row.savedAt)))
+          (!Number.isFinite(Date.parse(row.savedAt)) ||
+           new Date(row.savedAt).toISOString().slice(0, 19) !== row.savedAt.slice(0, 19)))
         throw new Error('Inbox unavailable');
       if (seenReceipts.has(row.receiptId)) throw new Error('Inbox unavailable');
       seenReceipts.add(row.receiptId);
