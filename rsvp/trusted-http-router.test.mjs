@@ -209,3 +209,27 @@ test('rejects cross-site Fetch Metadata even without Origin on RSVP and inbox', 
   }
   assert.equal(calls, 4);
 });
+
+test('rejects document navigation metadata before RSVP or inbox handlers', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; }, async () => {
+    calls++; return { status: 200, body: { responses: [] } };
+  });
+  const inbox = 'https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25';
+  for (const site of ['none', 'same-origin']) {
+    assert.equal((await router(post('{}', {
+      'Sec-Fetch-Site': site, 'Sec-Fetch-Mode': 'navigate'
+    }))).status, 403);
+    assert.equal((await router(new Request(inbox, { headers: {
+      'Sec-Fetch-Site': site, 'Sec-Fetch-Mode': 'navigate'
+    } }))).status, 403);
+  }
+  assert.equal(calls, 0);
+  assert.equal((await router(post('{}', {
+    'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors'
+  }))).status, 200);
+  assert.equal((await router(new Request(inbox, { headers: {
+    'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors'
+  } }))).status, 200);
+  assert.equal(calls, 2);
+});
