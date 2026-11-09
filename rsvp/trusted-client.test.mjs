@@ -187,3 +187,16 @@ test('redacts transport exceptions while allowing retry', async () => {
  assert.equal((await submit(input)).receiptId, 'receipt-3');
  assert.equal(calls, 2);
 });
+
+test('redacts auth provider exceptions and never contacts RSVP API', async () => {
+ let calls = 0;
+ const submit = createTrustedRsvpClient({
+   getAccessToken: async () => { throw new Error('private session secret and auth endpoint'); },
+   fetcher: async () => { calls++; throw new Error('must not send'); }
+ });
+ await assert.rejects(submit(input), error => {
+   assert.equal(error.message, 'RSVP authentication required');
+   return true;
+ });
+ assert.equal(calls, 0);
+});
