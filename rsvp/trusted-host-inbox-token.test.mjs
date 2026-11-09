@@ -52,3 +52,25 @@ test('host inbox never exposes hostile response payload accessor errors', async 
     });
   }
 });
+
+test('host inbox rejects impossible UTC dates and accepts leap-day timestamps', async () => {
+  for (const savedAt of ['2026-02-30T03:00:00Z', '2026-11-31T03:00:00Z', '2026-02-29T03:00:00Z']) {
+    const read = createTrustedHostInboxClient({
+      getAccessToken: async () => 'valid-token',
+      fetcher: async () => ({
+        ok: true, status: 200, headers: { get: () => 'application/json' },
+        json: async () => ({ responses: [{ receiptId: 'receipt-1', choice: 'yes', savedAt }] })
+      })
+    });
+    await assert.rejects(read(inviteId), /Inbox unavailable/);
+  }
+  const savedAt = '2024-02-29T03:00:00.123Z';
+  const read = createTrustedHostInboxClient({
+    getAccessToken: async () => 'valid-token',
+    fetcher: async () => ({
+      ok: true, status: 200, headers: { get: () => 'application/json' },
+      json: async () => ({ responses: [{ receiptId: 'receipt-1', choice: 'yes', savedAt }] })
+    })
+  });
+  assert.equal((await read(inviteId))[0].savedAt, savedAt);
+});
