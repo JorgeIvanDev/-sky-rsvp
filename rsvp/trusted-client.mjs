@@ -5,7 +5,11 @@ import { validateRsvpSubmission } from './rsvp-submit-policy.mjs';
 export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/api/rsvp' }) {
   if (typeof fetcher !== 'function' || typeof getAccessToken !== 'function' ||
       endpoint !== '/api/rsvp') throw new TypeError('Trusted RSVP client dependencies required');
+  let pending = false;
   return async function submitRsvp(input) {
+    if (pending) throw new Error('RSVP submission already in progress');
+    pending = true;
+    try {
     const payload = validateRsvpSubmission(input);
     const token = await getAccessToken();
     if (typeof token !== 'string' || token.length === 0 || token.length > 8192 || !/^[A-Za-z0-9._~+/-]+={0,2}$/.test(token))
@@ -30,5 +34,8 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     return Object.freeze({
       receiptId: receipt.receiptId, choice: receipt.choice, savedAt: receipt.savedAt
     });
+    } finally {
+      pending = false;
+    }
   };
 }
