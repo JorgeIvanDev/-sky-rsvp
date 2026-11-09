@@ -25,7 +25,7 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
       response = await fetcher(endpoint, {
       method: 'POST', mode: 'same-origin', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
       referrerPolicy: 'no-referrer',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', Authorization: 'Bearer ' + token },
       body: JSON.stringify(payload)
     });
     } catch {
