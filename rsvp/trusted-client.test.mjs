@@ -224,3 +224,28 @@ test('rejects accessor-backed and inherited receipt fields without invoking gett
   }
   assert.equal(getterCalls, 0);
 });
+
+test('rejects explicitly non-JSON RSVP responses before reading their body', async () => {
+  for (const contentType of ['text/html', 'application/problem+json', 'text/plain']) {
+    let parsed = false;
+    const submit = createTrustedRsvpClient({
+      getAccessToken: async () => 'token',
+      fetcher: async () => ({
+        ok:true, status:200,
+        headers: { get: () => contentType },
+        json: async () => { parsed = true; throw Error('private response'); }
+      })
+    });
+    await assert.rejects(submit(input), /RSVP unavailable/);
+    assert.equal(parsed, false);
+  }
+  const submit = createTrustedRsvpClient({
+    getAccessToken: async () => 'token',
+    fetcher: async () => ({
+      ok:true, status:200,
+      headers: { get: () => 'application/json; charset=utf-8' },
+      json: async () => ({receiptId:'receipt-4',choice:'yes',savedAt:'2026-11-07T03:00:00Z'})
+    })
+  });
+  assert.equal((await submit(input)).receiptId, 'receipt-4');
+});
