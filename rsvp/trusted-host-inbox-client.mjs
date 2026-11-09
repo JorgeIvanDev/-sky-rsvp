@@ -19,6 +19,13 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
     catch { throw new Error('Inbox unavailable'); }
     if (!response || response.ok !== true || response.status !== 200)
       throw new Error('Inbox unavailable');
+    // A private inbox must never parse an HTML redirect or ambiguous media type.
+    let contentType;
+    try { contentType = response.headers?.get?.('content-type'); }
+    catch { throw new Error('Inbox unavailable'); }
+    if (typeof contentType !== 'string' ||
+        !/^application\/json(?:\s*;\s*charset\s*=\s*(?:utf-8|"utf-8"))?\s*$/i.test(contentType))
+      throw new Error('Inbox unavailable');
     let body;
     try { body = await response.json(); }
     catch { throw new Error('Inbox unavailable'); }
