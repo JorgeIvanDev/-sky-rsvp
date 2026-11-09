@@ -115,3 +115,43 @@ test('rejects impossible UTC calendar dates without rejecting valid fractional p
    assert.equal((await submit(input)).savedAt, savedAt);
  }
 });
+
+test('serializes RSVP submissions and permits retry after completion or failure', async () => {
+ let release;
+ let calls = 0;
+ const submit = createTrustedRsvpClient({
+   getAccessToken: async () => 'token',
+   fetcher: async () => {
+     calls++;
+     if (calls === 1) await new Promise(resolve => { release = resolve; });
+     return {ok:true,status:200,json:async()=>({
+       receiptId:'receipt-1',choice:'yes',savedAt:'2026-11-07T03:00:00Z'
+     })};
+   }
+ });
+ const first = submit(input);
+ // Allow the first invocation to reach the asynchronous network boundary.
+ await Promise.resolve();
+ await Promise.resolve();
+ await assert.rejects(submit(input), /already in progress/);
+ assert.equal(calls, 1);
+ release();
+ await first;
+ await submit(input);
+ assert.equal(calls, 2);
+
+ let failCalls = 0;
+ const failing = createTrustedRsvpClient({
+   getAccessToken: async () => 'token',
+   fetcher: async () => {
+     failCalls++;
+     if (failCalls === 1) throw Error('network offline');
+     return {ok:true,status:200,json:async()=>({
+       receiptId:'receipt-2',choice:'yes',savedAt:'2026-11-07T03:00:00Z'
+     })};
+   }
+ });
+ await assert.rejects(failing(input), /network offline/);
+ assert.equal((await failing(input)).receiptId, 'receipt-2');
+ assert.equal(failCalls, 2);
+});
