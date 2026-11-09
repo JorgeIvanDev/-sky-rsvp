@@ -33,7 +33,7 @@ test('posts only validated RSVP data to same-origin trusted API and returns rece
  assert.equal(called,1);
 });
 test('rejects external endpoints and missing authentication without network request', async () => {
- for (const endpoint of ['https://example.org/rsvp', '//evil.example/rsvp', '/api/rsvp?token=secret', '/api/../evil', '/api/./rsvp', '/api/../../rsvp']) {
+ for (const endpoint of ['https://example.org/rsvp', '//evil.example/rsvp', '/api/rsvp?token=secret', '/api/../evil', '/api/./rsvp', '/api/../../rsvp', '/api/other', '/api/host-inbox']) {
    assert.throws(() => createTrustedRsvpClient({fetcher:async()=>{},getAccessToken:async()=>'',endpoint}));
  }
  let calls=0;
