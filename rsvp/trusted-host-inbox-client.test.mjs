@@ -93,3 +93,24 @@ test('never sends host bearer to alternate routes or with malformed tokens', asy
   }
   assert.equal(calls, 0);
 });
+
+test('redacts host inbox authentication, transport and JSON parser exceptions', async () => {
+  const secret = 'private-session-and-infrastructure-detail';
+  let calls = 0;
+  const authFailure = createTrustedHostInboxClient({
+    getAccessToken: async () => { throw new Error(secret); },
+    fetcher: async () => { calls++; throw new Error('must not fetch'); }
+  });
+  await assert.rejects(authFailure(id), error => error.message === 'Host authentication required' && !error.message.includes(secret));
+  assert.equal(calls, 0);
+  const transportFailure = createTrustedHostInboxClient({
+    getAccessToken: async () => 'token',
+    fetcher: async () => { throw new Error(secret); }
+  });
+  await assert.rejects(transportFailure(id), error => error.message === 'Inbox unavailable' && !error.message.includes(secret));
+  const parseFailure = createTrustedHostInboxClient({
+    getAccessToken: async () => 'token',
+    fetcher: async () => ({ ok: true, status: 200, json: async () => { throw new Error(secret); } })
+  });
+  await assert.rejects(parseFailure(id), error => error.message === 'Inbox unavailable' && !error.message.includes(secret));
+});
