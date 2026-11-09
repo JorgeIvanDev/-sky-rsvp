@@ -28,6 +28,9 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
       // even when Origin is absent (notably credentialed GET requests).
       const fetchSite = request.headers.get('sec-fetch-site');
       if (fetchSite !== null && !['same-origin', 'none'].includes(fetchSite)) return deny();
+      // API endpoints must never be invoked as document navigations, including
+      // user-initiated navigations reported with Sec-Fetch-Site: none.
+      if (request.headers.get('sec-fetch-mode') === 'navigate') return deny();
       // Fail closed on request encodings the router does not decode. A GET inbox
       // request must not carry an ambiguous body or transfer framing.
       // Never forward ambiguous HTTP framing to trusted RSVP handlers. Proxies
