@@ -14,12 +14,18 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     const token = await getAccessToken();
     if (typeof token !== 'string' || token.length === 0 || token.length > 8192 || !/^[A-Za-z0-9._~+/-]+={0,2}$/.test(token))
       throw new Error('RSVP authentication required');
-    const response = await fetcher(endpoint, {
+    let response;
+    try {
+      response = await fetcher(endpoint, {
       method: 'POST', mode: 'same-origin', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
       referrerPolicy: 'no-referrer',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body: JSON.stringify(payload)
     });
+    } catch {
+      // Network and transport failures must not disclose upstream details to guests.
+      throw new Error('RSVP unavailable');
+    }
     if (!response || response.ok !== true || response.status !== 200)
       throw new Error('RSVP unavailable');
     // Do not expose upstream parse errors or response bodies to the invitation UI.
