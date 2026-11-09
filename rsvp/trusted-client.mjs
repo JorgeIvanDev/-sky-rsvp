@@ -4,8 +4,7 @@ import { validateRsvpSubmission } from './rsvp-submit-policy.mjs';
 
 export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/api/rsvp' }) {
   if (typeof fetcher !== 'function' || typeof getAccessToken !== 'function' ||
-      typeof endpoint !== 'string' || !/^\/[a-zA-Z0-9/_-]+$/.test(endpoint) ||
-      endpoint.startsWith('//') || endpoint.split('/').some(segment => segment === '.' || segment === '..')) throw new TypeError('Trusted RSVP client dependencies required');
+      endpoint !== '/api/rsvp') throw new TypeError('Trusted RSVP client dependencies required');
   return async function submitRsvp(input) {
     const payload = validateRsvpSubmission(input);
     const token = await getAccessToken();
