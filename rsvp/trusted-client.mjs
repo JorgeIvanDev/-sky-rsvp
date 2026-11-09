@@ -12,7 +12,7 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     if (typeof token !== 'string' || token.length === 0 || token.length > 8192 || !/^[A-Za-z0-9._~+/-]+={0,2}$/.test(token))
       throw new Error('RSVP authentication required');
     const response = await fetcher(endpoint, {
-      method: 'POST', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
+      method: 'POST', mode: 'same-origin', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
       referrerPolicy: 'no-referrer',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
       body: JSON.stringify(payload)
