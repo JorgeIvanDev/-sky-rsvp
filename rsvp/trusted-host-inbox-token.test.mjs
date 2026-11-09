@@ -31,3 +31,23 @@ test('valid host bearer token reaches only same-origin inbox', async () => {
   assert.deepEqual(await read(inviteId), []);
   assert.equal(calls, 1);
 });
+
+test('host inbox never exposes hostile response payload accessor errors', async () => {
+  for (const payload of [
+    { get responses() { throw new Error('private database details'); } },
+    { responses: [{ get receiptId() { throw new Error('private database details'); } }] }
+  ]) {
+    const read = createTrustedHostInboxClient({
+      getAccessToken: async () => 'valid-token',
+      fetcher: async () => ({
+        ok: true, status: 200,
+        headers: { get: () => 'application/json' },
+        json: async () => payload
+      })
+    });
+    await assert.rejects(read(inviteId), error => {
+      assert.equal(error.message, 'Inbox unavailable');
+      return true;
+    });
+  }
+});
