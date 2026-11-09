@@ -41,8 +41,23 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     } catch {
       throw new Error('RSVP unavailable');
     }
-    if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt) ||
-        typeof receipt.receiptId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(receipt.receiptId) ||
+    // Reject accessor/prototype-backed receipts before reading any fields.
+    // A custom fetch adapter must not be able to execute getters in the UI path.
+    let fields;
+    try {
+      if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt) ||
+          (Object.getPrototypeOf(receipt) !== Object.prototype && Object.getPrototypeOf(receipt) !== null))
+        throw new Error();
+      fields = Object.getOwnPropertyDescriptors(receipt);
+      for (const key of ['receiptId', 'choice', 'savedAt']) {
+        if (!Object.prototype.hasOwnProperty.call(fields, key) ||
+            !Object.prototype.hasOwnProperty.call(fields[key], 'value')) throw new Error();
+      }
+      receipt = Object.fromEntries(['receiptId', 'choice', 'savedAt'].map(key => [key, fields[key].value]));
+    } catch {
+      throw new Error('RSVP unavailable');
+    }
+    if (typeof receipt.receiptId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(receipt.receiptId) ||
         receipt.choice !== payload.choice || typeof receipt.savedAt !== 'string' ||
         !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(receipt.savedAt) ||
         (!Number.isFinite(Date.parse(receipt.savedAt)) ||
