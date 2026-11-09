@@ -29,6 +29,7 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
     let body;
     try { body = await response.json(); }
     catch { throw new Error('Inbox unavailable'); }
+    try {
     if (!body || !Array.isArray(body.responses) || body.responses.length > limit)
       throw new Error('Inbox unavailable');
     const seenReceipts = new Set();
@@ -44,5 +45,6 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
       return Object.freeze({ receiptId: row.receiptId, choice: row.choice, savedAt: row.savedAt });
     });
     return Object.freeze(rows);
+    } catch { throw new Error('Inbox unavailable'); }
   };
 }
