@@ -9,7 +9,7 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
   return async function submitRsvp(input) {
     const payload = validateRsvpSubmission(input);
     const token = await getAccessToken();
-    if (typeof token !== 'string' || token.length === 0 || token.length > 8192 || !/^[\x21-\x7e]+$/.test(token) || /\s/.test(token))
+    if (typeof token !== 'string' || token.length === 0 || token.length > 8192 || !/^[A-Za-z0-9._~+/-]+={0,2}$/.test(token))
       throw new Error('RSVP authentication required');
     const response = await fetcher(endpoint, {
       method: 'POST', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
