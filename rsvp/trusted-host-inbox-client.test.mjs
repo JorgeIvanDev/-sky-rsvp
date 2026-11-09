@@ -18,7 +18,7 @@ test('host inbox uses same-origin authenticated GET and projects private respons
       assert.equal(init.redirect, 'error');
       assert.equal(init.cache, 'no-store');
       assert.equal(init.headers.Authorization, 'Bearer token');
-      return { ok: true, status: 200, json: async () => ({ responses: [{ ...row, privateEmail: 'hidden' }] }) };
+      return { ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => ({ responses: [{ ...row, privateEmail: 'hidden' }] }) };
     }
   });
   assert.deepEqual(await client(id), [row]);
@@ -39,9 +39,9 @@ test('rejects unsafe endpoint, invalid query and missing authentication before f
 test('rejects failed responses, malformed data and excess rows', async () => {
   for (const response of [
     { ok: false, status: 403 },
-    { ok: true, status: 200, json: async () => ({ responses: [ { ...row, savedAt: 'bad' } ] }) },
-    { ok: true, status: 200, json: async () => ({ responses: [row, row] }) },
-    { ok: true, status: 200, json: async () => ({ responses: 'invalid' }) }
+    { ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => ({ responses: [ { ...row, savedAt: 'bad' } ] }) },
+    { ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => ({ responses: [row, row] }) },
+    { ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => ({ responses: 'invalid' }) }
   ]) {
     const client = createTrustedHostInboxClient({ fetcher: async () => response, getAccessToken: async () => 'token' });
     await assert.rejects(client(id, 1), /Inbox unavailable/);
@@ -53,7 +53,7 @@ test('rejects duplicate receipt IDs instead of showing ambiguous host responses'
   const client = createTrustedHostInboxClient({
     getAccessToken: async () => 'token',
     fetcher: async () => ({
-      ok: true, status: 200,
+      ok: true, status: 200, headers: { get: () => 'application/json' },
       json: async () => ({ responses: [row, { ...row, choice: 'no' }] })
     })
   });
@@ -72,7 +72,7 @@ test('rejects unsafe receipt identifiers and ambiguous host inbox timestamps', a
     const client = createTrustedHostInboxClient({
       getAccessToken: async () => 'token',
       fetcher: async () => ({
-        ok: true, status: 200,
+        ok: true, status: 200, headers: { get: () => 'application/json' },
         json: async () => ({ responses: [invalidRow] })
       })
     });
@@ -110,7 +110,31 @@ test('redacts host inbox authentication, transport and JSON parser exceptions', 
   await assert.rejects(transportFailure(id), error => error.message === 'Inbox unavailable' && !error.message.includes(secret));
   const parseFailure = createTrustedHostInboxClient({
     getAccessToken: async () => 'token',
-    fetcher: async () => ({ ok: true, status: 200, json: async () => { throw new Error(secret); } })
+    fetcher: async () => ({ ok: true, status: 200, headers: { get: () => 'application/json' }, json: async () => { throw new Error(secret); } })
   });
   await assert.rejects(parseFailure(id), error => error.message === 'Inbox unavailable' && !error.message.includes(secret));
+});
+
+
+test('host inbox rejects missing, HTML, and ambiguous media types before parsing', async () => {
+  for (const mediaType of [null, 'text/html', 'application/json; charset=latin1',
+    'application/json; charset=utf-8; charset=latin1']) {
+    let parsed = false;
+    const client = createTrustedHostInboxClient({
+      getAccessToken: async () => 'token',
+      fetcher: async () => ({ ok: true, status: 200,
+        headers: { get: () => mediaType },
+        json: async () => { parsed = true; return { responses: [row] }; }
+      })
+    });
+    await assert.rejects(client(id), /Inbox unavailable/);
+    assert.equal(parsed, false);
+  }
+  const client = createTrustedHostInboxClient({
+    getAccessToken: async () => 'token',
+    fetcher: async () => ({ ok: true, status: 200,
+      headers: { get: () => 'application/json; charset=UTF-8' },
+      json: async () => ({ responses: [row] }) })
+  });
+  assert.deepEqual(await client(id), [row]);
 });
