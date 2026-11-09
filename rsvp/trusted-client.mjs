@@ -43,7 +43,7 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     try { contentType = response.headers?.get?.('content-type'); }
     catch { throw new Error('RSVP unavailable'); }
     if (typeof contentType !== 'string' ||
-        !/^application\/json(?:\s*;|\s*$)/i.test(contentType))
+        !/^application\/json(?:\s*;\s*charset\s*=\s*(?:utf-8|"utf-8"))?\s*$/i.test(contentType))
       throw new Error('RSVP unavailable');
     // Do not expose upstream parse errors or response bodies to the invitation UI.
     let receipt;
