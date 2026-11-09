@@ -21,6 +21,7 @@ test('posts only validated RSVP data to same-origin trusted API and returns rece
      assert.equal(options.redirect, 'error');
      assert.equal(options.cache, 'no-store');
      assert.equal(options.headers.Authorization, 'Bearer short-lived-token');
+     assert.equal(options.headers.Accept, 'application/json');
      assert.deepEqual(JSON.parse(options.body), input);
      return { ok:true, status:200, json:async () => ({
        receiptId:'receipt-1', choice:'yes', savedAt:'2026-11-07T03:00:00Z'
