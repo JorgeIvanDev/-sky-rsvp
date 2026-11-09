@@ -22,7 +22,13 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     });
     if (!response || response.ok !== true || response.status !== 200)
       throw new Error('RSVP unavailable');
-    const receipt = await response.json();
+    // Do not expose upstream parse errors or response bodies to the invitation UI.
+    let receipt;
+    try {
+      receipt = await response.json();
+    } catch {
+      throw new Error('RSVP unavailable');
+    }
     if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt) ||
         typeof receipt.receiptId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(receipt.receiptId) ||
         receipt.choice !== payload.choice || typeof receipt.savedAt !== 'string' ||
