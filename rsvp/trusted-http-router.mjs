@@ -30,7 +30,10 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
       if (fetchSite !== null && !['same-origin', 'none'].includes(fetchSite)) return deny();
       // API endpoints must never be invoked as document navigations, including
       // user-initiated navigations reported with Sec-Fetch-Site: none.
-      if (request.headers.get('sec-fetch-mode') === 'navigate') return deny();
+      // Browser API requests must use a readable fetch mode; opaque no-cors,
+      // navigation and unexpected modes cannot participate in the RSVP flow.
+      const fetchMode = request.headers.get('sec-fetch-mode');
+      if (fetchMode !== null && !['cors', 'same-origin'].includes(fetchMode)) return deny();
       // Fail closed on request encodings the router does not decode. A GET inbox
       // request must not carry an ambiguous body or transfer framing.
       // Never forward ambiguous HTTP framing to trusted RSVP handlers. Proxies
