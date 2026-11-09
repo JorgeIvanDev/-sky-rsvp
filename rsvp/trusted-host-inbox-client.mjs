@@ -6,16 +6,22 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
     if (typeof inviteId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(inviteId) ||
         !Number.isSafeInteger(limit) || limit < 1 || limit > 50)
       throw new TypeError('Invalid inbox query');
-    const token = await getAccessToken();
+    let token;
+    try { token = await getAccessToken(); }
+    catch { throw new Error('Host authentication required'); }
     if (typeof token !== 'string' || token.length === 0 || token.length > 8192 || !/^[A-Za-z0-9._~+/-]+={0,2}$/.test(token))
       throw new Error('Host authentication required');
-    const response = await fetcher(endpoint + '?inviteId=' + encodeURIComponent(inviteId) + '&limit=' + limit, {
+    let response;
+    try { response = await fetcher(endpoint + '?inviteId=' + encodeURIComponent(inviteId) + '&limit=' + limit, {
       method: 'GET', mode: 'same-origin', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
       referrerPolicy: 'no-referrer', headers: { Authorization: 'Bearer ' + token }
-    });
+    }); }
+    catch { throw new Error('Inbox unavailable'); }
     if (!response || response.ok !== true || response.status !== 200)
       throw new Error('Inbox unavailable');
-    const body = await response.json();
+    let body;
+    try { body = await response.json(); }
+    catch { throw new Error('Inbox unavailable'); }
     if (!body || !Array.isArray(body.responses) || body.responses.length > limit)
       throw new Error('Inbox unavailable');
     const seenReceipts = new Set();
