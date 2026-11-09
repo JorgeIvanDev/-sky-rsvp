@@ -155,3 +155,17 @@ test('serializes RSVP submissions and permits retry after completion or failure'
  assert.equal((await failing(input)).receiptId, 'receipt-2');
  assert.equal(failCalls, 2);
 });
+
+test('does not leak upstream JSON parse errors or response content to guests', async () => {
+ const submit = createTrustedRsvpClient({
+   getAccessToken: async () => 'token',
+   fetcher: async () => ({ok:true,status:200,json:async()=>{
+     throw new SyntaxError('private upstream response: secret');
+   }})
+ });
+ await assert.rejects(submit(input), error => {
+   assert.equal(error.message, 'RSVP unavailable');
+   assert.equal(error.message.includes('secret'), false);
+   return true;
+ });
+});
