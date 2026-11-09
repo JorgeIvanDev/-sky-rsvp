@@ -13,6 +13,7 @@ test('host inbox uses same-origin authenticated GET and projects private respons
       calls++;
       assert.equal(url, '/api/host-inbox?inviteId=' + id + '&limit=25');
       assert.equal(init.method, 'GET');
+      assert.equal(init.mode, 'same-origin');
       assert.equal(init.credentials, 'same-origin');
       assert.equal(init.redirect, 'error');
       assert.equal(init.cache, 'no-store');
@@ -77,4 +78,18 @@ test('rejects unsafe receipt identifiers and ambiguous host inbox timestamps', a
     });
     await assert.rejects(client(id), /Inbox unavailable/);
   }
+});
+
+
+test('never sends host bearer to alternate routes or with malformed tokens', async () => {
+  let calls = 0;
+  const fetcher = async () => { calls++; throw Error('unexpected network request'); };
+  for (const endpoint of ['/api/rsvp', '/api/host-inbox/other', '/api/host-inbox?next=/other']) {
+    assert.throws(() => createTrustedHostInboxClient({ fetcher, getAccessToken: async () => 'token', endpoint }), /dependencies/);
+  }
+  for (const token of ['', 'a b', 'a,b', 'a:b', 'a;b', 'abc=def', 'a\\nb']) {
+    const client = createTrustedHostInboxClient({ fetcher, getAccessToken: async () => token });
+    await assert.rejects(client(id), /authentication/);
+  }
+  assert.equal(calls, 0);
 });
