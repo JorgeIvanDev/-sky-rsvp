@@ -34,6 +34,14 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     }
     if (!response || response.ok !== true || response.status !== 200)
       throw new Error('RSVP unavailable');
+    // Reject explicitly non-JSON responses (for example an HTML login redirect)
+    // before parsing any body. Older fetch adapters may omit headers.
+    let contentType;
+    try { contentType = response.headers?.get?.('content-type'); }
+    catch { throw new Error('RSVP unavailable'); }
+    if (contentType != null && (typeof contentType !== 'string' ||
+        !/^application\/json(?:\s*;|\s*$)/i.test(contentType)))
+      throw new Error('RSVP unavailable');
     // Do not expose upstream parse errors or response bodies to the invitation UI.
     let receipt;
     try {
