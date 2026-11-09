@@ -14,7 +14,7 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
     let response;
     try { response = await fetcher(endpoint + '?inviteId=' + encodeURIComponent(inviteId) + '&limit=' + limit, {
       method: 'GET', mode: 'same-origin', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
-      referrerPolicy: 'no-referrer', headers: { Authorization: 'Bearer ' + token }
+      referrerPolicy: 'no-referrer', headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' }
     }); }
     catch { throw new Error('Inbox unavailable'); }
     if (!response || response.ok !== true || response.status !== 200)
