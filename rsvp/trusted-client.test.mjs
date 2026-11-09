@@ -151,7 +151,7 @@ test('serializes RSVP submissions and permits retry after completion or failure'
      })};
    }
  });
- await assert.rejects(failing(input), /network offline/);
+ await assert.rejects(failing(input), /RSVP unavailable/);
  assert.equal((await failing(input)).receiptId, 'receipt-2');
  assert.equal(failCalls, 2);
 });
@@ -168,4 +168,22 @@ test('does not leak upstream JSON parse errors or response content to guests', a
    assert.equal(error.message.includes('secret'), false);
    return true;
  });
+});
+
+test('redacts transport exceptions while allowing retry', async () => {
+ let calls = 0;
+ const submit = createTrustedRsvpClient({
+   getAccessToken: async () => 'token',
+   fetcher: async () => {
+     calls++;
+     if (calls === 1) throw new Error('private gateway hostname and secret');
+     return {ok:true,status:200,json:async()=>({receiptId:'receipt-3',choice:'yes',savedAt:'2026-11-07T03:00:00Z'})};
+   }
+ });
+ await assert.rejects(submit(input), error => {
+   assert.equal(error.message, 'RSVP unavailable');
+   return true;
+ });
+ assert.equal((await submit(input)).receiptId, 'receipt-3');
+ assert.equal(calls, 2);
 });
