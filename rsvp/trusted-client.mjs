@@ -32,8 +32,11 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
       // Network and transport failures must not disclose upstream details to guests.
       throw new Error('RSVP unavailable');
     }
-    if (!response || response.ok !== true || response.status !== 200)
-      throw new Error('RSVP unavailable');
+    // Custom fetch adapters can expose throwing accessors; never leak their errors.
+    let accepted;
+    try { accepted = response?.ok === true && response.status === 200; }
+    catch { throw new Error('RSVP unavailable'); }
+    if (!accepted) throw new Error('RSVP unavailable');
     // Reject explicitly non-JSON responses (for example an HTML login redirect)
     // before parsing any body. Older fetch adapters may omit headers.
     let contentType;
