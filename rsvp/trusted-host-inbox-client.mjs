@@ -1,17 +1,16 @@
 // Same-origin browser adapter for the private host inbox. Never uses public Supabase RPCs.
 export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint = '/api/host-inbox' }) {
   if (typeof fetcher !== 'function' || typeof getAccessToken !== 'function' ||
-      typeof endpoint !== 'string' || !/^\/[a-zA-Z0-9/_-]+$/.test(endpoint) ||
-      endpoint.startsWith('//')) throw new TypeError('Trusted host inbox dependencies required');
+      endpoint !== '/api/host-inbox') throw new TypeError('Trusted host inbox dependencies required');
   return async function getHostInbox(inviteId, limit = 25) {
     if (typeof inviteId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(inviteId) ||
         !Number.isSafeInteger(limit) || limit < 1 || limit > 50)
       throw new TypeError('Invalid inbox query');
     const token = await getAccessToken();
-    if (typeof token !== 'string' || token.length > 8192 || !/^[\x21-\x7e]+$/.test(token))
+    if (typeof token !== 'string' || token.length === 0 || token.length > 8192 || !/^[A-Za-z0-9._~+/-]+={0,2}$/.test(token))
       throw new Error('Host authentication required');
     const response = await fetcher(endpoint + '?inviteId=' + encodeURIComponent(inviteId) + '&limit=' + limit, {
-      method: 'GET', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
+      method: 'GET', mode: 'same-origin', credentials: 'same-origin', redirect: 'error', cache: 'no-store',
       referrerPolicy: 'no-referrer', headers: { Authorization: 'Bearer ' + token }
     });
     if (!response || response.ok !== true || response.status !== 200)
