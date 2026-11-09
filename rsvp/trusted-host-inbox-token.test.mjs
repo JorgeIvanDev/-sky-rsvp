@@ -25,7 +25,7 @@ test('valid host bearer token reaches only same-origin inbox', async () => {
       assert.equal(url, '/api/host-inbox?inviteId=' + inviteId + '&limit=25');
       assert.equal(options.headers.Authorization, 'Bearer valid-token');
       assert.equal(options.credentials, 'same-origin');
-      return { ok: true, status: 200, json: async () => ({ responses: [] }) };
+      return { ok: true, status: 200, headers: { get: name => name === 'content-type' ? 'application/json; charset=utf-8' : null }, json: async () => ({ responses: [] }) };
     }
   });
   assert.deepEqual(await read(inviteId), []);
