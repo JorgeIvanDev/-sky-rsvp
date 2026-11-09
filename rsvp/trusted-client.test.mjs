@@ -250,3 +250,20 @@ test('rejects explicitly non-JSON RSVP responses before reading their body', asy
   });
   assert.equal((await submit(input)).receiptId, 'receipt-4');
 });
+
+test('redacts throwing response status accessors without exposing transport details', async () => {
+  for (const field of ['ok', 'status']) {
+    const response = { ok:true, status:200 };
+    Object.defineProperty(response, field, {
+      get() { throw new Error('private proxy secret'); }
+    });
+    const submit = createTrustedRsvpClient({
+      getAccessToken:async()=> 'token',
+      fetcher:async()=>response
+    });
+    await assert.rejects(submit(input), error => {
+      assert.equal(error.message, 'RSVP unavailable');
+      return true;
+    });
+  }
+});
