@@ -280,3 +280,25 @@ test('redacts throwing response status accessors without exposing transport deta
     });
   }
 });
+
+test('rejects ambiguous receipt media types before parsing and accepts canonical UTF-8 JSON', async () => {
+  for (const type of ['application/json; profile=unsafe', 'application/json; charset=latin1',
+    'application/json; charset=utf-8; charset=latin1', 'application/json;']) {
+    let parsed = false;
+    const submit = createTrustedRsvpClient({
+      getAccessToken: async () => 'token',
+      fetcher: async () => ({ ok: true, status: 200,
+        headers: { get: () => type },
+        json: async () => { parsed = true; throw Error('private upstream'); } })
+    });
+    await assert.rejects(submit(input), /RSVP unavailable/);
+    assert.equal(parsed, false, type);
+  }
+  const submit = createTrustedRsvpClient({
+    getAccessToken: async () => 'token',
+    fetcher: async () => ({ ok: true, status: 200,
+      headers: { get: () => 'application/json; charset="UTF-8"' },
+      json: async () => ({ receiptId: 'receipt-utf8', choice: 'yes', savedAt: '2026-11-07T03:00:00Z' }) })
+  });
+  assert.equal((await submit(input)).receiptId, 'receipt-utf8');
+});
