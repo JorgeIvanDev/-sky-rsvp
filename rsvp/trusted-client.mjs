@@ -11,7 +11,13 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     pending = true;
     try {
     const payload = validateRsvpSubmission(input);
-    const token = await getAccessToken();
+    let token;
+    try {
+      token = await getAccessToken();
+    } catch {
+      // Authentication provider failures may contain private session details.
+      throw new Error('RSVP authentication required');
+    }
     if (typeof token !== 'string' || token.length === 0 || token.length > 8192 || !/^[A-Za-z0-9._~+/-]+={0,2}$/.test(token))
       throw new Error('RSVP authentication required');
     let response;
