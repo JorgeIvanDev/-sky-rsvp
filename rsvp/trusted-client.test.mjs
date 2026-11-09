@@ -23,7 +23,7 @@ test('posts only validated RSVP data to same-origin trusted API and returns rece
      assert.equal(options.headers.Authorization, 'Bearer short-lived-token');
      assert.equal(options.headers.Accept, 'application/json');
      assert.deepEqual(JSON.parse(options.body), input);
-     return { ok:true, status:200, json:async () => ({
+     return { ok:true, status:200, headers:{get:()=> 'application/json'}, json:async () => ({
        receiptId:'receipt-1', choice:'yes', savedAt:'2026-11-07T03:00:00Z'
      }) };
    }
@@ -46,7 +46,7 @@ test('rejects untrusted payload and malformed server receipts', async () => {
  let calls=0;
  const submit=createTrustedRsvpClient({
    getAccessToken:async()=> 'token',
-   fetcher:async()=>{calls++;return {ok:true,status:200,json:async()=>({
+   fetcher:async()=>{calls++;return {ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>({
      receiptId:' ',choice:'yes',savedAt:'2026-11-07T03:00:00Z'
    })};}
  });
@@ -74,7 +74,7 @@ test('rejects ambiguous or non-UTC receipt timestamps from the trusted endpoint'
    '2026-11-07T03:00:00.1234Z', 'not-a-date']) {
    const submit = createTrustedRsvpClient({
      getAccessToken: async () => 'token',
-     fetcher: async () => ({ok:true,status:200,json:async()=>({
+     fetcher: async () => ({ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>({
        receiptId:'receipt-1',choice:'yes',savedAt
      })})
    });
@@ -86,7 +86,7 @@ test('rejects unsafe, oversized or whitespace receipt identifiers', async () => 
  for (const receiptId of ['', ' ', ' receipt', 'receipt\nnext', '<script>', 'a'.repeat(129), 'é']) {
    const submit = createTrustedRsvpClient({
      getAccessToken: async () => 'token',
-     fetcher: async () => ({ok:true,status:200,json:async()=>({
+     fetcher: async () => ({ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>({
        receiptId, choice:'yes', savedAt:'2026-11-07T03:00:00Z'
      })})
    });
@@ -99,7 +99,7 @@ test('rejects impossible UTC calendar dates without rejecting valid fractional p
    '2026-13-01T03:00:00Z', '2026-02-29T03:00:00Z']) {
    const submit = createTrustedRsvpClient({
      getAccessToken: async () => 'token',
-     fetcher: async () => ({ok:true,status:200,json:async()=>({
+     fetcher: async () => ({ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>({
        receiptId:'receipt-1',choice:'yes',savedAt
      })})
    });
@@ -109,7 +109,7 @@ test('rejects impossible UTC calendar dates without rejecting valid fractional p
    '2026-11-07T03:00:00.12Z', '2026-11-07T03:00:00.123Z']) {
    const submit = createTrustedRsvpClient({
      getAccessToken: async () => 'token',
-     fetcher: async () => ({ok:true,status:200,json:async()=>({
+     fetcher: async () => ({ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>({
        receiptId:'receipt-1',choice:'yes',savedAt
      })})
    });
@@ -125,7 +125,7 @@ test('serializes RSVP submissions and permits retry after completion or failure'
    fetcher: async () => {
      calls++;
      if (calls === 1) await new Promise(resolve => { release = resolve; });
-     return {ok:true,status:200,json:async()=>({
+     return {ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>({
        receiptId:'receipt-1',choice:'yes',savedAt:'2026-11-07T03:00:00Z'
      })};
    }
@@ -147,7 +147,7 @@ test('serializes RSVP submissions and permits retry after completion or failure'
    fetcher: async () => {
      failCalls++;
      if (failCalls === 1) throw Error('network offline');
-     return {ok:true,status:200,json:async()=>({
+     return {ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>({
        receiptId:'receipt-2',choice:'yes',savedAt:'2026-11-07T03:00:00Z'
      })};
    }
@@ -160,7 +160,7 @@ test('serializes RSVP submissions and permits retry after completion or failure'
 test('does not leak upstream JSON parse errors or response content to guests', async () => {
  const submit = createTrustedRsvpClient({
    getAccessToken: async () => 'token',
-   fetcher: async () => ({ok:true,status:200,json:async()=>{
+   fetcher: async () => ({ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>{
      throw new SyntaxError('private upstream response: secret');
    }})
  });
@@ -178,7 +178,7 @@ test('redacts transport exceptions while allowing retry', async () => {
    fetcher: async () => {
      calls++;
      if (calls === 1) throw new Error('private gateway hostname and secret');
-     return {ok:true,status:200,json:async()=>({receiptId:'receipt-3',choice:'yes',savedAt:'2026-11-07T03:00:00Z'})};
+     return {ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>({receiptId:'receipt-3',choice:'yes',savedAt:'2026-11-07T03:00:00Z'})};
    }
  });
  await assert.rejects(submit(input), error => {
@@ -216,7 +216,7 @@ test('rejects accessor-backed and inherited receipt fields without invoking gett
   for (const receipt of cases) {
     const submit = createTrustedRsvpClient({
       getAccessToken:async()=> 'token',
-      fetcher:async()=>({ok:true,status:200,json:async()=>receipt})
+      fetcher:async()=>({ok:true,status:200, headers:{get:()=> 'application/json'}, json:async()=>receipt})
     });
     await assert.rejects(submit(input), error => {
       assert.equal(error.message, 'RSVP unavailable');
@@ -224,6 +224,19 @@ test('rejects accessor-backed and inherited receipt fields without invoking gett
     });
   }
   assert.equal(getterCalls, 0);
+});
+
+test('fails closed when RSVP response lacks a content type', async () => {
+  let parsed = false;
+  const submit = createTrustedRsvpClient({
+    getAccessToken: async () => 'token',
+    fetcher: async () => ({ok:true,status:200,json:async()=> {
+      parsed = true;
+      return {receiptId:'receipt-1',choice:'yes',savedAt:'2026-11-07T03:00:00Z'};
+    }})
+  });
+  await assert.rejects(submit(input), /RSVP unavailable/);
+  assert.equal(parsed, false);
 });
 
 test('rejects explicitly non-JSON RSVP responses before reading their body', async () => {
