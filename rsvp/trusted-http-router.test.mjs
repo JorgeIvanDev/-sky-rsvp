@@ -233,3 +233,21 @@ test('rejects document navigation metadata before RSVP or inbox handlers', async
   } }))).status, 200);
   assert.equal(calls, 2);
 });
+
+test('rejects opaque or unexpected browser fetch modes before private handlers', async () => {
+  let calls = 0;
+  const router = make(async () => { calls++; return ok; }, async () => {
+    calls++; return { status: 200, body: { responses: [] } };
+  });
+  const inbox = 'https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25';
+  for (const mode of ['no-cors', 'navigate', 'websocket', 'invalid']) {
+    assert.equal((await router(post('{}', { 'Sec-Fetch-Mode': mode }))).status, 403, mode);
+    assert.equal((await router(new Request(inbox, { headers: { 'Sec-Fetch-Mode': mode } }))).status, 403, mode);
+  }
+  assert.equal(calls, 0);
+  for (const mode of ['cors', 'same-origin']) {
+    assert.equal((await router(post('{}', { 'Sec-Fetch-Mode': mode }))).status, 200, mode);
+    assert.equal((await router(new Request(inbox, { headers: { 'Sec-Fetch-Mode': mode } }))).status, 200, mode);
+  }
+  assert.equal(calls, 4);
+});
