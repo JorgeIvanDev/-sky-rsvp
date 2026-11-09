@@ -200,3 +200,27 @@ test('redacts auth provider exceptions and never contacts RSVP API', async () =>
  });
  assert.equal(calls, 0);
 });
+
+test('rejects accessor-backed and inherited receipt fields without invoking getters', async () => {
+  let getterCalls = 0;
+  const cases = [
+    Object.defineProperty({choice:'yes', savedAt:'2026-11-07T03:00:00Z'}, 'receiptId', {
+      enumerable:true, get() { getterCalls++; throw Error('secret from getter'); }
+    }),
+    Object.create({receiptId:'inherited'}, {
+      choice:{value:'yes', enumerable:true},
+      savedAt:{value:'2026-11-07T03:00:00Z', enumerable:true}
+    })
+  ];
+  for (const receipt of cases) {
+    const submit = createTrustedRsvpClient({
+      getAccessToken:async()=> 'token',
+      fetcher:async()=>({ok:true,status:200,json:async()=>receipt})
+    });
+    await assert.rejects(submit(input), error => {
+      assert.equal(error.message, 'RSVP unavailable');
+      return true;
+    });
+  }
+  assert.equal(getterCalls, 0);
+});
