@@ -16,6 +16,7 @@ test('posts only validated RSVP data to same-origin trusted API and returns rece
      called++;
      assert.equal(url, '/api/rsvp');
      assert.equal(options.method, 'POST');
+     assert.equal(options.mode, 'same-origin');
      assert.equal(options.credentials, 'same-origin');
      assert.equal(options.redirect, 'error');
      assert.equal(options.cache, 'no-store');
