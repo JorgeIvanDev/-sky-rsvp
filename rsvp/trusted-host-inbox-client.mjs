@@ -3,7 +3,7 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
   if (typeof fetcher !== 'function' || typeof getAccessToken !== 'function' ||
       endpoint !== '/api/host-inbox') throw new TypeError('Trusted host inbox dependencies required');
   return async function getHostInbox(inviteId, limit = 25) {
-    if (typeof inviteId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(inviteId) ||
+    if (typeof inviteId !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(inviteId) ||
         !Number.isSafeInteger(limit) || limit < 1 || limit > 50)
       throw new TypeError('Invalid inbox query');
     let token;
