@@ -52,6 +52,13 @@ export function createNodeEventListener(route, { publicOrigin = 'http://localhos
       }
       if (rawHeaders['content-length'] !== undefined &&
           rawHeaders['transfer-encoding'] !== undefined) return deny();
+      // Refuse oversized declared bodies before forwarding to the private router.
+      // Chunked bodies still require the router's streaming size limit.
+      if (rawHeaders['content-length'] !== undefined) {
+        const length = rawHeaders['content-length'];
+        if (typeof length !== 'string' || !/^(0|[1-9][0-9]*)$/.test(length) ||
+            !Number.isSafeInteger(Number(length)) || Number(length) > 16384) return deny();
+      }
       if (rawHeaders['content-encoding'] !== undefined &&
           String(rawHeaders['content-encoding']).toLowerCase() !== 'identity') return deny();
       const headers = new Headers();
