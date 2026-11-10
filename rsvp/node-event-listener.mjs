@@ -2,7 +2,12 @@
 // createPrivateEventApi router; never accept dependencies from HTTP input.
 export function createNodeEventListener(route, { publicOrigin = 'http://localhost' } = {}) {
   if (typeof route !== 'function') throw new TypeError('Trusted event router required');
-  // Use a deployment-configured origin, never the untrusted Host header.\n  const trustedOrigin = new URL(publicOrigin);\n  if (!['http:', 'https:'].includes(trustedOrigin.protocol) || trustedOrigin.username ||\n      trustedOrigin.password || trustedOrigin.pathname !== '/' || trustedOrigin.search || trustedOrigin.hash)\n    throw new TypeError('Invalid trusted public origin');\n  return async function listener(req, res) {
+  // Use a deployment-configured origin, never the untrusted Host header.
+  const trustedOrigin = new URL(publicOrigin);
+  if (!['http:', 'https:'].includes(trustedOrigin.protocol) || trustedOrigin.username ||
+      trustedOrigin.password || trustedOrigin.pathname !== '/' || trustedOrigin.search || trustedOrigin.hash)
+    throw new TypeError('Invalid trusted public origin');
+  return async function listener(req, res) {
     const deny = () => {
       if (!res.headersSent) {
         res.writeHead(403, { 'content-type': 'application/json', 'cache-control': 'no-store' });
