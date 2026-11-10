@@ -20,7 +20,7 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
     // A custom transport can expose throwing status accessors. Never leak
     // upstream error details into the authenticated host UI.
     let accepted;
-    try { accepted = response?.ok === true && response.status === 200; }
+    try { accepted = response?.ok === true && response.status === 200 && response.redirected !== true && (!response.type || response.type === 'basic' || response.type === 'default'); }
     catch { throw new Error('Inbox unavailable'); }
     if (!accepted) throw new Error('Inbox unavailable');
     // A private inbox must never parse an HTML redirect or ambiguous media type.
