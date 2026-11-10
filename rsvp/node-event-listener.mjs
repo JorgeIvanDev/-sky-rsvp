@@ -1,8 +1,8 @@
 // Node HTTP adapter for the private event API. Inject a trusted, server-configured
 // createPrivateEventApi router; never accept dependencies from HTTP input.
-export function createNodeEventListener(route) {
+export function createNodeEventListener(route, { publicOrigin = 'http://localhost' } = {}) {
   if (typeof route !== 'function') throw new TypeError('Trusted event router required');
-  return async function listener(req, res) {
+  // Use a deployment-configured origin, never the untrusted Host header.\n  const trustedOrigin = new URL(publicOrigin);\n  if (!['http:', 'https:'].includes(trustedOrigin.protocol) || trustedOrigin.username ||\n      trustedOrigin.password || trustedOrigin.pathname !== '/' || trustedOrigin.search || trustedOrigin.hash)\n    throw new TypeError('Invalid trusted public origin');\n  return async function listener(req, res) {
     const deny = () => {
       if (!res.headersSent) {
         res.writeHead(403, { 'content-type': 'application/json', 'cache-control': 'no-store' });
@@ -13,8 +13,8 @@ export function createNodeEventListener(route) {
       if (!req || !res || !['GET', 'POST'].includes(req.method) ||
           typeof req.url !== 'string' || !req.url.startsWith('/api/')) return deny();
       // Do not trust Host or X-Forwarded-* headers when constructing a Request URL.
-      const url = new URL(req.url, 'http://localhost');
-      if (url.origin !== 'http://localhost' || url.username || url.password || url.hash) return deny();
+      const url = new URL(req.url, trustedOrigin.origin);
+      if (url.origin !== trustedOrigin.origin || url.username || url.password || url.hash) return deny();
       // Reject ambiguous HTTP message framing before creating a Fetch Request.
       // A proxy and Node must never disagree about the request body boundary.
       const rawHeaders = req.headers || {};
