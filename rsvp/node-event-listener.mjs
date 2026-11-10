@@ -53,7 +53,7 @@ export function createNodeEventListener(route, { publicOrigin = 'http://localhos
       if (rawHeaders['content-length'] !== undefined &&
           rawHeaders['transfer-encoding'] !== undefined) return deny();
       // Refuse oversized declared bodies before forwarding to the private router.
-      // Chunked bodies still require the router's streaming size limit.
+      // Enforce the same limit on actual streamed bytes, including chunked bodies.
       if (rawHeaders['content-length'] !== undefined) {
         const length = rawHeaders['content-length'];
         if (typeof length !== 'string' || !/^(0|[1-9][0-9]*)$/.test(length) ||
@@ -66,7 +66,23 @@ export function createNodeEventListener(route, { publicOrigin = 'http://localhos
         if (Array.isArray(value)) return deny(); // ambiguous duplicate headers
         if (typeof value === 'string') headers.set(name, value);
       }
-      const body = req.method === 'POST' ? req : undefined;
+      // Bound actual bytes before invoking trusted application code. A missing or
+      // forged Content-Length must not bypass the limit on chunked uploads.
+      let body;
+      if (req.method === 'POST') {
+        const chunks = [];
+        let total = 0;
+        for await (const chunk of req) {
+          if (!(typeof chunk === 'string' || chunk instanceof Uint8Array)) return deny();
+          const bytes = Buffer.from(chunk);
+          total += bytes.byteLength;
+          if (total > 16384) return deny();
+          chunks.push(bytes);
+        }
+        if (rawHeaders['content-length'] !== undefined &&
+            total !== Number(rawHeaders['content-length'])) return deny();
+        body = Buffer.concat(chunks, total);
+      }
       const request = new Request(url.href, {
         method: req.method, headers, body, ...(body ? { duplex: 'half' } : {})
       });
