@@ -251,3 +251,15 @@ test('rejects opaque or unexpected browser fetch modes before private handlers',
   }
   assert.equal(calls, 4);
 });
+
+test('private API responses prevent MIME sniffing and referrer disclosure on success and denial', async () => {
+  const router = make();
+  for (const request of [post('{}'), post('{'),
+    new Request('https://example.test/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=25'),
+    new Request('https://example.test/api/host-inbox?inviteId=invalid&limit=25')]) {
+    const response = await router(request);
+    assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+  }
+});
