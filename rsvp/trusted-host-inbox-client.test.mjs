@@ -138,3 +138,23 @@ test('host inbox rejects missing, HTML, and ambiguous media types before parsing
   });
   assert.deepEqual(await client(id), [row]);
 });
+
+test('host inbox sanitizes throwing transport status accessors', async () => {
+  for (const field of ['ok', 'status']) {
+    const secret = 'private upstream status detail';
+    let parsed = false;
+    const response = {
+      ok: true, status: 200,
+      headers: { get: () => 'application/json' },
+      json: async () => { parsed = true; return { responses: [row] }; }
+    };
+    Object.defineProperty(response, field, { get() { throw new Error(secret); } });
+    const client = createTrustedHostInboxClient({
+      getAccessToken: async () => 'token',
+      fetcher: async () => response
+    });
+    await assert.rejects(client(id), error =>
+      error.message === 'Inbox unavailable' && !error.message.includes(secret));
+    assert.equal(parsed, false);
+  }
+});
