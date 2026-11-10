@@ -158,3 +158,19 @@ test('host inbox sanitizes throwing transport status accessors', async () => {
     assert.equal(parsed, false);
   }
 });
+
+test('host inbox rejects redirected and opaque responses before parsing private data', async () => {
+  for (const extra of [{ redirected: true }, { type: 'opaque' }, { type: 'opaqueredirect' }]) {
+    let parsed = false;
+    const client = createTrustedHostInboxClient({
+      getAccessToken: async () => 'token',
+      fetcher: async () => ({
+        ok: true, status: 200, ...extra,
+        headers: { get: () => 'application/json' },
+        json: async () => { parsed = true; return { responses: [row] }; }
+      })
+    });
+    await assert.rejects(client(id), /Inbox unavailable/);
+    assert.equal(parsed, false);
+  }
+});
