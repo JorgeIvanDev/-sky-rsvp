@@ -75,3 +75,27 @@ test('rejects malformed raw wire header names before private routing', async () 
     assert.equal(called, 0, JSON.stringify(name));
   }
 });
+
+test('configured public origin supports real browser same-origin requests without trusting Host', async () => {
+  const req = Object.assign(new EventEmitter(), {
+    method: 'GET', url: '/api/host-inbox?inviteId=123e4567-e89b-42d3-a456-426614174000&limit=1',
+    headers: { host: 'attacker.example', origin: 'https://invite.example' },
+    async *[Symbol.asyncIterator]() {}
+  });
+  const res = { headersSent: false, writeHead(status) { this.status = status; this.headersSent = true; },
+    end() {}, destroy() { throw Error('unexpected destroy'); } };
+  const { createRsvpHttpRouter } = await import('./trusted-http-router.mjs');
+  const router = createRsvpHttpRouter({
+    submitRsvp: async () => ({ status: 403 }),
+    getHostInbox: async () => ({ status: 200, body: { responses: [] } })
+  });
+  await createNodeEventListener(router, { publicOrigin: 'https://invite.example' })(req, res);
+  assert.equal(res.status, 200);
+});
+
+test('rejects invalid trusted public origin at construction', () => {
+  for (const publicOrigin of ['javascript:alert(1)', 'https://user:pass@example.test',
+    'https://example.test/path', 'https://example.test/?token=secret']) {
+    assert.throws(() => createNodeEventListener(async () => new Response(), { publicOrigin }), TypeError);
+  }
+});
