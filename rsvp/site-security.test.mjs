@@ -10,7 +10,8 @@ test('invitation URL payloads are protected by a no-referrer policy',()=>{
 
 test('guest reveal requires a completed challenge attempt',()=>{
  assert.match(html,/function revealInvite\(\)\{if\(!incoming\|\|!challengeAttempted\)return;/);
- assert.match(html,/id="safeReveal" disabled/);
+ assert.match(html,/id="safeReveal">/);
+ assert.match(html,/\$\('safeReveal'\)\.onclick=\(\)=>\{if\(challengeAttempted\)\{revealInvite\(\);return\}/);
  assert.match(html,/function complete\(feet,catchLike\)/);
  assert.match(html,/unlockChallengeContent\(\);if\(incoming\)revealInvite\(\)/);
 });
