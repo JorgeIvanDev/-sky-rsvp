@@ -5,7 +5,7 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
   if (typeof submitRsvp !== 'function' || typeof getHostInbox !== 'function')
     throw new TypeError('Trusted handlers required');
   const deny = () => new Response(JSON.stringify({ error: 'Unavailable' }), {
-    status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+    status: 403, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }
   });
   return async function route(request) {
     try {
@@ -94,7 +94,7 @@ export function createRsvpHttpRouter({ submitRsvp, getHostInbox }) {
       const result = await (path === '/api/rsvp' ? submitRsvp(input) : getHostInbox(input));
       if (!result || result.status !== 200 || !result.body) return deny();
       return new Response(JSON.stringify(result.body), {
-        status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+        status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }
       });
     } catch { return deny(); }
   };
