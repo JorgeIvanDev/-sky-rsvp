@@ -120,3 +120,26 @@ test('rejects oversized or ambiguous declared body lengths before routing', asyn
   assert.equal(res.status, 200);
   assert.equal(called, 1);
 });
+
+test('rejects oversized streamed POST even without declared length', async () => {
+  for (const headers of [{}, { 'transfer-encoding': 'chunked' }]) {
+    const { res, called } = await invoke('POST', '/api/rsvp', headers, 'x'.repeat(16385));
+    assert.equal(res.status, 403);
+    assert.equal(called, 0);
+  }
+});
+
+test('rejects declared length mismatch before private routing', async () => {
+  for (const length of ['1', '3']) {
+    const { res, called } = await invoke('POST', '/api/rsvp', { 'content-length': length }, '{}');
+    assert.equal(res.status, 403);
+    assert.equal(called, 0);
+  }
+});
+
+test('accepts a streamed POST at the exact 16 KiB boundary', async () => {
+  const { res, called } = await invoke('POST', '/api/rsvp',
+    { 'transfer-encoding': 'chunked' }, 'x'.repeat(16384));
+  assert.equal(res.status, 200);
+  assert.equal(called, 1);
+});
