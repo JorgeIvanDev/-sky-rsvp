@@ -59,6 +59,10 @@ export function createNodeEventListener(route, { publicOrigin = 'http://localhos
         if (typeof length !== 'string' || !/^(0|[1-9][0-9]*)$/.test(length) ||
             !Number.isSafeInteger(Number(length)) || Number(length) > 16384) return deny();
       }
+      // Host inbox is read-only: reject GET message bodies rather than silently
+      // discarding bytes that intermediaries may interpret differently.
+      if (req.method === 'GET' && (rawHeaders['transfer-encoding'] !== undefined ||
+          (rawHeaders['content-length'] !== undefined && Number(rawHeaders['content-length']) !== 0))) return deny();
       if (rawHeaders['content-encoding'] !== undefined &&
           String(rawHeaders['content-encoding']).toLowerCase() !== 'identity') return deny();
       const headers = new Headers();
