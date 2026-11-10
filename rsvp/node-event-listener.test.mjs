@@ -109,3 +109,14 @@ test('rejects invalid trusted public origin at construction', () => {
     assert.throws(() => createNodeEventListener(async () => new Response(), { publicOrigin }), TypeError);
   }
 });
+
+test('rejects oversized or ambiguous declared body lengths before routing', async () => {
+  for (const value of ['16385', '9999999999999999999999', '-1', '+2', '02', '1.5', 'NaN']) {
+    const { res, called } = await invoke('POST', '/api/rsvp', { 'content-length': value }, '{}');
+    assert.equal(res.status, 403, value);
+    assert.equal(called, 0, value);
+  }
+  const { res, called } = await invoke('POST', '/api/rsvp', { 'content-length': '2' }, '{}');
+  assert.equal(res.status, 200);
+  assert.equal(called, 1);
+});
