@@ -58,7 +58,13 @@ form.addEventListener('submit',async event=>{
 document.getElementById('clear').addEventListener('click',()=>{
  controller.clear();token.value='';invite.value='';
 });
-window.addEventListener('pagehide',()=>{controller.clear();token.value='';});
+// Clear sensitive credentials and rendered replies when the host backgrounds the tab.
+// Mobile browsers often keep backgrounded tabs alive without firing pagehide.
+function clearPrivateView(){controller.clear();token.value='';}
+window.addEventListener('pagehide',clearPrivateView);
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='hidden')clearPrivateView();
+});
 </script>
 </body>
 </html>
