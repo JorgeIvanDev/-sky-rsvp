@@ -10,7 +10,12 @@ export function createNodeEventListener(route, { publicOrigin = 'http://localhos
   return async function listener(req, res) {
     const deny = () => {
       if (!res.headersSent) {
-        res.writeHead(403, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+        res.writeHead(403, {
+          'content-type': 'application/json',
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+          'referrer-policy': 'no-referrer'
+        });
         res.end('{"error":"Unavailable"}');
       } else res.destroy();
     };
