@@ -302,3 +302,26 @@ test('rejects ambiguous receipt media types before parsing and accepts canonical
   });
   assert.equal((await submit(input)).receiptId, 'receipt-utf8');
 });
+
+test('rejects redirected and opaque RSVP receipts before parsing private response bodies', async () => {
+  for (const flags of [
+    { redirected:true, type:'basic' },
+    { redirected:false, type:'opaque' },
+    { redirected:false, type:'opaqueredirect' }
+  ]) {
+    let parsed = false;
+    const submit = createTrustedRsvpClient({
+      getAccessToken: async () => 'token',
+      fetcher: async () => ({
+        ok:true, status:200, ...flags,
+        headers:{get:()=> 'application/json'},
+        json:async()=> { parsed = true; throw Error('private upstream data'); }
+      })
+    });
+    await assert.rejects(submit(input), error => {
+      assert.equal(error.message, 'RSVP unavailable');
+      return true;
+    });
+    assert.equal(parsed, false);
+  }
+});
