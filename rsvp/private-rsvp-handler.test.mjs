@@ -94,3 +94,19 @@ test('trusted transaction rejects normalized impossible dates but accepts leap d
   assert.equal((await handler({method:'POST',body:input})).status,200);
  }
 });
+
+
+test('trusted server rejects accessor-backed and inherited receipt fields', async () => {
+ const valid = {receiptId:'receipt',choice:'yes',savedAt:'2026-11-06T23:00:00Z'};
+ const malicious = [
+  Object.defineProperty({...valid}, 'receiptId', {get(){throw Error('private adapter error');}}),
+  Object.create(valid),
+  Object.assign(Object.create({receiptId:'inherited'}), {choice:'yes',savedAt:valid.savedAt}),
+  Object.assign(Object.create({}), valid)
+ ];
+ for (const receipt of malicious) {
+  const {handler}=make({submitAtomic:async()=>receipt});
+  assert.deepEqual(await handler({method:'POST',body:input}),
+   {status:403,body:{error:'RSVP unavailable'}});
+ }
+});
