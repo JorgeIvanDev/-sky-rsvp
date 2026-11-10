@@ -9,15 +9,12 @@ export function createHostInboxController({ root, status, fetcher, getAccessToke
     throw new TypeError('Host inbox elements required');
   const read = createTrustedHostInboxClient({ fetcher, getAccessToken });
   let generation = 0;
-  let busy = false;
   function clear() {
     generation++;
     root.replaceChildren();
     status.textContent = '';
   }
   async function refresh(inviteId) {
-    if (busy) return false;
-    busy = true;
     const current = ++generation;
     root.replaceChildren();
     status.textContent = 'Loading private responses…';
@@ -34,8 +31,6 @@ export function createHostInboxController({ root, status, fetcher, getAccessToke
         status.textContent = 'Private inbox unavailable. Sign in as the host and try again.';
       }
       return false;
-    } finally {
-      busy = false;
     }
   }
   return Object.freeze({ refresh, clear });
