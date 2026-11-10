@@ -25,6 +25,16 @@ test('rejects absolute URLs before trusted routing', async () => {
   assert.equal(called, 0);
 });
 
+test('denied private API requests retain no-store and privacy headers', async () => {
+  const { res, called } = await invoke('GET', 'https://attacker.example/api/host-inbox');
+  assert.equal(called, 0);
+  assert.equal(res.status, 403);
+  assert.equal(res.headers['cache-control'], 'no-store');
+  assert.equal(res.headers['x-content-type-options'], 'nosniff');
+  assert.equal(res.headers['referrer-policy'], 'no-referrer');
+  assert.equal(res.headers['content-type'], 'application/json');
+});
+
 test('rejects ambiguous duplicated headers', async () => {
   const { res, called } = await invoke('GET', '/api/host-inbox', { authorization: ['a', 'b'] });
   assert.equal(res.status, 403);
