@@ -17,8 +17,12 @@ export function createTrustedHostInboxClient({ fetcher, getAccessToken, endpoint
       referrerPolicy: 'no-referrer', headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' }
     }); }
     catch { throw new Error('Inbox unavailable'); }
-    if (!response || response.ok !== true || response.status !== 200)
-      throw new Error('Inbox unavailable');
+    // A custom transport can expose throwing status accessors. Never leak
+    // upstream error details into the authenticated host UI.
+    let accepted;
+    try { accepted = response?.ok === true && response.status === 200; }
+    catch { throw new Error('Inbox unavailable'); }
+    if (!accepted) throw new Error('Inbox unavailable');
     // A private inbox must never parse an HTML redirect or ambiguous media type.
     let contentType;
     try { contentType = response.headers?.get?.('content-type'); }
