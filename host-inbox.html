@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>CNIDARIA · Private host inbox</title>
+<style>
+:root{color-scheme:light;font-family:system-ui,sans-serif}
+body{max-width:34rem;margin:2rem auto;padding:0 1rem;line-height:1.5;background:#faf9f7;color:#222}
+label{display:block;margin-top:1rem;font-weight:600}
+input,button{box-sizing:border-box;font:inherit;padding:.75rem;width:100%;border:1px solid #777;border-radius:.5rem}
+button{margin-top:1rem;background:#232323;color:white;cursor:pointer}
+button:disabled{opacity:.6}
+#responses{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:1rem}
+#responses p{padding:.75rem;background:white;border-radius:.5rem;text-align:center}
+small{display:block;margin-top:1rem}
+</style>
+</head>
+<body>
+<main>
+<h1>Private host inbox</h1>
+<p>View replies to your invitation. Only an authenticated host can access the private API.</p>
+<form id="inbox-form">
+<label for="invite-id">Invitation ID</label>
+<input id="invite-id" required autocomplete="off" spellcheck="false" placeholder="Invitation UUID" pattern="[0-9a-fA-F-]{36}">
+<label for="access-token">Host access token</label>
+<input id="access-token" type="password" required autocomplete="off" spellcheck="false" aria-describedby="token-help">
+<small id="token-help">Temporary authenticated-session input. Never share your token. It stays in this page's memory and is not saved or placed in a URL. A proper host sign-in screen is still required.</small>
+<button id="refresh" type="submit">Load private replies</button>
+<button id="clear" type="button">Clear inbox and credentials</button>
+</form>
+<p id="status" role="status" aria-live="polite"></p>
+<section id="responses" aria-label="RSVP totals"></section>
+</main>
+<script type="module">
+import { createHostInboxController } from './rsvp/host-inbox-controller.mjs';
+const form=document.getElementById('inbox-form');
+const invite=document.getElementById('invite-id');
+const token=document.getElementById('access-token');
+const status=document.getElementById('status');
+const button=document.getElementById('refresh');
+const controller=createHostInboxController({
+ root:document.getElementById('responses'),status,
+ fetcher:(...args)=>fetch(...args),
+ getAccessToken:async()=>token.value.trim()
+});
+form.addEventListener('submit',async event=>{
+ event.preventDefault();
+ button.disabled=true;
+ try{await controller.refresh(invite.value.trim());}
+ finally{button.disabled=false;}
+});
+document.getElementById('clear').addEventListener('click',()=>{
+ controller.clear();token.value='';invite.value='';
+});
+window.addEventListener('pagehide',()=>{controller.clear();token.value='';});
+</script>
+</body>
+</html>
