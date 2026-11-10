@@ -65,7 +65,8 @@ export function createNodeEventListener(route, { publicOrigin = 'http://localhos
       res.writeHead(response.status, {
         'content-type': 'application/json',
         'cache-control': 'no-store',
-        'x-content-type-options': 'nosniff'
+        'x-content-type-options': 'nosniff',
+        'referrer-policy': 'no-referrer'
       });
       res.end(Buffer.from(bytes));
     } catch { deny(); }
