@@ -143,3 +143,14 @@ test('accepts a streamed POST at the exact 16 KiB boundary', async () => {
   assert.equal(res.status, 200);
   assert.equal(called, 1);
 });
+
+test('GET host inbox rejects body framing before trusted routing', async () => {
+  for (const headers of [{ 'content-length': '2' }, { 'transfer-encoding': 'chunked' }]) {
+    const { res, called } = await invoke('GET', '/api/host-inbox', headers, '{}');
+    assert.equal(res.status, 403, JSON.stringify(headers));
+    assert.equal(called, 0, JSON.stringify(headers));
+  }
+  const empty = await invoke('GET', '/api/host-inbox', { 'content-length': '0' });
+  assert.equal(empty.res.status, 200);
+  assert.equal(empty.called, 1);
+});
