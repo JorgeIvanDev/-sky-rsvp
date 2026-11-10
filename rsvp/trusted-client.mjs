@@ -34,7 +34,7 @@ export function createTrustedRsvpClient({ fetcher, getAccessToken, endpoint = '/
     }
     // Custom fetch adapters can expose throwing accessors; never leak their errors.
     let accepted;
-    try { accepted = response?.ok === true && response.status === 200; }
+    try { accepted = response?.ok === true && response.status === 200 && response.redirected !== true && (!response.type || response.type === 'basic' || response.type === 'default'); }
     catch { throw new Error('RSVP unavailable'); }
     if (!accepted) throw new Error('RSVP unavailable');
     // Reject explicitly non-JSON responses (for example an HTML login redirect)
