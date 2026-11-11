@@ -188,3 +188,45 @@ test('recent user-labeled hand and couch recordings retain distinct evidence and
   // can distinguish a hand from upholstery.
   assert.notEqual(hand.userConfirmed, couch.userConfirmed);
 });
+
+test('recent hand-catch observation has chronological measured samples, not invented full trace', () => {
+  const hand = fixture.examples.find(x => x.recordedAt === '2026-11-11T19:06:44.289Z');
+  assert.equal(hand.userConfirmed, 'Caught in hand, not couch');
+  assert.equal(hand.postImpactSamples, 21);
+  assert.equal(hand.postImpactMs, 350);
+  assert.ok(hand.postImpactSamplesExcerpt.length < hand.postImpactSamples,
+    'fixture contains representative samples, not all 21 raw readings');
+  for (let i = 1; i < hand.postImpactSamplesExcerpt.length; i++) {
+    assert.ok(hand.postImpactSamplesExcerpt[i].ms > hand.postImpactSamplesExcerpt[i - 1].ms,
+      'post-impact excerpts must preserve increasing timestamps');
+  }
+  assert.ok(hand.postImpactSamplesExcerpt[0].ms > hand.impactSamples.at(-1).ms);
+  assert.equal(hand.postImpactStats.samples, hand.postImpactSamples);
+  assert.ok(hand.postImpactStats.maximumAcceleration >= hand.postImpactStats.minimumAcceleration);
+  assert.equal(hand.reportedFeet < hand.targetFeet, true,
+    'below-target does not mean the user-labeled genuine catch was rejected');
+});
+
+test('couch drop retains multiple distinct re-impacts without manufacturing post-impact review', () => {
+  const couch = fixture.examples.find(x => x.recordedAt === '2026-11-11T19:11:20.179Z');
+  const samples = couch.diagnosticSamples;
+  for (let i = 1; i < samples.length; i++) {
+    assert.ok(samples[i].ms > samples[i - 1].ms, 'diagnostic timestamps must increase');
+  }
+  const flyingImpacts = samples.filter(s => s.state === 'flying' && s.m > 20);
+  assert.ok(flyingImpacts.length >= 4);
+  assert.ok(flyingImpacts.at(-1).ms - flyingImpacts[0].ms >= 200,
+    'late re-impact must remain distinguishable from first impact cluster');
+  assert.equal(couch.postImpactSamples, 0);
+  assert.equal(couch.postImpactCoverage, 'not_started');
+  assert.equal(couch.reportedCatchDetected, false);
+  assert.equal(couch.reportedFeet, 0);
+});
+
+test('production review guards sample gaps and timeouts before granting impact credit', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /if\(now-lastMotionAt>250\)\{flightFailureReason='Post-impact sensor gap/);
+  assert.match(html, /impactReviewTimer=setTimeout\(\(\)=>\{if\(state==='impact-review'\)/);
+  assert.match(html, /if\(impactReboundDetected\)\{flightFailureReason='Rebound after impact/);
+  assert.match(html, /if\(impactReviewSamples<8\)/);
+});
