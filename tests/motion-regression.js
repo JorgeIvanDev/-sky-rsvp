@@ -42,4 +42,17 @@ const noLaunch=replay([...seq(0,900,16,.3),{ms:916,m:22},{ms:932,m:30}]);
 assert.equal(noLaunch.ok,false,'low gravity without launch is not a flight');
 const gap=replay([...flight.slice(0,12),{ms:600,m:0.4}]);
 assert.equal(gap.ok,false);
+// Confirmed real-world soft, two-handed catch (2026-11-11, ~4.9 ft).
+// Values are sampled from the shared recording; no identity/location stored.
+const confirmedSoft=[
+ {ms:6085,m:47.7,spin:359},{ms:6102,m:43.54,spin:360},{ms:6118,m:37.88,spin:322.2},
+ {ms:6135,m:25.24,spin:205.3},{ms:6152,m:10.12,spin:153},
+ ...seq(6168,7251,16,0.4,132),
+ {ms:7268,m:19.35,spin:711.5},{ms:7285,m:34.42,spin:1164}
+];
+const recorded=replay(confirmedSoft);
+assert.equal(recorded.ok,true,'confirmed real-world soft catch should qualify');
+assert.equal(recorded.mode,'strong','two impact samples should use strong path');
+assert.ok(recorded.feet>4.7&&recorded.feet<5.1,'recorded flight should estimate near 4.9 ft');
+assert.equal(recorded.peakSpin,132,'impact rotation must not be counted');
 console.log('PASS: strong catch, gentle catch, interrupted settle, missing launch, sensor gap, spin isolation');
