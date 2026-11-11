@@ -152,3 +152,39 @@ test('production serializer preserves uncertainty for both historical labeled ex
     assert.match(result.reason, /timeout/i, example.label);
   }
 });
+
+
+test('production coverage cannot be complete with sparse samples even without a failure reason', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const match = html.match(/lastFlightOutcome=(\\{postImpactStats,feet:Number\\(feet\\.toFixed\\(2\\)\\)[\\s\\S]*?\\});clearTimeout\\(flightWatchdog\\)/);
+  assert.ok(match, 'production outcome serializer must be present');
+  const context = {
+    postImpactStats: null, feet: 4, target: () => 5, catchLike: false,
+    flightFailureReason: 'No confirmed catch', spinPeak: 0, flightSamples: 20,
+    impactReviewSamples: 3, impactReviewAt: 1000, lastMotionAt: 1350, Math, Number
+  };
+  const outcome = runInNewContext('(' + match[1] + ')', context);
+  assert.equal(outcome.postImpactCoverage, 'insufficient_samples');
+  assert.equal(outcome.handCatchVerified, false);
+});
+
+test('recent user-labeled hand and couch recordings retain distinct evidence and uncertainty', () => {
+  const hand = fixture.examples.find(x => x.recordedAt === '2026-11-11T19:06:44.289Z');
+  const couch = fixture.examples.find(x => x.recordedAt === '2026-11-11T19:11:20.179Z');
+  assert.ok(hand && couch);
+  assert.equal(hand.label, 'hand_catch');
+  assert.equal(hand.postImpactSamples, 21);
+  assert.equal(hand.postImpactMs, 350);
+  assert.equal(hand.postImpactCoverage, 'observed_350ms');
+  assert.equal(hand.reportedFeet < hand.targetFeet, true, 'genuine catch can be below target');
+  assert.equal(couch.label, 'couch_drop');
+  assert.equal(couch.postImpactCoverage, 'not_started');
+  assert.equal(couch.postImpactSamples, 0);
+  const impacts = couch.diagnosticSamples.filter(s => s.m > 20 && s.state === 'flying');
+  assert.ok(impacts.length >= 3, 'multiple later impacts must remain visible in the couch fixture');
+  assert.ok(impacts.at(-1).ms > impacts[0].ms, 're-impact follows first airborne collision');
+  assert.match(couch.reason, /249 ms/, 'early freefall rejection must not be relabeled as a verified catch');
+  // User labels are ground truth for evaluation, not proof that inertial sensors
+  // can distinguish a hand from upholstery.
+  assert.notEqual(hand.userConfirmed, couch.userConfirmed);
+});
