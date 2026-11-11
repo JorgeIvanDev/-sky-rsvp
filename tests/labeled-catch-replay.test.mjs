@@ -24,10 +24,12 @@ function classifyExcerpt(example) {
   };
 }
 test('fixture has separately user-labeled couch bounce and hand catch', () => {
-  assert.deepEqual(fixture.examples.map(x => x.label).sort(), ['couch_bounce','hand_catch']);
+  assert.ok(fixture.examples.some(x => x.label === 'couch_bounce'));
+  assert.ok(fixture.examples.some(x => x.label === 'couch_drop'));
+  assert.equal(fixture.examples.filter(x => x.label === 'hand_catch').length, 2);
 });
-for (const example of fixture.examples) {
-  test(example.label + ': truncated trace never proves a hand catch', () => {
+for (const example of fixture.examples.filter(x => Array.isArray(x.lastSamples))) {
+  test(example.recordedAt + ': truncated trace never proves a hand catch', () => {
     const result = classifyExcerpt(example);
     assert.equal(result.impactObserved, true);
     assert.equal(result.verifiedHandCatch, false);
@@ -53,7 +55,7 @@ test('production motion outcome does not claim a verified hand catch from impact
 
 test('historical positive catch flags are not ground truth', () => {
   const couch = fixture.examples.find(x => x.label === 'couch_bounce');
-  const hand = fixture.examples.find(x => x.label === 'hand_catch');
+  const hand = fixture.examples.find(x => x.label === 'hand_catch' && Array.isArray(x.lastSamples));
   assert.equal(couch.reportedCatchDetected, true, 'fixture must preserve the original false positive');
   assert.equal(hand.reportedCatchDetected, true, 'fixture must preserve the original genuine catch');
   assert.notEqual(couch.userConfirmed, hand.userConfirmed);
@@ -131,9 +133,9 @@ test('execute production outcome serializer against sparse and complete sensor c
 // The excerpts end on impact, so neither is evidence of a completed settle review.
 test('production serializer preserves uncertainty for both historical labeled excerpts', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const match = html.match(/lastFlightOutcome=(\\{postImpactStats,feet:Number\\(feet\\.toFixed\\(2\\)\\)[\\s\\S]*?\\});clearTimeout\\(flightWatchdog\\)/);
+  const match = html.match(/lastFlightOutcome=(\{postImpactStats,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
   assert.ok(match, 'production serializer must be found');
-  for (const example of fixture.examples) {
+  for (const example of fixture.examples.filter(x => Array.isArray(x.lastSamples))) {
     const last = example.lastSamples.at(-1);
     const context = {
       postImpactStats: null, feet: example.reportedFeet, target: () => 5,
