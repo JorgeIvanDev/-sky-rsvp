@@ -3,10 +3,12 @@ on:
   push:
     paths:
       - 'tests/motion-regression.js'
+      - 'index.html'
       - '.github/workflows/motion-regression.yml'
   pull_request:
     paths:
       - 'tests/motion-regression.js'
+      - 'index.html'
       - '.github/workflows/motion-regression.yml'
   workflow_dispatch:
 jobs:
@@ -20,3 +22,5 @@ jobs:
           node-version: '22'
       - name: Run motion regression checks
         run: node tests/motion-regression.js
+      - name: Check browser engine syntax and test alignment
+        run: node tests/engine-sanity.js
