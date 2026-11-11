@@ -71,12 +71,12 @@ function motion(e){
  flightSamples++;flightPeak=Math.max(flightPeak,feet);
  $('height').textContent=feet.toFixed(1);
  $('detail').textContent=seconds.toFixed(2)+'s flight · spin '+Math.round(spinPeak)+'°/s';
- if(seconds>.35&&seconds<=4&&m>16&&m<45){
+ if(seconds>.35&&seconds<=8&&m>16&&m<45){
    if(!impactStartedAt)impactStartedAt=now;
    impactCount++;
  }else{impactCount=0;impactStartedAt=0}
  if(impactCount>=2&&now-impactStartedAt>=12&&flightSamples>=4){complete(feet,true)}
- else if(seconds>4){complete(0,false)}
+ else if(seconds>8){complete(0,false)}
 }
 async function submitScore(feet,needed,catchLike,pass){const nickname=$('nickname').value.trim();if(!catchLike||!Number.isFinite(feet)||feet<0){$('boardStatus').textContent='Unverified flight: score not posted.';return}if(nickname.length<2||nickname.length>24){$('boardStatus').textContent='Enter a nickname (2–24 characters) before playing to post scores.';return}try{localStorage.setItem('cnidariaNickname',nickname);const response=await fetch(API,{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({nickname,height_ft:Number(feet.toFixed(1)),target_ft:needed,catch_detected:catchLike,qualified:pass})});if(!response.ok)throw Error('Score upload failed ('+response.status+')');$('boardStatus').textContent='Score posted!';await loadBoard()}catch(e){$('boardStatus').textContent='Score not posted: '+e.message}}
 let boardBusy=false;
