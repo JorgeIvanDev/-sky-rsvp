@@ -133,6 +133,71 @@
         }
       ],
       "limitations": "Representative excerpts plus complete summary statistics from user-provided 21 post-impact samples; no raw full trace stored here. Sensor data alone does not establish hand identity."
+    },
+    {
+      "label": "couch_drop",
+      "recordedAt": "2026-11-11T19:11:20.179Z",
+      "engine": "post-impact-stats-v8-20261111",
+      "userConfirmed": "Couch drop, not a hand catch",
+      "reportedFeet": 0,
+      "targetFeet": 5,
+      "reportedCatchDetected": false,
+      "postImpactCoverage": "not_started",
+      "postImpactSamples": 0,
+      "reason": "Impact before sustained free fall (249 ms)",
+      "flightSamples": 24,
+      "airborneSpin": 327,
+      "diagnosticSamples": [
+        {
+          "ms": 7666,
+          "state": "armed",
+          "m": 48.7,
+          "spin": 1864.2
+        },
+        {
+          "ms": 7683,
+          "state": "armed",
+          "m": 276.82,
+          "spin": 646.2
+        },
+        {
+          "ms": 7866,
+          "state": "flying",
+          "m": 0.62,
+          "spin": 312.3
+        },
+        {
+          "ms": 8000,
+          "state": "flying",
+          "m": 13.61,
+          "spin": 214
+        },
+        {
+          "ms": 8016,
+          "state": "flying",
+          "m": 28.04,
+          "spin": 259.6
+        },
+        {
+          "ms": 8033,
+          "state": "flying",
+          "m": 56.19,
+          "spin": 194.1
+        },
+        {
+          "ms": 8050,
+          "state": "flying",
+          "m": 27.76,
+          "spin": 199.9
+        },
+        {
+          "ms": 8250,
+          "state": "flying",
+          "m": 26.28,
+          "spin": 592.3
+        }
+      ],
+      "limitations": "No impact-review samples; this is an early freefall rejection, not a validated post-impact couch-versus-hand classification. Excerpts only."
     }
   ]
 }
