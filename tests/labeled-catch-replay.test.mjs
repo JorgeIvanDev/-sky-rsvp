@@ -72,3 +72,10 @@ test('replay rejects malformed timestamps rather than silently manufacturing cov
   malformed.lastSamples[2].ms = malformed.lastSamples[1].ms;
   assert.throws(() => classifyExcerpt(malformed), /timestamps must increase/);
 });
+
+test('production requires multiple real post-impact samples before impact-based gameplay credit', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /if\(impactReviewSamples<8\)/, 'a sparse post-impact trace must not receive gameplay credit');
+  assert.match(html, /Post-impact sample coverage insufficient: hand catch unverified/, 'sparse sensor data must be labeled unverified');
+  assert.match(html, /complete\(impactReviewFeet,false\)/, 'insufficient samples must fail closed');
+});
