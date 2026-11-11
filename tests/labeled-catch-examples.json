@@ -10,10 +10,26 @@
       "reportedFeet": 4.02,
       "reportedCatchDetected": true,
       "lastSamples": [
-        {"ms": 9232, "m": 1.61, "spin": 196},
-        {"ms": 9248, "m": 1.67, "spin": 191.6},
-        {"ms": 9266, "m": 42.75, "spin": 2293.2},
-        {"ms": 9282, "m": 264.16, "spin": 2077.6}
+        {
+          "ms": 9232,
+          "m": 1.61,
+          "spin": 196
+        },
+        {
+          "ms": 9248,
+          "m": 1.67,
+          "spin": 191.6
+        },
+        {
+          "ms": 9266,
+          "m": 42.75,
+          "spin": 2293.2
+        },
+        {
+          "ms": 9282,
+          "m": 264.16,
+          "spin": 2077.6
+        }
       ],
       "limitations": "Recording stops immediately after second impact; no post-impact settling data."
     },
@@ -25,12 +41,98 @@
       "reportedFeet": 3.76,
       "reportedCatchDetected": true,
       "lastSamples": [
-        {"ms": 7264, "m": 0.66, "spin": 127.4},
-        {"ms": 7280, "m": 6.26, "spin": 106.9},
-        {"ms": 7297, "m": 34.96, "spin": 1048},
-        {"ms": 7314, "m": 58.27, "spin": 1503.9}
+        {
+          "ms": 7264,
+          "m": 0.66,
+          "spin": 127.4
+        },
+        {
+          "ms": 7280,
+          "m": 6.26,
+          "spin": 106.9
+        },
+        {
+          "ms": 7297,
+          "m": 34.96,
+          "spin": 1048
+        },
+        {
+          "ms": 7314,
+          "m": 58.27,
+          "spin": 1503.9
+        }
       ],
       "limitations": "Recording stops immediately after second impact; no post-impact settling data."
+    },
+    {
+      "label": "hand_catch",
+      "recordedAt": "2026-11-11T19:06:44.289Z",
+      "engine": "post-impact-stats-v8-20261111",
+      "userConfirmed": "Caught in hand, not couch",
+      "reportedFeet": 3.03,
+      "targetFeet": 5,
+      "postImpactCoverage": "observed_350ms",
+      "postImpactMs": 350,
+      "postImpactSamples": 21,
+      "postImpactStats": {
+        "samples": 21,
+        "minimumAcceleration": 11.42,
+        "maximumAcceleration": 38.91,
+        "minimumSpin": 49.9,
+        "maximumSpin": 430.7,
+        "finalAcceleration": 13.63,
+        "finalSpin": 238.9
+      },
+      "impactSamples": [
+        {
+          "ms": 9402,
+          "m": 61.38,
+          "spin": 2061.6
+        },
+        {
+          "ms": 9419,
+          "m": 70.69,
+          "spin": 2283.4
+        }
+      ],
+      "postImpactSamplesExcerpt": [
+        {
+          "ms": 9435,
+          "m": 38.91,
+          "spin": 430.7
+        },
+        {
+          "ms": 9452,
+          "m": 11.42,
+          "spin": 108.7
+        },
+        {
+          "ms": 9469,
+          "m": 18.94,
+          "spin": 49.9
+        },
+        {
+          "ms": 9502,
+          "m": 20.65,
+          "spin": 60.2
+        },
+        {
+          "ms": 9602,
+          "m": 14.24,
+          "spin": 132.2
+        },
+        {
+          "ms": 9702,
+          "m": 16.67,
+          "spin": 158.4
+        },
+        {
+          "ms": 9769,
+          "m": 13.63,
+          "spin": 238.9
+        }
+      ],
+      "limitations": "Representative excerpts plus complete summary statistics from user-provided 21 post-impact samples; no raw full trace stored here. Sensor data alone does not establish hand identity."
     }
   ]
 }
