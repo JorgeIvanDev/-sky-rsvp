@@ -156,7 +156,7 @@ test('production serializer preserves uncertainty for both historical labeled ex
 
 test('production coverage cannot be complete with sparse samples even without a failure reason', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const match = html.match(/lastFlightOutcome=(\\{postImpactStats,feet:Number\\(feet\\.toFixed\\(2\\)\\)[\\s\\S]*?\\});clearTimeout\\(flightWatchdog\\)/);
+  const match = html.match(/lastFlightOutcome=(\{postImpactStats,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
   assert.ok(match, 'production outcome serializer must be present');
   const context = {
     postImpactStats: null, feet: 4, target: () => 5, catchLike: false,
