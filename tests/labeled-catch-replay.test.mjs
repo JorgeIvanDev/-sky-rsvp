@@ -79,3 +79,9 @@ test('production requires multiple real post-impact samples before impact-based 
   assert.match(html, /Post-impact sample coverage insufficient: hand catch unverified/, 'sparse sensor data must be labeled unverified');
   assert.match(html, /complete\(impactReviewFeet,false\)/, 'insufficient samples must fail closed');
 });
+
+test('sparse post-impact coverage is not exported as complete', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /flightFailureReason\.startsWith\('Post-impact sample coverage insufficient'\)\?'insufficient_samples'/,
+    '350 ms with fewer than eight readings must be exported as insufficient_samples, not observed_350ms');
+});
