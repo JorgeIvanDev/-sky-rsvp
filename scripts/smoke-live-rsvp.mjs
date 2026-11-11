@@ -34,6 +34,27 @@ try {
   assert.equal(denied.status, 401, 'wrong host secret must be denied');
   assert.ok(!denied.body.replies, 'unauthorized response must not contain guest data');
   console.log('PASS: unauthorized inbox denied');
+  // A missing capability must never expose private replies, even if an invite ID is known.
+  const missingSecret = await call('inbox', { inviteId });
+  assert.notEqual(missingSecret.status, 200, 'missing host secret must be denied');
+  assert.ok(!missingSecret.body.replies, 'missing-secret response must not contain guest data');
+  console.log('PASS: missing host capability denied');
+  // Browser preflight must permit the production GitHub Pages origin and POST headers.
+  const preflight = await fetch(url, {
+    method: 'OPTIONS',
+    headers: {
+      Origin: 'https://jorgeivandev.github.io',
+      'Access-Control-Request-Method': 'POST',
+      'Access-Control-Request-Headers': 'content-type'
+    },
+    signal: AbortSignal.timeout(12000)
+  });
+  assert.ok(preflight.ok, 'browser CORS preflight status');
+  assert.equal(preflight.headers.get('access-control-allow-origin'), 'https://jorgeivandev.github.io', 'preflight origin');
+  assert.match(preflight.headers.get('access-control-allow-methods') || '', /POST/i, 'preflight must allow POST');
+  assert.match(preflight.headers.get('access-control-allow-headers') || '', /content-type/i, 'preflight must allow content-type');
+  console.log('PASS: browser CORS preflight');
+
   const expected = ['yes', 'maybe', 'no'].map(choice => ({ name: 'CNIDARIA QA ' + marker + ' ' + choice, choice }));
   for (const guest of expected) {
     const replied = await call('reply', { inviteId, name: guest.name, choice: guest.choice });
