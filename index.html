@@ -29,7 +29,7 @@
 <div id="permissionDenied" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="denialTitle"><div class="denialInner"><div class="denialIcon" aria-hidden="true">⚠</div><div id="denialTitle" class="denialTitle">GAY DENIED.</div><div class="denialSub">NO CHALLENGE. NO INVITE.</div></div></div>
 <div id="result" class="hidden" role="alertdialog" aria-modal="true"><div class="inner"><div class="brand">CNIDARIA · FLIGHT RESULT</div><div class="number" id="finalHeight">0.0</div><div class="sub">FEET ESTIMATED</div><h2 id="verdict">SORRY LOSER.<br>YOU DIDN'T MAKE THE CUT.</h2><p id="reason">TRY AGAIN.</p><p id="next" class="sub"></p><button id="again">TRY AGAIN</button></div></div>
 <script>
-const API='https://hwkxuczipnaqzhbnaurw.supabase.co/rest/v1/cnidaria_scores',KEY='sb_publishable_4qpeic_k8BJKdgQLoBlNsw_wrpP72Q_';const $=id=>document.getElementById(id),G=9.80665,FT=3.28084;let sensor=false,state='off',failures=0,lowStart=0,flightStart=0,impactCount=0,armedAt=0,finalFeet=0,settleTimer=null,spinPeak=0,flightPeak=0,flightSamples=0,lastLaunchImpulse=0,lastMotionAt=0,impactStartedAt=0,flightFailureReason='No confirmed catch',flightWatchdog=null,motionTrace=[],lastFlightTrace=[];const target=()=>Math.max(3,5-failures);
+const API='https://hwkxuczipnaqzhbnaurw.supabase.co/rest/v1/cnidaria_scores',KEY='sb_publishable_4qpeic_k8BJKdgQLoBlNsw_wrpP72Q_';const $=id=>document.getElementById(id),G=9.80665,FT=3.28084;let sensor=false,state='off',failures=0,lowStart=0,flightStart=0,impactCount=0,armedAt=0,finalFeet=0,settleTimer=null,spinPeak=0,flightPeak=0,flightSamples=0,lastLaunchImpulse=0,lastMotionAt=0,impactStartedAt=0,firstImpactFeet=0,flightFailureReason='No confirmed catch',flightWatchdog=null,motionTrace=[],lastFlightTrace=[];const target=()=>Math.max(3,5-failures);
 function labels(){$('target').textContent=target()+' FT.';$('tries').textContent='Failed attempts: '+failures;$('rules').textContent=target()===3?'MAXIMUM MERCY: 3 FT + CATCH-LIKE SIGNAL':'EVERY FAILURE LOWERS THE TARGET BY 1 FT · CURRENT '+target()+' FT'}
 // Unlocks last only for this page session; reloading requires another attempt.
 let challengeAttempted=false;
@@ -60,7 +60,7 @@ function motion(e){
    if(m>13&&m<65)lastLaunchImpulse=now;
    if(m<2.5&&now-lastLaunchImpulse<450){
      if(!lowStart)lowStart=now;
-     if(now-lowStart>=100){state='flying';flightStart=lowStart;impactCount=0;impactStartedAt=0;flightSamples=0;lastMotionAt=now;flightFailureReason='No confirmed catch';clearTimeout(flightWatchdog);flightWatchdog=setTimeout(()=>{if(state==='flying'){flightFailureReason='Flight timeout: no confirmed catch or sensor stopped';complete(0,false)}},8100);$('status').textContent='FLIGHT DETECTED';$('detail').textContent='Tracking flight and rotation...'}
+     if(now-lowStart>=100){state='flying';flightStart=lowStart;impactCount=0;impactStartedAt=0;firstImpactFeet=0;flightSamples=0;lastMotionAt=now;flightFailureReason='No confirmed catch';clearTimeout(flightWatchdog);flightWatchdog=setTimeout(()=>{if(state==='flying'){flightFailureReason='Flight timeout: no confirmed catch or sensor stopped';complete(0,false)}},8100);$('status').textContent='FLIGHT DETECTED';$('detail').textContent='Tracking flight and rotation...'}
    }else lowStart=0;
    return;
  }
@@ -73,10 +73,10 @@ function motion(e){
  $('height').textContent=feet.toFixed(1);
  $('detail').textContent=seconds.toFixed(2)+'s flight · spin '+Math.round(spinPeak)+'°/s';
  if(seconds>.35&&seconds<=8&&m>16&&m<45){
-   if(!impactStartedAt)impactStartedAt=now;
+   if(!impactStartedAt){impactStartedAt=now;firstImpactFeet=feet;}
    impactCount++;
- }else{impactCount=0;impactStartedAt=0}
- if(impactCount>=2&&now-impactStartedAt>=12&&flightSamples>=4){complete(feet,true)}
+ }else{impactCount=0;impactStartedAt=0;firstImpactFeet=0}
+ if(impactCount>=2&&now-impactStartedAt>=12&&flightSamples>=4){complete(firstImpactFeet,true)}
  else if(seconds>8){flightFailureReason='No confirmed catch within 8 seconds';complete(0,false)}
 }
 async function submitScore(feet,needed,catchLike,pass){const nickname=$('nickname').value.trim();if(!catchLike||!Number.isFinite(feet)||feet<0){$('boardStatus').textContent='Unverified flight: score not posted.';return}if(nickname.length<2||nickname.length>24){$('boardStatus').textContent='Enter a nickname (2–24 characters) before playing to post scores.';return}try{localStorage.setItem('cnidariaNickname',nickname);const response=await fetch(API,{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({nickname,height_ft:Number(feet.toFixed(1)),target_ft:needed,catch_detected:catchLike,qualified:pass})});if(!response.ok)throw Error('Score upload failed ('+response.status+')');$('boardStatus').textContent='Score posted!';await loadBoard()}catch(e){$('boardStatus').textContent='Score not posted: '+e.message}}
