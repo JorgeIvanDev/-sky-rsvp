@@ -85,3 +85,33 @@ test('sparse post-impact coverage is not exported as complete', () => {
   assert.match(html, /flightFailureReason\.startsWith\('Post-impact sample coverage insufficient'\)\?'insufficient_samples'/,
     '350 ms with fewer than eight readings must be exported as insufficient_samples, not observed_350ms');
 });
+
+import { runInNewContext } from 'node:vm';
+
+test('execute production outcome serializer against sparse and complete sensor coverage', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const match = html.match(/lastFlightOutcome=(\{feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
+  assert.ok(match, 'must locate actual production outcome expression');
+  function outcome({ samples, lastSampleAt, reason = 'No confirmed catch', impactAt = 1000 }) {
+    const context = {
+      feet: 4, target: () => 5, catchLike: false, flightFailureReason: reason,
+      spinPeak: 0, flightSamples: 20, impactReviewSamples: samples,
+      impactReviewAt: impactAt, lastMotionAt: lastSampleAt,
+      Math, Number
+    };
+    return runInNewContext('(' + match[1] + ')', context);
+  }
+  const noSamples = outcome({samples:0,lastSampleAt:1000});
+  assert.equal(noSamples.postImpactMs, 0);
+  assert.equal(noSamples.postImpactCoverage, 'no_samples');
+  const sparse = outcome({samples:3,lastSampleAt:1350,reason:'Post-impact sample coverage insufficient: hand catch unverified'});
+  assert.equal(sparse.postImpactMs, 350);
+  assert.equal(sparse.postImpactCoverage, 'insufficient_samples');
+  assert.equal(sparse.handCatchVerified, false);
+  const complete = outcome({samples:12,lastSampleAt:1360});
+  assert.equal(complete.postImpactMs, 360);
+  assert.equal(complete.postImpactCoverage, 'observed_350ms');
+  assert.equal(complete.handCatchVerified, false);
+  const gap = outcome({samples:4,lastSampleAt:1150,reason:'Post-impact sensor gap'});
+  assert.equal(gap.postImpactCoverage, 'sensor_gap');
+});
