@@ -68,6 +68,14 @@ try {
     assert.ok(inbox.body.replies?.some(r => r.guest_name === guest.name && r.choice === guest.choice), 'missing private receipt: ' + guest.choice);
   }
   console.log('PASS: private host inbox received all three exact guest RSVPs');
+  // Re-check access after private guest data exists; an empty inbox cannot prove confidentiality.
+  const deniedWithData = await call('inbox', { inviteId, hostSecret: randomUUID() + randomUUID() });
+  assert.equal(deniedWithData.status, 401, 'wrong host secret must be denied after replies exist');
+  assert.ok(!deniedWithData.body.replies, 'wrong-secret response leaked populated inbox');
+  const missingWithData = await call('inbox', { inviteId });
+  assert.notEqual(missingWithData.status, 200, 'missing secret must be denied after replies exist');
+  assert.ok(!missingWithData.body.replies, 'missing-secret response leaked populated inbox');
+  console.log('PASS: populated inbox stays private without correct capability');
   // A valid host secret for a different invitation must not grant access here.
   const second = await call('create', { title: '[CNIDARIA ISOLATION TEST] ' + marker });
   assert.equal(second.status, 200, 'second invite create');
