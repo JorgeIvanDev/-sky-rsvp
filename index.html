@@ -84,6 +84,10 @@ function motion(e){
  }
  // A flight must follow a recent launch impulse; a stationary low-gravity glitch is not a toss.
  if(state==='armed'){
+   // A sensor pause must not count as continuous low gravity during launch arming.
+   // Requiring fresh adjacent readings avoids a false launch after a backgrounded tab.
+   if(lastMotionAt&&now-lastMotionAt>150)lowStart=0;
+   lastMotionAt=now;
    if(m>13&&m<65)lastLaunchImpulse=now;
    if(m<2.5&&now-lastLaunchImpulse<450){
      if(!lowStart)lowStart=now;
