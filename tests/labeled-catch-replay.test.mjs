@@ -90,14 +90,14 @@ import { runInNewContext } from 'node:vm';
 
 test('execute production outcome serializer against sparse and complete sensor coverage', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const match = html.match(/lastFlightOutcome=(\{feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
+  const match = html.match(/lastFlightOutcome=(\{postImpactStats,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
   assert.ok(match, 'must locate actual production outcome expression');
   function outcome({ samples, lastSampleAt, reason = 'No confirmed catch', impactAt = 1000 }) {
     const context = {
       feet: 4, target: () => 5, catchLike: false, flightFailureReason: reason,
       spinPeak: 0, flightSamples: 20, impactReviewSamples: samples,
       impactReviewAt: impactAt, lastMotionAt: lastSampleAt,
-      Math, Number
+      Math, Number, postImpactStats: null
     };
     return runInNewContext('(' + match[1] + ')', context);
   }
@@ -125,4 +125,28 @@ test('execute production outcome serializer against sparse and complete sensor c
   const noReview = outcome({samples:0,lastSampleAt:0,impactAt:0});
   assert.equal(noReview.postImpactCoverage, 'not_started');
   assert.equal(noReview.postImpactMs, 0);
+});
+
+// Execute the exact production outcome serializer against both user-labeled excerpts.
+// The excerpts end on impact, so neither is evidence of a completed settle review.
+test('production serializer preserves uncertainty for both historical labeled excerpts', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const match = html.match(/lastFlightOutcome=(\\{postImpactStats,feet:Number\\(feet\\.toFixed\\(2\\)\\)[\\s\\S]*?\\});clearTimeout\\(flightWatchdog\\)/);
+  assert.ok(match, 'production serializer must be found');
+  for (const example of fixture.examples) {
+    const last = example.lastSamples.at(-1);
+    const context = {
+      postImpactStats: null, feet: example.reportedFeet, target: () => 5,
+      catchLike: false, flightFailureReason: 'Post-impact sample timeout: no settle evidence',
+      spinPeak: last.spin, flightSamples: example.lastSamples.length,
+      impactReviewSamples: 0, impactReviewAt: last.ms,
+      lastMotionAt: last.ms, Math, Number
+    };
+    const result = runInNewContext('(' + match[1] + ')', context);
+    assert.equal(result.handCatchVerified, false, example.label);
+    assert.equal(result.catchDetected, false, example.label);
+    assert.equal(result.postImpactMs, 0, example.label);
+    assert.equal(result.postImpactCoverage, 'no_samples', example.label);
+    assert.match(result.reason, /timeout/i, example.label);
+  }
 });
