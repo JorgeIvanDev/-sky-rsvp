@@ -47,14 +47,14 @@ function unlockChallengeContent(){
  renderMyInvites();
  $('safeReveal').textContent='💌 OPEN MY INVITATION';
 }
-function disarm(){gentleSettleSamples=0;clearTimeout(settleTimer);motionTrace=[];freefallMs=0;freefallLastAt=0;airborneLostAt=0;clearTimeout(flightWatchdog);flightWatchdog=null;state='off';lowStart=0;flightStart=0;impactCount=0;spinPeak=0;flightPeak=0;flightSamples=0;$('height').textContent='0.0';$('status').textContent='ENGINE OFF';$('detail').textContent='Press ACTIVATE LAUNCH ENGINE to start a new attempt.';$('result').className='hidden';$('activate').disabled=!sensor;labels()}
-function activate(){if(!validNickname()||!sensor)return;gentleSettleSamples=0;motionTrace=[];freefallMs=0;freefallLastAt=0;clearTimeout(settleTimer);clearTimeout(flightWatchdog);flightWatchdog=null;state='arming';armedAt=performance.now();lowStart=0;impactCount=0;spinPeak=0;flightPeak=0;flightSamples=0;$('height').textContent='0.0';$('status').textContent='ENGINE ACTIVATING';$('detail').textContent='Stand by... sensor stabilizing.';$('activate').disabled=true;settleTimer=setTimeout(()=>{if(state==='arming'){state='armed';lastLaunchImpulse=0;lowStart=0;lastMotionAt=0;$('status').textContent='ENGINE ARMED';$('detail').textContent='Waiting for flight detection.'}},1200)}
+function disarm(){gentleSettleSamples=0;strongImpactAt=0;strongFirstFeet=0;clearTimeout(settleTimer);motionTrace=[];freefallMs=0;freefallLastAt=0;airborneLostAt=0;clearTimeout(flightWatchdog);flightWatchdog=null;state='off';lowStart=0;flightStart=0;impactCount=0;spinPeak=0;flightPeak=0;flightSamples=0;$('height').textContent='0.0';$('status').textContent='ENGINE OFF';$('detail').textContent='Press ACTIVATE LAUNCH ENGINE to start a new attempt.';$('result').className='hidden';$('activate').disabled=!sensor;labels()}
+function activate(){if(!validNickname()||!sensor)return;gentleSettleSamples=0;strongImpactAt=0;strongFirstFeet=0;motionTrace=[];freefallMs=0;freefallLastAt=0;clearTimeout(settleTimer);clearTimeout(flightWatchdog);flightWatchdog=null;state='arming';armedAt=performance.now();lowStart=0;impactCount=0;spinPeak=0;flightPeak=0;flightSamples=0;$('height').textContent='0.0';$('status').textContent='ENGINE ACTIVATING';$('detail').textContent='Stand by... sensor stabilizing.';$('activate').disabled=true;settleTimer=setTimeout(()=>{if(state==='arming'){state='armed';lastLaunchImpulse=0;lowStart=0;lastMotionAt=0;$('status').textContent='ENGINE ARMED';$('detail').textContent='Waiting for flight detection.'}},1200)}
 function complete(feet,catchLike){if(state!=='flying')return;lastFlightTrace=motionTrace.slice();clearTimeout(flightWatchdog);flightWatchdog=null;state='done';finalFeet=feet;const needed=target(),pass=feet>=needed&&catchLike;$('height').textContent=feet.toFixed(1);$('status').textContent=catchLike?(pass?'CATCH CONFIRMED · QUALIFIED':'CATCH CONFIRMED · BELOW TARGET'):'FLIGHT NOT VERIFIED';$('detail').textContent=feet.toFixed(1)+' FT estimated · '+(catchLike?'catch-like signal · peak airborne spin '+Math.round(spinPeak)+'°/s':flightFailureReason+' · '+flightSamples+' samples');$('finalHeight').textContent=feet.toFixed(1);$('result').className=pass?'pass':'fail';$('verdict').innerHTML=pass?'YOU MADE<br>THE CUT.':'SORRY LOSER.<br>YOU DIDN’T MAKE THE CUT.';const jokes=['WE’LL MAKE IT EASIER FOR YOU.','FINE. ONE FOOT LESS. HAPPY NOW?','THE BAR IS LITERALLY GETTING LOWER.','YOUR PHONE HAS MORE AMBITION THAN YOU.','MERCY MODE: ACTIVATED.','AT THIS RATE, JUST PICK IT UP.'];$('reason').textContent=pass?'RSVP UNLOCKED.':catchLike?'CATCH DETECTED! HEIGHT BELOW THE '+needed+' FT TARGET.':flightFailureReason;if(!pass)failures++;labels();$('next').textContent=pass?'Qualified at '+needed+' FT estimated.':'YOU GOT '+feet.toFixed(1)+' FT · TARGET WAS '+needed+' FT · NEXT TARGET '+target()+' FT. TRY AGAIN, THEN ACTIVATE.';$('again').textContent=pass?'CONTINUE TO RSVP':'TRY AGAIN';if(pass)$('rsvp').classList.remove('hidden');submitScore(feet,needed,catchLike,pass);unlockChallengeContent();if(incoming)revealInvite();try{const storedHistory=JSON.parse(localStorage.getItem('cnidariaAttempts')||'[]');const history=Array.isArray(storedHistory)?storedHistory:[];history.push({at:new Date().toISOString(),feet:Number(feet.toFixed(1)),target:needed,pass,catchLike,spin:Math.round(spinPeak)});localStorage.setItem('cnidariaAttempts',JSON.stringify(history.slice(-200)))}catch{}}
 $('copyMotionTrace').onclick=()=>{if(!lastFlightTrace.length){$('detail').textContent='No completed flight trace yet. Activate and attempt a throw first.';return}const report=JSON.stringify({version:1,recordedAt:new Date().toISOString(),note:'Sensor magnitude and rotation only; no identity or location',samples:lastFlightTrace});if(navigator.clipboard?.writeText){navigator.clipboard.writeText(report).then(()=>$('detail').textContent='Sensor trace copied ('+lastFlightTrace.length+' samples).').catch(()=>$('detail').textContent='Clipboard unavailable. Try another browser.')}else $('detail').textContent='Clipboard unavailable. Try another browser.'};
 // Build identifier for distinguishing cached browser tabs during device calibration.
-const cnidariaBuild='catch-consecutive-v3-20261111';
+const cnidariaBuild='catch-timing-v4-20261111';
 $('engineBuild').textContent='ENGINE BUILD · '+cnidariaBuild;
-let gentleSettleSamples=0;
+let gentleSettleSamples=0,strongImpactAt=0,strongFirstFeet=0;
 function motion(e){
  if(state!=='armed'&&state!=='flying')return;
  const a=e.accelerationIncludingGravity;
@@ -65,7 +65,7 @@ function motion(e){
    if(m>13&&m<65)lastLaunchImpulse=now;
    if(m<2.5&&now-lastLaunchImpulse<450){
      if(!lowStart)lowStart=now;
-     if(now-lowStart>=100){state='flying';flightStart=lowStart;impactCount=0;impactStartedAt=0;firstImpactFeet=0;gentleSettleSamples=0;freefallMs=0;freefallLastAt=now;airborneLostAt=0;flightSamples=0;lastMotionAt=now;flightFailureReason='No confirmed catch';clearTimeout(flightWatchdog);flightWatchdog=setTimeout(()=>{if(state==='flying'){flightFailureReason='Flight timeout: no confirmed catch or sensor stopped';complete(0,false)}},8100);$('status').textContent='FLIGHT DETECTED';$('detail').textContent='Tracking flight and rotation...'}
+     if(now-lowStart>=100){state='flying';flightStart=lowStart;impactCount=0;impactStartedAt=0;firstImpactFeet=0;gentleSettleSamples=0;strongImpactAt=0;strongFirstFeet=0;freefallMs=0;freefallLastAt=now;airborneLostAt=0;flightSamples=0;lastMotionAt=now;flightFailureReason='No confirmed catch';clearTimeout(flightWatchdog);flightWatchdog=setTimeout(()=>{if(state==='flying'){flightFailureReason='Flight timeout: no confirmed catch or sensor stopped';complete(0,false)}},8100);$('status').textContent='FLIGHT DETECTED';$('detail').textContent='Tracking flight and rotation...'}
    }else lowStart=0;
    return;
  }
@@ -88,14 +88,15 @@ function motion(e){
  if(seconds>.35&&seconds<=8&&m>16){
    if(freefallMs<250){flightFailureReason='Impact before sustained free fall ('+Math.round(freefallMs)+' ms)';complete(0,false);return}
    if(!impactStartedAt){impactStartedAt=now;firstImpactFeet=feet;gentleSettleSamples=0;}
+   if(impactCount===0){strongImpactAt=now;strongFirstFeet=feet}
    impactCount++;
  }else{
    // Strong catches require consecutive high-impact samples. A softer settling
    // sequence can still qualify separately, but must stay within 220 ms.
-   impactCount=0;
+   impactCount=0;strongImpactAt=0;strongFirstFeet=0;
    if(!impactStartedAt||now-impactStartedAt>220||m<2.5){impactStartedAt=0;firstImpactFeet=0;gentleSettleSamples=0}
  }
- if(impactCount>=2&&now-impactStartedAt>=12&&flightSamples>=4&&freefallMs>=250){complete(firstImpactFeet,true)}
+ if(impactCount>=2&&now-strongImpactAt>=12&&flightSamples>=4&&freefallMs>=250){complete(strongFirstFeet,true)}
  else if(seconds>8){flightFailureReason=freefallMs<250?'Insufficient sustained free fall ('+Math.round(freefallMs)+' ms)':'No confirmed catch within 8 seconds';complete(0,false)}
 }
 async function submitScore(feet,needed,catchLike,pass){const nickname=$('nickname').value.trim();if(!catchLike||!Number.isFinite(feet)||feet<0){$('boardStatus').textContent='Unverified flight: score not posted.';return}if(nickname.length<2||nickname.length>24){$('boardStatus').textContent='Enter a nickname (2–24 characters) before playing to post scores.';return}try{localStorage.setItem('cnidariaNickname',nickname);const response=await fetch(API,{method:'POST',headers:{'apikey':KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({nickname,height_ft:Number(feet.toFixed(1)),target_ft:needed,catch_detected:catchLike,qualified:pass})});if(!response.ok)throw Error('Score upload failed ('+response.status+')');$('boardStatus').textContent='Score posted!';await loadBoard()}catch(e){$('boardStatus').textContent='Score not posted: '+e.message}}
