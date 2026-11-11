@@ -72,7 +72,7 @@ function motion(e){
  flightSamples++;flightPeak=Math.max(flightPeak,feet);
  $('height').textContent=feet.toFixed(1);
  $('detail').textContent=seconds.toFixed(2)+'s flight · spin '+Math.round(spinPeak)+'°/s';
- if(seconds>.35&&seconds<=8&&m>16&&m<45){
+ if(seconds>.35&&seconds<=8&&m>16){
    if(!impactStartedAt){impactStartedAt=now;firstImpactFeet=feet;}
    impactCount++;
  }else{impactCount=0;impactStartedAt=0;firstImpactFeet=0}
