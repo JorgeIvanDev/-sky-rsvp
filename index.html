@@ -158,4 +158,36 @@ $('rewardHow').onclick=()=>{$('rewardDetails').classList.toggle('hidden');$('rew
 
 const replayTossDemo=document.getElementById('replayTossDemo');if(replayTossDemo)replayTossDemo.addEventListener('click',()=>{const demo=replayTossDemo.closest('.how-to-play');demo.classList.add('demo-paused');void demo.offsetWidth;demo.classList.remove('demo-paused')});
 initInvite();
-</script><script>let logoTurns=0;document.getElementById('logoFlip').addEventListener('click',function(){logoTurns+=180;this.querySelector('.logo-emblem').style.transform='rotateX('+logoTurns+'deg)'});</script></body></html>
+</script><script>
+/* 90s DVD-style screensaver: viewport bounce, tap to flip the emblem. */
+let logoTurns=0;
+const logoButton=document.getElementById('logoFlip');
+const roamingLogo=logoButton.closest('.logo');
+logoButton.addEventListener('click',function(){logoTurns+=180;this.querySelector('.logo-emblem').style.transform='rotateX('+logoTurns+'deg)'});
+if(roamingLogo&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  roamingLogo.style.position='fixed';
+  roamingLogo.style.left='0';
+  roamingLogo.style.top='0';
+  roamingLogo.style.margin='0';
+  roamingLogo.style.zIndex='25';
+  roamingLogo.style.pointerEvents='none';
+  logoButton.style.pointerEvents='auto';
+  const size=()=>({w:roamingLogo.offsetWidth,h:roamingLogo.offsetHeight});
+  let {w,h}=size();
+  let x=Math.max(0,(innerWidth-w)/2),y=20;
+  let vx=95,vy=76,last=0;
+  function animateLogo(t){
+    const dt=Math.min((t-last)/1000||0,.05);last=t;
+    ({w,h}=size());
+    const maxX=Math.max(0,innerWidth-w),maxY=Math.max(0,innerHeight-h);
+    x+=vx*dt;y+=vy*dt;
+    if(x<=0){x=0;vx=Math.abs(vx)*(0.9+Math.random()*.2)}
+    if(x>=maxX){x=maxX;vx=-Math.abs(vx)*(0.9+Math.random()*.2)}
+    if(y<=0){y=0;vy=Math.abs(vy)*(0.9+Math.random()*.2)}
+    if(y>=maxY){y=maxY;vy=-Math.abs(vy)*(0.9+Math.random()*.2)}
+    roamingLogo.style.transform='translate3d('+x+'px,'+y+'px,0)';
+    requestAnimationFrame(animateLogo);
+  }
+  requestAnimationFrame(animateLogo);
+}
+</script></body></html>
