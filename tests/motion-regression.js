@@ -25,7 +25,7 @@ function replay(samples){
    if(freefall<250)return {ok:false,reason:'premature impact'};
    if(!impactStart){impactStart=ms;firstFeet=feet}
    impactCount++;
-  }else if(!impactStart||ms-impactStart>220||m<2.5){impactStart=0;impactCount=0;firstFeet=0;stable=0}
+  }else{impactCount=0;if(!impactStart||ms-impactStart>220||m<2.5){impactStart=0;firstFeet=0;stable=0}}
   if(impactCount>=2&&ms-impactStart>=12&&freefall>=250)return {ok:true,mode:'strong',feet:firstFeet,peakSpin};
  }
  return {ok:false,reason:'no catch'};
@@ -38,6 +38,8 @@ const gentle=replay([...flight,{ms:866,m:18},{ms:882,m:9.8},{ms:898,m:9.7},{ms:9
 assert.equal(gentle.ok,true);assert.equal(gentle.mode,'gentle');
 const interrupted=replay([...flight,{ms:866,m:18},{ms:882,m:9.8},{ms:898,m:4},{ms:914,m:9.8},{ms:930,m:9.8}]);
 assert.equal(interrupted.ok,false,'stable samples must be consecutive');
+const separatedImpacts=replay([...flight,{ms:866,m:18},{ms:882,m:5},{ms:898,m:19}]);
+assert.equal(separatedImpacts.ok,false,'separated spikes must not count as consecutive impacts');
 const noLaunch=replay([...seq(0,900,16,.3),{ms:916,m:22},{ms:932,m:30}]);
 assert.equal(noLaunch.ok,false,'low gravity without launch is not a flight');
 const gap=replay([...flight.slice(0,12),{ms:600,m:0.4}]);
