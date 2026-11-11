@@ -6,13 +6,15 @@ on:
       - '.github/workflows/live-rsvp-smoke.yml'
       - 'scripts/smoke-live-rsvp.mjs'
       - 'scripts/smoke-mobile-browser.mjs'
+      - 'index.html'
+      - 'host-live.html'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   live-rsvp:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
