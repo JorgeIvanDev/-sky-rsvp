@@ -230,3 +230,27 @@ test('production review guards sample gaps and timeouts before granting impact c
   assert.match(html, /if\(impactReboundDetected\)\{flightFailureReason='Rebound after impact/);
   assert.match(html, /if\(impactReviewSamples<8\)/);
 });
+
+test('production motion state machine resets stale launch low-gravity window after a sensor gap', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function motion(e){');
+  const end = html.indexOf('\nasync function submitScore', start);
+  assert.ok(start > 0 && end > start, 'production motion function must be found');
+  const source = html.slice(start, end);
+  function runArmed(now, previousSampleAt, lowStartAt) {
+    const context = {
+      state: 'armed', lastMotionAt: previousSampleAt, lowStart: lowStartAt,
+      lastLaunchImpulse: 1000, motionTrace: [], Math, Number,
+      performance: { now: () => now }
+    };
+    runInNewContext(source + '\nmotion({accelerationIncludingGravity:{x:1,y:0,z:0},rotationRate:null})', context);
+    return context;
+  }
+  const gap = runArmed(1400, 1050, 1000);
+  assert.equal(gap.state, 'armed', 'stale low gravity cannot launch a flight');
+  assert.equal(gap.lowStart, 1400, 'arming must restart on the first fresh sample');
+  assert.equal(gap.lastMotionAt, 1400);
+  const continuous = runArmed(1080, 1050, 1000);
+  assert.equal(continuous.state, 'armed');
+  assert.equal(continuous.lowStart, 1000, 'continuous readings retain their low-gravity start');
+});
