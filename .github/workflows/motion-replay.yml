@@ -2,11 +2,13 @@ name: CNIDARIA motion replay regression
 on:
   push:
     paths:
+      - 'index.html'
       - 'tests/labeled-catch-examples.json'
       - 'tests/labeled-catch-replay.test.mjs'
       - '.github/workflows/motion-replay.yml'
   pull_request:
     paths:
+      - 'index.html'
       - 'tests/labeled-catch-examples.json'
       - 'tests/labeled-catch-replay.test.mjs'
       - '.github/workflows/motion-replay.yml'
