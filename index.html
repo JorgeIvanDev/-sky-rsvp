@@ -73,7 +73,7 @@ function motion(e){
    lastMotionAt=now;impactReviewSamples++;
    $('status').textContent='IMPACT · CHECKING SETTLE';
    $('detail').textContent='Collecting post-impact motion ('+Math.round(now-impactReviewAt)+' ms)';
-   if(now-impactReviewAt>=350){flightFailureReason='Impact observed; hand catch cannot be verified from motion alone';complete(impactReviewFeet,false)}
+   if(now-impactReviewAt>=350){flightFailureReason='Impact observed; hand catch cannot be verified from motion alone';complete(impactReviewFeet,true)}
    return;
  }
  // A flight must follow a recent launch impulse; a stationary low-gravity glitch is not a toss.
