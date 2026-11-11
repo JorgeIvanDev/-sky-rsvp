@@ -41,6 +41,11 @@ const interrupted=replay([...flight,{ms:866,m:18},{ms:882,m:9.8},{ms:898,m:4},{m
 assert.equal(interrupted.ok,false,'stable samples must be consecutive');
 const separatedImpacts=replay([...flight,{ms:866,m:18},{ms:882,m:5},{ms:898,m:19}]);
 assert.equal(separatedImpacts.ok,false,'separated spikes must not count as consecutive impacts');
+// A second high spike after a stable-looking interruption must not be a strong catch.
+const stableThenSpike=replay([...flight,{ms:866,m:18},{ms:882,m:9.8},{ms:898,m:19}]);
+assert.equal(stableThenSpike.ok,false,'non-consecutive impact spikes cannot qualify');
+const stableSoftWithNoise=replay([...flight,{ms:866,m:18},{ms:882,m:9.8},{ms:898,m:9.9},{ms:914,m:5},{ms:930,m:9.8},{ms:946,m:9.9}]);
+assert.equal(stableSoftWithNoise.ok,false,'gentle confirmation requires three uninterrupted samples');
 const noLaunch=replay([...seq(0,900,16,.3),{ms:916,m:22},{ms:932,m:30}]);
 assert.equal(noLaunch.ok,false,'low gravity without launch is not a flight');
 const gap=replay([...flight.slice(0,12),{ms:600,m:0.4}]);
@@ -58,4 +63,4 @@ assert.equal(recorded.ok,true,'confirmed real-world soft catch should qualify');
 assert.equal(recorded.mode,'strong','two impact samples should use strong path');
 assert.ok(recorded.feet>4.7&&recorded.feet<5.1,'recorded flight should estimate near 4.9 ft');
 assert.equal(recorded.peakSpin,132,'impact rotation must not be counted');
-console.log('PASS: strong catch, gentle catch, interrupted settle, separated impacts, missing launch, sensor gap, recorded soft catch, spin isolation');
+console.log('PASS: strong catch, gentle catch, interrupted settle, separated impacts, noisy gentle catch, missing launch, sensor gap, recorded soft catch, spin isolation');
