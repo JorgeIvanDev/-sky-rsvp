@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/live-rsvp-smoke.yml'
       - 'scripts/smoke-live-rsvp.mjs'
+      - 'scripts/smoke-mobile-browser.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -21,3 +22,11 @@ jobs:
         env:
           CNIDARIA_SMOKE_CONFIRM: 'YES'
         run: node scripts/smoke-live-rsvp.mjs
+      - name: Install mobile browser test dependencies
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Verify deployed mobile host inbox receives named RSVPs
+        env:
+          CNIDARIA_SMOKE_CONFIRM: 'YES'
+        run: node scripts/smoke-mobile-browser.mjs
