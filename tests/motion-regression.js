@@ -3,7 +3,7 @@
 // Synthetic traces exercise the current thresholds; browser device testing is still required.
 const assert=require('node:assert/strict');
 function replay(samples){
- let state='armed',launch=-Infinity,low=null,flightStart=0,freefall=0,last=0,impactStart=0,impactCount=0,firstFeet=0,stable=0,peakSpin=0;
+ let state='armed',launch=-Infinity,low=null,flightStart=0,freefall=0,last=0,impactStart=0,impactCount=0,firstFeet=0,strongFirstFeet=0,strongAt=0,stable=0,peakSpin=0;
  for(const {ms,m,spin=0} of samples){
   if(state==='armed'){
    if(m>13&&m<65)launch=ms;
@@ -24,9 +24,10 @@ function replay(samples){
   if(seconds>.35&&seconds<=8&&m>16){
    if(freefall<250)return {ok:false,reason:'premature impact'};
    if(!impactStart){impactStart=ms;firstFeet=feet}
+   if(impactCount===0){strongAt=ms;strongFirstFeet=feet}
    impactCount++;
-  }else{impactCount=0;if(!impactStart||ms-impactStart>220||m<2.5){impactStart=0;firstFeet=0;stable=0}}
-  if(impactCount>=2&&ms-impactStart>=12&&freefall>=250)return {ok:true,mode:'strong',feet:firstFeet,peakSpin};
+  }else{impactCount=0;strongAt=0;strongFirstFeet=0;if(!impactStart||ms-impactStart>220||m<2.5){impactStart=0;firstFeet=0;stable=0}}
+  if(impactCount>=2&&ms-strongAt>=12&&freefall>=250)return {ok:true,mode:'strong',feet:strongFirstFeet,peakSpin};
  }
  return {ok:false,reason:'no catch'};
 }
@@ -57,4 +58,4 @@ assert.equal(recorded.ok,true,'confirmed real-world soft catch should qualify');
 assert.equal(recorded.mode,'strong','two impact samples should use strong path');
 assert.ok(recorded.feet>4.7&&recorded.feet<5.1,'recorded flight should estimate near 4.9 ft');
 assert.equal(recorded.peakSpin,132,'impact rotation must not be counted');
-console.log('PASS: strong catch, gentle catch, interrupted settle, missing launch, sensor gap, spin isolation');
+console.log('PASS: strong catch, gentle catch, interrupted settle, separated impacts, missing launch, sensor gap, recorded soft catch, spin isolation');
