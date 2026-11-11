@@ -10,13 +10,12 @@ if (process.env.CNIDARIA_SMOKE_CONFIRM !== 'YES') {
   console.error('Refusing to create production test data without CNIDARIA_SMOKE_CONFIRM=YES');
   process.exit(2);
 }
-const timeout = AbortSignal.timeout(12000);
 async function call(action, extra = {}) {
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Origin: 'https://jorgeivandev.github.io' },
     body: JSON.stringify({ action, ...extra }),
-    signal: timeout
+    signal: AbortSignal.timeout(12000)
   });
   let body;
   try { body = await response.json(); } catch { throw Error(action + ': invalid JSON response'); }
@@ -35,14 +34,19 @@ try {
   assert.equal(denied.status, 401, 'wrong host secret must be denied');
   assert.ok(!denied.body.replies, 'unauthorized response must not contain guest data');
   console.log('PASS: unauthorized inbox denied');
-  const replied = await call('reply', { inviteId, name: 'CNIDARIA QA ' + marker, choice: 'yes' });
-  assert.equal(replied.status, 200, 'reply');
-  assert.equal(replied.body.saved, true);
-  console.log('PASS: guest RSVP accepted');
+  const expected = ['yes', 'maybe', 'no'].map(choice => ({ name: 'CNIDARIA QA ' + marker + ' ' + choice, choice }));
+  for (const guest of expected) {
+    const replied = await call('reply', { inviteId, name: guest.name, choice: guest.choice });
+    assert.equal(replied.status, 200, guest.choice + ' reply');
+    assert.equal(replied.body.saved, true);
+  }
+  console.log('PASS: Yes / Maybe / No guest RSVPs accepted');
   const inbox = await call('inbox', { inviteId, hostSecret: created.body.hostSecret });
   assert.equal(inbox.status, 200, 'authorized inbox');
-  assert.ok(inbox.body.replies?.some(r => r.guest_name === 'CNIDARIA QA ' + marker && r.choice === 'yes'));
-  console.log('PASS: private host inbox received exact guest RSVP');
+  for (const guest of expected) {
+    assert.ok(inbox.body.replies?.some(r => r.guest_name === guest.name && r.choice === guest.choice), 'missing private receipt: ' + guest.choice);
+  }
+  console.log('PASS: private host inbox received all three exact guest RSVPs');
   console.log('Production API vertical slice PASS; mobile UI still requires manual verification.');
 } catch (error) {
   console.error('FAIL:', error.message);
