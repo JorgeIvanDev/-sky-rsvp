@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "description": "User-labeled real sensor observations; excerpts only, not full traces. Impact magnitude is m/s^2, not g-force. These samples alone cannot prove a hand catch.",
+  "examples": [
+    {
+      "label": "couch_bounce",
+      "recordedAt": "2026-11-11T05:12:24.720Z",
+      "engine": "trace-outcome-v5-20261111",
+      "userConfirmed": "Phone bounced and settled on couch cushion; no hand catch",
+      "reportedFeet": 4.02,
+      "reportedCatchDetected": true,
+      "lastSamples": [
+        {"ms": 9232, "m": 1.61, "spin": 196},
+        {"ms": 9248, "m": 1.67, "spin": 191.6},
+        {"ms": 9266, "m": 42.75, "spin": 2293.2},
+        {"ms": 9282, "m": 264.16, "spin": 2077.6}
+      ],
+      "limitations": "Recording stops immediately after second impact; no post-impact settling data."
+    },
+    {
+      "label": "hand_catch",
+      "recordedAt": "2026-11-11T05:13:08.476Z",
+      "engine": "trace-outcome-v5-20261111",
+      "userConfirmed": "Caught by hand",
+      "reportedFeet": 3.76,
+      "reportedCatchDetected": true,
+      "lastSamples": [
+        {"ms": 7264, "m": 0.66, "spin": 127.4},
+        {"ms": 7280, "m": 6.26, "spin": 106.9},
+        {"ms": 7297, "m": 34.96, "spin": 1048},
+        {"ms": 7314, "m": 58.27, "spin": 1503.9}
+      ],
+      "limitations": "Recording stops immediately after second impact; no post-impact settling data."
+    }
+  ]
+}
