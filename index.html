@@ -52,7 +52,7 @@ function activate(){if(!validNickname()||!sensor)return;gentleSettleSamples=0;mo
 function complete(feet,catchLike){if(state!=='flying')return;lastFlightTrace=motionTrace.slice();clearTimeout(flightWatchdog);flightWatchdog=null;state='done';finalFeet=feet;const needed=target(),pass=feet>=needed&&catchLike;$('height').textContent=feet.toFixed(1);$('status').textContent=catchLike?(pass?'CATCH CONFIRMED · QUALIFIED':'CATCH CONFIRMED · BELOW TARGET'):'FLIGHT NOT VERIFIED';$('detail').textContent=feet.toFixed(1)+' FT estimated · '+(catchLike?'catch-like signal · peak airborne spin '+Math.round(spinPeak)+'°/s':flightFailureReason+' · '+flightSamples+' samples');$('finalHeight').textContent=feet.toFixed(1);$('result').className=pass?'pass':'fail';$('verdict').innerHTML=pass?'YOU MADE<br>THE CUT.':'SORRY LOSER.<br>YOU DIDN’T MAKE THE CUT.';const jokes=['WE’LL MAKE IT EASIER FOR YOU.','FINE. ONE FOOT LESS. HAPPY NOW?','THE BAR IS LITERALLY GETTING LOWER.','YOUR PHONE HAS MORE AMBITION THAN YOU.','MERCY MODE: ACTIVATED.','AT THIS RATE, JUST PICK IT UP.'];$('reason').textContent=pass?'RSVP UNLOCKED.':catchLike?'CATCH DETECTED! HEIGHT BELOW THE '+needed+' FT TARGET.':flightFailureReason;if(!pass)failures++;labels();$('next').textContent=pass?'Qualified at '+needed+' FT estimated.':'YOU GOT '+feet.toFixed(1)+' FT · TARGET WAS '+needed+' FT · NEXT TARGET '+target()+' FT. TRY AGAIN, THEN ACTIVATE.';$('again').textContent=pass?'CONTINUE TO RSVP':'TRY AGAIN';if(pass)$('rsvp').classList.remove('hidden');submitScore(feet,needed,catchLike,pass);unlockChallengeContent();if(incoming)revealInvite();try{const storedHistory=JSON.parse(localStorage.getItem('cnidariaAttempts')||'[]');const history=Array.isArray(storedHistory)?storedHistory:[];history.push({at:new Date().toISOString(),feet:Number(feet.toFixed(1)),target:needed,pass,catchLike,spin:Math.round(spinPeak)});localStorage.setItem('cnidariaAttempts',JSON.stringify(history.slice(-200)))}catch{}}
 $('copyMotionTrace').onclick=()=>{if(!lastFlightTrace.length){$('detail').textContent='No completed flight trace yet. Activate and attempt a throw first.';return}const report=JSON.stringify({version:1,recordedAt:new Date().toISOString(),note:'Sensor magnitude and rotation only; no identity or location',samples:lastFlightTrace});if(navigator.clipboard?.writeText){navigator.clipboard.writeText(report).then(()=>$('detail').textContent='Sensor trace copied ('+lastFlightTrace.length+' samples).').catch(()=>$('detail').textContent='Clipboard unavailable. Try another browser.')}else $('detail').textContent='Clipboard unavailable. Try another browser.'};
 // Build identifier for distinguishing cached browser tabs during device calibration.
-const cnidariaBuild='gentle-catch-v2-20261111';
+const cnidariaBuild='catch-consecutive-v3-20261111';
 $('engineBuild').textContent='ENGINE BUILD · '+cnidariaBuild;
 let gentleSettleSamples=0;
 function motion(e){
@@ -89,7 +89,12 @@ function motion(e){
    if(freefallMs<250){flightFailureReason='Impact before sustained free fall ('+Math.round(freefallMs)+' ms)';complete(0,false);return}
    if(!impactStartedAt){impactStartedAt=now;firstImpactFeet=feet;gentleSettleSamples=0;}
    impactCount++;
- }else if(!impactStartedAt||now-impactStartedAt>220||m<2.5){impactCount=0;impactStartedAt=0;firstImpactFeet=0;gentleSettleSamples=0}
+ }else{
+   // Strong catches require consecutive high-impact samples. A softer settling
+   // sequence can still qualify separately, but must stay within 220 ms.
+   impactCount=0;
+   if(!impactStartedAt||now-impactStartedAt>220||m<2.5){impactStartedAt=0;firstImpactFeet=0;gentleSettleSamples=0}
+ }
  if(impactCount>=2&&now-impactStartedAt>=12&&flightSamples>=4&&freefallMs>=250){complete(firstImpactFeet,true)}
  else if(seconds>8){flightFailureReason=freefallMs<250?'Insufficient sustained free fall ('+Math.round(freefallMs)+' ms)':'No confirmed catch within 8 seconds';complete(0,false)}
 }
