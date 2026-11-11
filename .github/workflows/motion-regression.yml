@@ -3,11 +3,13 @@ on:
   push:
     paths:
       - 'tests/motion-regression.js'
+      - 'tests/engine-sanity.js'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   pull_request:
     paths:
       - 'tests/motion-regression.js'
+      - 'tests/engine-sanity.js'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   workflow_dispatch:
