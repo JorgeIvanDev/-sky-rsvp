@@ -46,5 +46,7 @@ test('production motion outcome does not claim a verified hand catch from impact
   assert.match(html, /postImpactMs\s*:/, 'production outcome must export post-impact duration');
   assert.match(html, /state\s*=\s*['"]impact-review['"]/, 'production must enter post-impact review');
   assert.match(html, /motionTrace\.slice\(\)/, 'production must preserve recorded sensor trace');
+  assert.match(html, /postImpactCoverage:!impactReviewAt\?'not_started'/, 'diagnostics must identify missing post-impact observation');
+  assert.match(html, /'sensor_gap':flightFailureReason\.startsWith\('Post-impact sample timeout'\)\?'timeout'/, 'diagnostics must distinguish sensor gaps from timeouts');
   assert.match(html, /postImpactMs:impactReviewAt&&impactReviewSamples\?Math\.max\(0,Math\.round\(lastMotionAt-impactReviewAt\)\):0/, 'elapsed post-impact time must come from actual samples, not a timeout clock');
 });
