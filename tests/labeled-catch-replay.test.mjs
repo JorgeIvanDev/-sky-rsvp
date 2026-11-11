@@ -38,3 +38,12 @@ for (const example of fixture.examples) {
     if (example.label === 'hand_catch') assert.notEqual(result.status, 'rejected_hand_catch', 'genuine catch remains inconclusive, not rejected');
   });
 }
+
+test('production motion outcome does not claim a verified hand catch from impact alone', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /handCatchVerified\s*:\s*false/, 'production outcome must explicitly mark hand catch unverified');
+  assert.match(html, /postImpactSamples\s*:/, 'production outcome must export post-impact sample count');
+  assert.match(html, /postImpactMs\s*:/, 'production outcome must export post-impact duration');
+  assert.match(html, /state\s*=\s*['"]impact-review['"]/, 'production must enter post-impact review');
+  assert.match(html, /motionTrace\.slice\(\)/, 'production must preserve recorded sensor trace');
+});
