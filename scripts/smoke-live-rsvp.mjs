@@ -68,6 +68,14 @@ try {
     assert.ok(inbox.body.replies?.some(r => r.guest_name === guest.name && r.choice === guest.choice), 'missing private receipt: ' + guest.choice);
   }
   console.log('PASS: private host inbox received all three exact guest RSVPs');
+  // A valid host secret for a different invitation must not grant access here.
+  const second = await call('create', { title: '[CNIDARIA ISOLATION TEST] ' + marker });
+  assert.equal(second.status, 200, 'second invite create');
+  const crossInvite = await call('inbox', { inviteId, hostSecret: second.body.hostSecret });
+  assert.equal(crossInvite.status, 401, 'another invite host secret must be denied');
+  assert.ok(!crossInvite.body.replies, 'cross-invite response must not leak guest data');
+  console.log('PASS: host capability is scoped to its own invitation');
+
   console.log('Production API vertical slice PASS; mobile UI still requires manual verification.');
 } catch (error) {
   console.error('FAIL:', error.message);
