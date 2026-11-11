@@ -1,0 +1,24 @@
+name: CNIDARIA motion replay regression
+on:
+  push:
+    paths:
+      - 'tests/labeled-catch-examples.json'
+      - 'tests/labeled-catch-replay.test.mjs'
+      - '.github/workflows/motion-replay.yml'
+  pull_request:
+    paths:
+      - 'tests/labeled-catch-examples.json'
+      - 'tests/labeled-catch-replay.test.mjs'
+      - '.github/workflows/motion-replay.yml'
+  workflow_dispatch:
+jobs:
+  labeled-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate labeled couch and hand excerpts without fabricated post-impact data
+        run: node --test tests/labeled-catch-replay.test.mjs
