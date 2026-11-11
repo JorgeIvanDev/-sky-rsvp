@@ -50,3 +50,25 @@ test('production motion outcome does not claim a verified hand catch from impact
   assert.match(html, /'sensor_gap':flightFailureReason\.startsWith\('Post-impact sample timeout'\)\?'timeout'/, 'diagnostics must distinguish sensor gaps from timeouts');
   assert.match(html, /postImpactMs:impactReviewAt&&impactReviewSamples\?Math\.max\(0,Math\.round\(lastMotionAt-impactReviewAt\)\):0/, 'elapsed post-impact time must come from actual samples, not a timeout clock');
 });
+
+test('historical positive catch flags are not ground truth', () => {
+  const couch = fixture.examples.find(x => x.label === 'couch_bounce');
+  const hand = fixture.examples.find(x => x.label === 'hand_catch');
+  assert.equal(couch.reportedCatchDetected, true, 'fixture must preserve the original false positive');
+  assert.equal(hand.reportedCatchDetected, true, 'fixture must preserve the original genuine catch');
+  assert.notEqual(couch.userConfirmed, hand.userConfirmed);
+  for (const example of [couch, hand]) {
+    const final = example.lastSamples.at(-1);
+    const result = classifyExcerpt(example);
+    assert.equal(result.postImpactMs, 0, 'no post-impact samples exist after final impact');
+    assert.equal(result.verifiedHandCatch, false, 'legacy positive flag must not override missing evidence');
+    assert.ok(final.m > 16, 'recording really ends at an impact');
+  }
+});
+
+test('replay rejects malformed timestamps rather than silently manufacturing coverage', () => {
+  const original = fixture.examples[0];
+  const malformed = { ...original, lastSamples: original.lastSamples.map(s => ({...s})) };
+  malformed.lastSamples[2].ms = malformed.lastSamples[1].ms;
+  assert.throws(() => classifyExcerpt(malformed), /timestamps must increase/);
+});
