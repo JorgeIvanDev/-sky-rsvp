@@ -114,4 +114,15 @@ test('execute production outcome serializer against sparse and complete sensor c
   assert.equal(complete.handCatchVerified, false);
   const gap = outcome({samples:4,lastSampleAt:1150,reason:'Post-impact sensor gap'});
   assert.equal(gap.postImpactCoverage, 'sensor_gap');
+  const timeout = outcome({samples:4,lastSampleAt:1200,reason:'Post-impact sample timeout: catch unverified'});
+  assert.equal(timeout.postImpactMs, 200, 'timeout cannot manufacture additional sensor time');
+  assert.equal(timeout.postImpactCoverage, 'timeout');
+  assert.equal(timeout.handCatchVerified, false);
+  const incomplete = outcome({samples:9,lastSampleAt:1275});
+  assert.equal(incomplete.postImpactMs, 275);
+  assert.equal(incomplete.postImpactCoverage, 'incomplete');
+  assert.equal(incomplete.handCatchVerified, false);
+  const noReview = outcome({samples:0,lastSampleAt:0,impactAt:0});
+  assert.equal(noReview.postImpactCoverage, 'not_started');
+  assert.equal(noReview.postImpactMs, 0);
 });
