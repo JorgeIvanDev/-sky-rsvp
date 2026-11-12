@@ -57,3 +57,13 @@ test('invalid payloads and throttling fail before mutations',async()=>{
  assert.equal((await denied.api.execute({inviteId:A,action:'post',body:'hi'})).status,429);
  assert.equal(denied.calls.filter(x=>x[0]==='post').length,0);
 });
+
+test('chat rejects invisible control and bidi spoofing without blocking ordinary multiline messages',async()=>{
+ const {api,calls}=setup();
+ for(const body of ['hello\u0000world','hello\u001bworld','hello\u202eworld','hello\u2066world']){
+  assert.equal((await api.execute({inviteId:A,action:'post',body})).status,400);
+ }
+ assert.equal(calls.filter(x=>x[0]==='post').length,0);
+ assert.equal((await api.execute({inviteId:A,action:'post',body:'Hello\nworld'})).status,201);
+ assert.equal(calls.filter(x=>x[0]==='post').length,1);
+});
