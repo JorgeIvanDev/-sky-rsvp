@@ -274,3 +274,37 @@ test('production rebound detector requires adjacent near-weightless readings bef
   assert.equal(replay([1, 1, 9.8, 25]), false, 'settling between lows and impact breaks rebound sequence');
   assert.equal(replay([34, 58, 9.8, 9.8]), false, 'high catch spikes alone do not establish rebound');
 });
+
+test('production impact-review state machine does not bridge missing frames into a false rebound', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function motion(e){');
+  const end = html.indexOf('\nasync function submitScore', start);
+  assert.ok(start > 0 && end > start, 'production motion function must be found');
+  const source = html.slice(start, end);
+  function replay(readings) {
+    const elements = new Map();
+    const context = {
+      state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
+      impactReviewFeet: 3, impactReviewSamples: 0, impactReboundLowSamples: 0,
+      impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
+      Math, Number, performance: { now: () => context.clock },
+      $: id => { if (!elements.has(id)) elements.set(id, {textContent: ''}); return elements.get(id); },
+      complete: (feet, credited) => { context.completed = {feet, credited}; context.state = 'done'; }
+    };
+    for (const [clock, magnitude] of readings) {
+      context.clock = clock;
+      runInNewContext(source + '\nmotion({accelerationIncludingGravity:{x:' + magnitude + ',y:0,z:0},rotationRate:null})', context);
+    }
+    return context;
+  }
+  const rebound = replay([[1016,1],[1032,1],[1048,25]]);
+  assert.equal(rebound.impactReboundDetected, true, 'adjacent freefall readings followed by impact remain suspicious');
+  assert.equal(rebound.completed?.credited, false, 'rebound must not receive catch credit');
+  const interrupted = replay([[1016,1],[1150,1],[1166,25]]);
+  assert.equal(interrupted.impactReboundDetected, false, '130 ms missing frames break the low-gravity sequence');
+  assert.equal(interrupted.completed, undefined, 'interrupted sequence alone must not end the review');
+  assert.equal(interrupted.impactReviewSamples, 3);
+  const gap = replay([[1016,1],[1290,1]]);
+  assert.match(gap.flightFailureReason, /Post-impact sensor gap/, 'large sensor gap fails closed');
+  assert.equal(gap.completed?.credited, false);
+});
