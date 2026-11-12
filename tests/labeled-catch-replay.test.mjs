@@ -248,9 +248,11 @@ test('production motion state machine resets stale launch low-gravity window aft
   }
   const gap = runArmed(1400, 1050, 1000);
   assert.equal(gap.state, 'armed', 'stale low gravity cannot launch a flight');
-  assert.equal(gap.lowStart, 1400, 'arming must restart on the first fresh sample');
+  assert.equal(gap.lowStart, 0, 'a stale launch impulse cannot restart arming after a sensor gap');
+  assert.equal(gap.lastLaunchImpulse, 0, 'the interrupted launch impulse must be discarded');
   assert.equal(gap.lastMotionAt, 1400);
   const continuous = runArmed(1080, 1050, 1000);
   assert.equal(continuous.state, 'armed');
   assert.equal(continuous.lowStart, 1000, 'continuous readings retain their low-gravity start');
+  assert.equal(continuous.lastLaunchImpulse, 1000, 'continuous sensor readings retain a recent launch impulse');
 });
