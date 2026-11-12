@@ -4,6 +4,8 @@ on:
     paths:
       - 'natas-wallet-auth.mjs'
       - 'natas-wallet-auth.test.mjs'
+      - 'natas-wallet-challenges.test.mjs'
+      - 'supabase/migrations/20261112235000_natas_wallet_challenges.sql'
       - '.github/workflows/natas-wallet-auth.yml'
   workflow_dispatch:
 jobs:
@@ -15,4 +17,5 @@ jobs:
         with:
           node-version: '22'
       - run: node natas-wallet-auth.test.mjs
+      - run: node natas-wallet-challenges.test.mjs
       - run: node natas-read-tools.test.mjs
