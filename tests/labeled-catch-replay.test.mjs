@@ -308,3 +308,29 @@ test('production impact-review state machine does not bridge missing frames into
   assert.match(gap.flightFailureReason, /Post-impact sensor gap/, 'large sensor gap fails closed');
   assert.equal(gap.completed?.credited, false);
 });
+
+test('one-tap retry discards stale launch and first-impact evidence before arming', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function activate(){');
+  const end = html.indexOf('\nfunction complete(', start);
+  assert.ok(start > 0 && end > start, 'production activation function must exist');
+  const source = html.slice(start, end);
+  const elements = new Map();
+  const context = {
+    sensor: true, state: 'done', lastLaunchImpulse: 900, lastMotionAt: 950,
+    impactStartedAt: 910, firstImpactFeet: 12, lowStart: 920, impactCount: 3,
+    impactReviewTimer: null, settleTimer: null, flightWatchdog: null,
+    motionTrace: [{ms:900}], failures: 0, spinPeak: 22, flightPeak: 12,
+    flightSamples: 15, impactReviewSamples: 12, Math,
+    performance: {now: () => 1000}, validNickname: () => true,
+    clearTimeout: () => {}, setTimeout: () => 1,
+    $: id => {if (!elements.has(id)) elements.set(id, {textContent:'', disabled:false}); return elements.get(id);}
+  };
+  runInNewContext(source + '\nactivate()', context);
+  assert.equal(context.state, 'arming');
+  for (const key of ['lastLaunchImpulse','lastMotionAt','impactStartedAt','firstImpactFeet','lowStart','impactCount','flightSamples']) {
+    assert.equal(context[key], 0, key + ' must reset on retry');
+  }
+  assert.equal(context.motionTrace.length, 0, 'retry starts a fresh diagnostic trace');
+  assert.equal(elements.get('activate').disabled, true, 'retry must not double-arm');
+});
