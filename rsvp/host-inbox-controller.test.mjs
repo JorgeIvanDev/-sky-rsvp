@@ -14,7 +14,7 @@ test('clearing pending inbox permits fresh load and stale result cannot overwrit
   let calls = 0;
   const root = {
     ownerDocument: {
-      createElement: () => ({ textContent: '', setAttribute() {}, append() {} }),
+      createElement: () => ({ textContent: '', style: {}, setAttribute() {}, append() {} }),
       createTextNode: text => text
     },
     replaceChildren() { this.items = []; },
@@ -27,7 +27,7 @@ test('clearing pending inbox permits fresh load and stale result cannot overwrit
       calls++;
       return calls === 1
         ? new Promise(resolve => { resolveFirst = resolve; })
-        : response([{ receiptId: 'receipt2', choice: 'yes', savedAt: '2026-11-10T16:00:00Z' }]);
+        : response([{ receiptId: '123e4567-e89b-42d3-a456-426614174001', choice: 'yes', savedAt: '2026-11-10T16:00:00Z' }]);
     }
   });
   const oldLoad = controller.refresh(inviteId);
