@@ -35,7 +35,7 @@ export function createEventRoomAccess({authenticate,findMember,readRoom,readPotl
       }
       case 'post':{
         const body=request.body;
-        if(typeof body!=='string'||!body.trim()||body.trim().length>2000)return fail(400,'invalid_message');
+        if(typeof body!=='string'||!body.trim()||body.trim().length>2000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u202a-\u202e\u2066-\u2069]/u.test(body))return fail(400,'invalid_message');
         const id=await postMessage({inviteId,memberId,body:body.trim()});
         return id?{status:201,body:{messageId:id}}:fail(403,'room_access_denied');
       }
