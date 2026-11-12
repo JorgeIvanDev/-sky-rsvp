@@ -14,7 +14,7 @@ test('clearing pending inbox permits fresh load and stale result cannot overwrit
   let calls = 0;
   const root = {
     ownerDocument: {
-      createElement: () => ({ textContent: '', append() {} }),
+      createElement: () => ({ textContent: '', setAttribute() {}, append() {} }),
       createTextNode: text => text
     },
     replaceChildren() { this.items = []; },
