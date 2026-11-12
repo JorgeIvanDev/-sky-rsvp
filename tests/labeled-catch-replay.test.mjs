@@ -364,3 +364,42 @@ test('production arming cannot mistake startup low gravity for a toss without a 
   assert.equal(valid.state,'armed','recent impulse may preserve the low-gravity window');
   assert.equal(valid.lowStart,80);
 });
+
+
+test('production impact-review replays 350ms with 21 measured readings, sparse coverage and couch re-impact', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function motion(e){');
+  const end = html.indexOf('\nasync function submitScore', start);
+  assert.ok(start > 0 && end > start, 'execute production motion state machine');
+  const source = html.slice(start, end);
+  function replay(readings) {
+    const elements = new Map();
+    const context = {
+      state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
+      impactReviewFeet: 3, impactReviewSamples: 0, impactReboundLowSamples: 0,
+      impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
+      Math, Number, performance: {now: () => context.clock},
+      $: id => {if (!elements.has(id)) elements.set(id, {textContent: ''}); return elements.get(id);},
+      complete: (feet, credited) => {context.completed = {feet, credited}; context.state = 'done';}
+    };
+    for (const [clock, magnitude] of readings) {
+      context.clock = clock;
+      runInNewContext(source + '\nmotion({accelerationIncludingGravity:{x:' + magnitude + ',y:0,z:0},rotationRate:null})', context);
+    }
+    return context;
+  }
+  // Synthetic timings exercise production logic, not fabricated readings from the user's trace.
+  const continuous = replay(Array.from({length:21}, (_, i) => [1000 + 17.5 * (i + 1), 9.8]));
+  assert.equal(continuous.impactReviewSamples, 21);
+  assert.equal(continuous.completed?.credited, true, 'complete settle observation may receive unverified gameplay credit');
+  assert.match(continuous.flightFailureReason, /cannot be verified from motion alone/);
+  const sparse = replay([[1050,9.8],[1100,9.8],[1150,9.8],[1200,9.8],[1250,9.8],[1300,9.8],[1350,9.8]]);
+  assert.equal(sparse.completed?.credited, false);
+  assert.match(sparse.flightFailureReason, /coverage insufficient/);
+  const rebound = replay([[1017,1],[1034,1],[1051,25],[1360,9.8]]);
+  assert.equal(rebound.completed?.credited, false, 'couch-like rebound fails before any later reading');
+  assert.equal(rebound.impactReboundDetected, true);
+  const gap = replay([[1017,9.8],[1290,9.8]]);
+  assert.equal(gap.completed?.credited, false);
+  assert.match(gap.flightFailureReason, /sensor gap/);
+});
