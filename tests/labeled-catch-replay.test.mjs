@@ -433,3 +433,37 @@ test('in-flight couch rebound survives the 220ms initial-impact reset', () => {
   assert.equal(ctx.completed?.credit,false,'couch-like re-impact must not receive credit');
   assert.match(ctx.flightFailureReason,/Repeated airborne impact after rebound/);
 });
+
+
+test('in-flight rebound requires contiguous sensor samples after the first collision', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function motion(e){');
+  const end = html.indexOf('\nasync function submitScore', start);
+  assert.ok(start > 0 && end > start);
+  const source = html.slice(start, end);
+  function replay(samples) {
+    const elements = new Map();
+    const ctx = {
+      state:'flying', flightStart:1000, lastMotionAt:1400, freefallMs:300,
+      flightSamples:8, flightPeak:2, spinPeak:0, impactStartedAt:0,
+      firstImpactFeet:0, impactCount:0, strongImpactAt:0, strongFirstFeet:0,
+      gentleSettleSamples:0, airborneLostAt:0, flightReboundAnchor:0,
+      flightReboundAt:0, flightReboundLowSamples:0, motionTrace:[],
+      Math, Number, G:9.80665, FT:3.28084, performance:{now:()=>ctx.clock},
+      $: id => {if(!elements.has(id))elements.set(id,{textContent:''});return elements.get(id)},
+      complete:(feet,credit)=>{ctx.completed={feet,credit};ctx.state='done'}
+    };
+    for (const [ms,g] of samples) {
+      ctx.clock=ms;
+      runInNewContext(source+'\nmotion({accelerationIncludingGravity:{x:'+g+',y:0,z:0},rotationRate:null})',ctx);
+    }
+    return ctx;
+  }
+  const contiguous = replay([[1416,25],[1650,1],[1670,1],[1690,25]]);
+  assert.equal(contiguous.completed?.credit,false);
+  assert.match(contiguous.flightFailureReason,/Repeated airborne impact after rebound/);
+  const interrupted = replay([[1416,25],[1650,1],[1780,1],[1800,25]]);
+  assert.equal(interrupted.completed,undefined,'missing frames cannot count as contiguous rebound');
+  assert.equal(interrupted.flightReboundLowSamples,0);
+  assert.equal(interrupted.flightReboundAt,0);
+});
