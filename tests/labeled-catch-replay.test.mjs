@@ -467,3 +467,30 @@ test('in-flight rebound requires contiguous sensor samples after the first colli
   assert.equal(interrupted.flightReboundLowSamples,0);
   assert.equal(interrupted.flightReboundAt,0);
 });
+
+
+test('production impact-review replays 350 ms of readings without claiming hand verification', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function motion(e){');
+  const end = html.indexOf('\nasync function submitScore', start);
+  assert.ok(start > 0 && end > start);
+  const source = html.slice(start, end);
+  const context = {
+    state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
+    impactReviewFeet: 3.03, impactReviewSamples: 0, impactReboundLowSamples: 0,
+    impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
+    Math, Number, performance: {now: () => context.clock},
+    $: () => ({textContent: ''}),
+    complete: (feet, credited) => {context.completed = {feet, credited}; context.state = 'done';}
+  };
+  // Synthetic timings only: the user supplied 21 samples over 350 ms, not
+  // their complete raw stream. Never present this as a recorded hand trace.
+  for (let i = 1; i <= 21; i++) {
+    context.clock = 1000 + Math.round(350 * i / 21);
+    runInNewContext(source + '\nmotion({accelerationIncludingGravity:{x:13.63,y:0,z:0},rotationRate:null})', context);
+  }
+  assert.equal(context.impactReviewSamples, 21);
+  assert.equal(context.lastMotionAt, 1350);
+  assert.equal(context.impactReboundDetected, false, 'ordinary readings do not prove a rebound');
+  assert.equal(context.completed, undefined, 'review completion is timer-driven, not invented by samples');
+});
