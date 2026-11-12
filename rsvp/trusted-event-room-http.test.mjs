@@ -70,3 +70,22 @@ test('untrusted adapter failure returns no private detail',async()=>{
  assert.equal(result.status,403);
  assert.equal((await result.text()).includes('secret'),false);
 });
+
+test('reject extraneous fields for each operation before session lookup',async()=>{
+ const {route,calls}=setup();
+ const invalid=[
+  {inviteId,action:'read',itemId},
+  {inviteId,action:'read',body:'unexpected'},
+  {inviteId,action:'claim',itemId,body:'unexpected'},
+  {inviteId,action:'unclaim',itemId,body:'unexpected'},
+  {inviteId,action:'post',body:'hello',itemId},
+  {inviteId,action:'post'},
+  {inviteId,action:'claim'},
+  {inviteId,action:'read',unexpected:true}
+ ];
+ for(const payload of invalid){
+  const response=await route(request(payload));
+  assert.equal(response.status,403,JSON.stringify(payload));
+ }
+ assert.deepEqual(calls,[],'rejected payloads must not reach authentication or database adapters');
+});
