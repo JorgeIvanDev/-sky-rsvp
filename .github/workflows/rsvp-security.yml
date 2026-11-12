@@ -88,3 +88,7 @@ jobs:
       - name: Private host inbox SQL authorization tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/private-host-inbox-migration.test.mjs
+
+      - name: Event room isolation and permissions regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/event-room-schema.test.mjs
