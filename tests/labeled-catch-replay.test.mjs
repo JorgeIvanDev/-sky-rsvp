@@ -99,7 +99,7 @@ test('execute production outcome serializer against sparse and complete sensor c
       feet: 4, target: () => 5, catchLike: false, flightFailureReason: reason,
       spinPeak: 0, flightSamples: 20, impactReviewSamples: samples,
       impactReviewAt: impactAt, lastMotionAt: lastSampleAt,
-      Math, Number, postImpactStats: null
+      Math, Number, impactReboundDetected: false, postImpactStats: null
     };
     return runInNewContext('(' + match[1] + ')', context);
   }
@@ -142,7 +142,7 @@ test('production serializer preserves uncertainty for both historical labeled ex
       catchLike: false, flightFailureReason: 'Post-impact sample timeout: no settle evidence',
       spinPeak: last.spin, flightSamples: example.lastSamples.length,
       impactReviewSamples: 0, impactReviewAt: last.ms,
-      lastMotionAt: last.ms, Math, Number
+      lastMotionAt: last.ms, impactReboundDetected: false, Math, Number
     };
     const result = runInNewContext('(' + match[1] + ')', context);
     assert.equal(result.handCatchVerified, false, example.label);
@@ -161,7 +161,7 @@ test('production coverage cannot be complete with sparse samples even without a 
   const context = {
     postImpactStats: null, feet: 4, target: () => 5, catchLike: false,
     flightFailureReason: 'No confirmed catch', spinPeak: 0, flightSamples: 20,
-    impactReviewSamples: 3, impactReviewAt: 1000, lastMotionAt: 1350, Math, Number
+    impactReviewSamples: 3, impactReviewAt: 1000, lastMotionAt: 1350, impactReboundDetected: false, Math, Number
   };
   const outcome = runInNewContext('(' + match[1] + ')', context);
   assert.equal(outcome.postImpactCoverage, 'insufficient_samples');
