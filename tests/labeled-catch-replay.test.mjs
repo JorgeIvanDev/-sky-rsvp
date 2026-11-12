@@ -389,7 +389,7 @@ test('production impact-review replays 350ms with 21 measured readings, sparse c
     return context;
   }
   // Synthetic timings exercise production logic, not fabricated readings from the user's trace.
-  const continuous = replay(Array.from({length:21}, (_, i) => [1000 + 17.5 * (i + 1), 9.8]));
+  const continuous = replay(Array.from({length:21}, (_, i) => [1000 + 17.5 * i, 9.8]));
   assert.equal(continuous.impactReviewSamples, 21);
   assert.equal(continuous.completed?.credited, true, 'complete settle observation may receive unverified gameplay credit');
   assert.match(continuous.flightFailureReason, /cannot be verified from motion alone/);
