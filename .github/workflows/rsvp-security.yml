@@ -96,3 +96,7 @@ jobs:
       - name: Hall of Fame private ranking schema regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/hall-of-fame-schema.test.mjs
+
+      - name: Atomic potluck ownership and access regression tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/potluck-claim-schema.test.mjs
