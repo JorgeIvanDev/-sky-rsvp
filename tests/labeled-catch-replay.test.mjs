@@ -92,7 +92,7 @@ import { runInNewContext } from 'node:vm';
 
 test('execute production outcome serializer against sparse and complete sensor coverage', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const match = html.match(/lastFlightOutcome=(\{postImpactStats,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
+  const match = html.match(/lastFlightOutcome=(\{postImpactStats,reboundDetected:impactReboundDetected,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
   assert.ok(match, 'must locate actual production outcome expression');
   function outcome({ samples, lastSampleAt, reason = 'No confirmed catch', impactAt = 1000 }) {
     const context = {
@@ -133,7 +133,7 @@ test('execute production outcome serializer against sparse and complete sensor c
 // The excerpts end on impact, so neither is evidence of a completed settle review.
 test('production serializer preserves uncertainty for both historical labeled excerpts', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const match = html.match(/lastFlightOutcome=(\{postImpactStats,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
+  const match = html.match(/lastFlightOutcome=(\{postImpactStats,reboundDetected:impactReboundDetected,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
   assert.ok(match, 'production serializer must be found');
   for (const example of fixture.examples.filter(x => Array.isArray(x.lastSamples))) {
     const last = example.lastSamples.at(-1);
@@ -156,7 +156,7 @@ test('production serializer preserves uncertainty for both historical labeled ex
 
 test('production coverage cannot be complete with sparse samples even without a failure reason', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const match = html.match(/lastFlightOutcome=(\{postImpactStats,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
+  const match = html.match(/lastFlightOutcome=(\{postImpactStats,reboundDetected:impactReboundDetected,feet:Number\(feet\.toFixed\(2\)\)[\s\S]*?\});clearTimeout\(flightWatchdog\)/);
   assert.ok(match, 'production outcome serializer must be present');
   const context = {
     postImpactStats: null, feet: 4, target: () => 5, catchLike: false,
