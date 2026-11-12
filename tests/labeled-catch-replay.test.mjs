@@ -342,3 +342,25 @@ test('public scoreboard does not imply a sensor score is a verified hand catch',
   assert.doesNotMatch(html, /textContent='Score posted!'/);
   assert.match(html, /handCatchVerified\s*:\s*false/);
 });
+
+test('production arming cannot mistake startup low gravity for a toss without a launch impulse', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function motion(e){');
+  const end = html.indexOf('\nasync function submitScore', start);
+  assert.ok(start > 0 && end > start);
+  const source = html.slice(start, end);
+  function sample(now, impulse, lowStart) {
+    const context = {
+      state:'armed', lastMotionAt:0, lowStart, lastLaunchImpulse:impulse,
+      motionTrace:[], Math, Number, performance:{now:()=>now}
+    };
+    runInNewContext(source + '\nmotion({accelerationIncludingGravity:{x:1,y:0,z:0},rotationRate:null})', context);
+    return context;
+  }
+  const missing = sample(120,0,1);
+  assert.equal(missing.state,'armed','startup freefall must not launch without an impulse');
+  assert.equal(missing.lowStart,0,'startup low-gravity window must reset');
+  const valid = sample(120,50,80);
+  assert.equal(valid.state,'armed','recent impulse may preserve the low-gravity window');
+  assert.equal(valid.lowStart,80);
+});
