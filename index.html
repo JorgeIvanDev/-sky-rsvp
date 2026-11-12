@@ -106,6 +106,8 @@ function motion(e){
    return;
  }
  if(now-lastMotionAt>250){flightFailureReason='Motion sensor paused for '+Math.round(now-lastMotionAt)+' ms';complete(0,false);return} // sensor gap: cannot trust elapsed flight time
+ // Missing frames cannot establish consecutive near-weightless rebound readings.
+ if(now-lastMotionAt>100){flightReboundLowSamples=0;flightReboundAt=0}
  if(flightReboundAnchor&&now-flightReboundAnchor>100){
    // A distinct low-gravity interval after an impact, followed by another collision,
    // indicates a bounce/tumble rather than a settled catch. Do not use spin or impact alone.
