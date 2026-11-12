@@ -62,7 +62,7 @@ function motionTraceReport(){return JSON.stringify({version:3,recordedAt:new Dat
 $('downloadMotionTrace').onclick=()=>{if(!lastFlightTrace.length){$('traceExportStatus').textContent='No completed trace to download.';return}const blob=new Blob([motionTraceReport()],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cnidaria-motion-trace.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);$('traceExportStatus').textContent='Motion trace download started.'};
 $('copyMotionTrace').onclick=()=>{if(!lastFlightTrace.length){$('detail').textContent='No completed flight trace yet. Activate and attempt a throw first.';return}const report=motionTraceReport();if(navigator.clipboard?.writeText){navigator.clipboard.writeText(report).then(()=>$('detail').textContent='Sensor trace copied ('+lastFlightTrace.length+' samples).').catch(()=>$('detail').textContent='Clipboard unavailable. Try another browser.')}else $('detail').textContent='Clipboard unavailable. Try another browser.'};
 // Build identifier for distinguishing cached browser tabs during device calibration.
-const cnidariaBuild='rebound-contiguous-v10-20261111';
+const cnidariaBuild='rebound-gap-aware-v11-20261111';
 $('engineBuild').textContent='ENGINE BUILD · '+cnidariaBuild;
 let gentleSettleSamples=0,strongImpactAt=0,strongFirstFeet=0,lastFlightOutcome=null;
 function beginImpactReview(feet,now){
@@ -80,6 +80,8 @@ function motion(e){
  const now=performance.now(),m=Math.hypot(a.x,a.y,a.z),r=e.rotationRate;const spin=r?Math.hypot(r.alpha||0,r.beta||0,r.gamma||0):0;motionTrace.push({ms:Math.round(now),state,g:Number(m.toFixed(2)),spin:Number(spin.toFixed(1))});if(motionTrace.length>1200)motionTrace.shift();
  if(state==='impact-review'){
    if(now-lastMotionAt>250){flightFailureReason='Post-impact sensor gap: catch unverified';complete(impactReviewFeet,false);return}
+   // Missing intermediate sensor frames cannot count as consecutive rebound evidence.
+   if(now-lastMotionAt>100)impactReboundLowSamples=0;
    lastMotionAt=now;impactReviewSamples++;
    // A renewed near-weightless interval followed by another impact is consistent with a cushion rebound.
    // Do not use impact magnitude or spin alone: legitimate hand catches can have large spikes.
