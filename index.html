@@ -62,7 +62,7 @@ function motionTraceReport(){return JSON.stringify({version:3,recordedAt:new Dat
 $('downloadMotionTrace').onclick=()=>{if(!lastFlightTrace.length){$('traceExportStatus').textContent='No completed trace to download.';return}const blob=new Blob([motionTraceReport()],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cnidaria-motion-trace.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);$('traceExportStatus').textContent='Motion trace download started.'};
 $('copyMotionTrace').onclick=()=>{if(!lastFlightTrace.length){$('detail').textContent='No completed flight trace yet. Activate and attempt a throw first.';return}const report=motionTraceReport();if(navigator.clipboard?.writeText){navigator.clipboard.writeText(report).then(()=>$('detail').textContent='Sensor trace copied ('+lastFlightTrace.length+' samples).').catch(()=>$('detail').textContent='Clipboard unavailable. Try another browser.')}else $('detail').textContent='Clipboard unavailable. Try another browser.'};
 // Build identifier for distinguishing cached browser tabs during device calibration.
-const cnidariaBuild='rebound-guard-v9-20261111';
+const cnidariaBuild='rebound-contiguous-v10-20261111';
 $('engineBuild').textContent='ENGINE BUILD · '+cnidariaBuild;
 let gentleSettleSamples=0,strongImpactAt=0,strongFirstFeet=0,lastFlightOutcome=null;
 function beginImpactReview(feet,now){
@@ -83,7 +83,7 @@ function motion(e){
    lastMotionAt=now;impactReviewSamples++;
    // A renewed near-weightless interval followed by another impact is consistent with a cushion rebound.
    // Do not use impact magnitude or spin alone: legitimate hand catches can have large spikes.
-   if(m<2.5)impactReboundLowSamples++;else if(impactReboundLowSamples>=2&&m>16)impactReboundDetected=true;
+   if(m<2.5)impactReboundLowSamples++;else if(m>16){if(impactReboundLowSamples>=2)impactReboundDetected=true;impactReboundLowSamples=0}else impactReboundLowSamples=0;
    if(impactReboundDetected){flightFailureReason='Rebound after impact: possible couch landing; catch unverified';complete(impactReviewFeet,false);return}
    $('status').textContent='IMPACT · CHECKING SETTLE';
    $('detail').textContent='Collecting post-impact motion ('+Math.round(now-impactReviewAt)+' ms)';
