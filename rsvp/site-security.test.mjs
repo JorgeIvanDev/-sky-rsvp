@@ -8,17 +8,17 @@ test('invitation URL payloads are protected by a no-referrer policy',()=>{
  assert.match(html,/<meta\s+name="referrer"\s+content="no-referrer">/);
 });
 
-test('guest reveal requires a completed challenge attempt',()=>{
- assert.match(html,/function revealInvite\(\)\{if\(!incoming\|\|!challengeAttempted\)return;/);
+test('guest reveal remains available without forcing a game attempt',()=>{
+ assert.match(html,/function revealInvite\(options=\{\}\)\{if\(!incoming\)return;/);
  assert.match(html,/id="safeReveal">/);
- assert.match(html,/\$\('safeReveal'\)\.onclick=\(\)=>\{if\(challengeAttempted\)\{revealInvite\(\);return\}/);
+ assert.match(html,/\$\('safeReveal'\)\.onclick=\(\)=>revealInvite\(\{scroll:true\}\)/);
  assert.match(html,/function complete\(feet,catchLike\)/);
  assert.match(html,/unlockChallengeContent\(\);if\(incoming\)revealInvite\(\)/);
 });
 
 test('invite creation and sharing require a completed attempt',()=>{
  assert.match(html,/id="makeInvite" disabled/);
- assert.match(html,/\$\('makeInvite'\)\.onclick=\(\)=>\{if\(!challengeAttempted\)/);
+ assert.match(html,/\$\('makeInvite'\)\.onclick=async\(\)=>\{if\(inviteCreatePending\)return;if\(!challengeAttempted\)/);
  assert.match(html,/\$\('shareInviteLink'\)\.onclick=async\(\)=>\{if\(!challengeAttempted\|\|!latestInviteUrl\)return;/);
 });
 
