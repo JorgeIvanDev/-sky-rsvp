@@ -492,5 +492,6 @@ test('production impact-review replays 350 ms of readings without claiming hand 
   assert.equal(context.impactReviewSamples, 21);
   assert.equal(context.lastMotionAt, 1350);
   assert.equal(context.impactReboundDetected, false, 'ordinary readings do not prove a rebound');
-  assert.equal(context.completed, undefined, 'review completion is timer-driven, not invented by samples');
+  assert.deepEqual({feet:context.completed?.feet,credited:context.completed?.credited}, {feet:3.03,credited:true}, '350ms of adequately sampled settling can earn unverified gameplay credit; this is not a verified hand catch');
+  assert.equal(context.state, 'done', 'production finalizes review at the observed 350ms boundary');
 });
