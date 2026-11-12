@@ -1,0 +1,10 @@
+import {strict as assert} from "node:assert";
+import {classifyNatasIntent,answerNatas} from "./natas-agent-core.mjs";
+assert.equal(classifyNatasIntent("what is my rank?").type,"rankings");
+assert.equal(classifyNatasIntent("challenge my friend").type,"challenges");
+assert.equal(classifyNatasIntent("my seed phrase is 123").type,"secret_refusal");
+assert.equal(classifyNatasIntent("send 500 sats").type,"transaction_refusal");
+assert.equal(answerNatas("send 500 sats").actions.length,0);
+assert.match(answerNatas("wallet login").reply,/Never share your seed phrase/);
+assert.match(answerNatas("what is my score",{nickname:"Ace",personalBest:5}).reply,/5/);
+console.log("Natas agent core: 7 checks passed");
