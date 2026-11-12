@@ -104,3 +104,7 @@ jobs:
       - name: Private event chat membership and permissions regression tests
         if: success() || failure()
         run: node --test --test-reporter=spec rsvp/event-chat-schema.test.mjs
+
+      - name: Trusted event-room session and mutation boundary tests
+        if: success() || failure()
+        run: node --test --test-reporter=spec rsvp/trusted-event-room-access.test.mjs
