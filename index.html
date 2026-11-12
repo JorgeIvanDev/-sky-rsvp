@@ -99,7 +99,7 @@ function motion(e){
    if(lastMotionAt&&now-lastMotionAt>150){lowStart=0;lastLaunchImpulse=0;}
    lastMotionAt=now;
    if(m>13&&m<65)lastLaunchImpulse=now;
-   if(m<2.5&&now-lastLaunchImpulse<450){
+   if(m<2.5&&lastLaunchImpulse>0&&now-lastLaunchImpulse<450){
      if(!lowStart)lowStart=now;
      if(now-lowStart>=100){state='flying';flightStart=lowStart;impactCount=0;impactStartedAt=0;firstImpactFeet=0;gentleSettleSamples=0;strongImpactAt=0;strongFirstFeet=0;freefallMs=0;freefallLastAt=now;airborneLostAt=0;flightSamples=0;lastMotionAt=now;flightFailureReason='No confirmed catch';clearTimeout(flightWatchdog);flightWatchdog=setTimeout(()=>{if(state==='flying'){flightFailureReason='Flight timeout: no confirmed catch or sensor stopped';complete(0,false)}},8100);$('status').textContent='FLIGHT DETECTED';$('detail').textContent='Tracking flight and rotation...'}
    }else lowStart=0;
