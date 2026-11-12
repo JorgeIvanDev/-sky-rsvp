@@ -42,6 +42,13 @@ export function createEventRoomHttpRouter(access) {
       if (!payload || typeof payload!=='object' || Array.isArray(payload)) return deny();
       if (Object.keys(payload).some(k=>!['inviteId','action','itemId','body'].includes(k))) return deny();
       if (!['read','claim','unclaim','post'].includes(payload.action)) return deny();
+      // Each action has an exact payload shape: prevent confused-deputy
+      // behavior if adapters later start consuming additional fields.
+      const expected = payload.action === 'read' ? ['action','inviteId']
+        : payload.action === 'post' ? ['action','body','inviteId']
+        : ['action','inviteId','itemId'];
+      const actual = Object.keys(payload).sort();
+      if (actual.length !== expected.length || actual.some((key,i)=>key!==expected[i])) return deny();
       const result=await access.execute({...payload,rawRequest:request});
       if (!result || ![200,201,400,401,403,409,429].includes(result.status) || !result.body) return deny();
       return new Response(JSON.stringify(result.body),{status:result.status,headers});
