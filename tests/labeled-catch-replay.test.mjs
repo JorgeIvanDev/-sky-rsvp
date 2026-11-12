@@ -256,3 +256,21 @@ test('production motion state machine resets stale launch low-gravity window aft
   assert.equal(continuous.lowStart, 1000, 'continuous readings retain their low-gravity start');
   assert.equal(continuous.lastLaunchImpulse, 1000, 'continuous sensor readings retain a recent launch impulse');
 });
+
+test('production rebound detector requires adjacent near-weightless readings before a later impact', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const match = html.match(/if\(m<2\.5\)impactReboundLowSamples\+\+;else if\(m>16\)\{if\(impactReboundLowSamples>=2\)impactReboundDetected=true;impactReboundLowSamples=0\}else impactReboundLowSamples=0;/);
+  assert.ok(match, 'test must execute the production rebound expression');
+  function replay(values) {
+    const context = { impactReboundLowSamples: 0, impactReboundDetected: false };
+    for (const m of values) {
+      context.m = m;
+      runInNewContext(match[0], context);
+    }
+    return context.impactReboundDetected;
+  }
+  assert.equal(replay([1, 1, 25]), true, 'continuous freefall then re-impact is suspicious');
+  assert.equal(replay([1, 9.8, 1, 25]), false, 'separated isolated lows are not continuous rebound');
+  assert.equal(replay([1, 1, 9.8, 25]), false, 'settling between lows and impact breaks rebound sequence');
+  assert.equal(replay([34, 58, 9.8, 9.8]), false, 'high catch spikes alone do not establish rebound');
+});
