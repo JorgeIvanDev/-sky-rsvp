@@ -403,3 +403,33 @@ test('production impact-review replays 350ms with 21 measured readings, sparse c
   assert.equal(gap.completed?.credited, false);
   assert.match(gap.flightFailureReason, /sensor gap/);
 });
+
+test('in-flight couch rebound survives the 220ms initial-impact reset', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function motion(e){');
+  const end = html.indexOf('\nasync function submitScore', start);
+  assert.ok(start > 0 && end > start);
+  const source = html.slice(start, end);
+  const elements = new Map();
+  const ctx = {
+    state:'flying', flightStart:1000, lastMotionAt:1400, freefallMs:300,
+    flightSamples:8, flightPeak:2, spinPeak:0, impactStartedAt:0,
+    firstImpactFeet:0, impactCount:0, strongImpactAt:0, strongFirstFeet:0,
+    gentleSettleSamples:0, airborneLostAt:0, flightReboundAnchor:0,
+    flightReboundAt:0, flightReboundLowSamples:0, motionTrace:[],
+    Math, Number, G:9.80665, FT:3.28084, performance:{now:()=>ctx.clock},
+    $: id => {if(!elements.has(id))elements.set(id,{textContent:''});return elements.get(id)},
+    complete:(feet,credit)=>{ctx.completed={feet,credit};ctx.state='done'}
+  };
+  function sample(ms,g){
+    ctx.clock=ms;
+    runInNewContext(source+'\nmotion({accelerationIncludingGravity:{x:'+g+',y:0,z:0},rotationRate:null})',ctx);
+  }
+  sample(1416,25); // first airborne collision
+  assert.equal(ctx.flightReboundAnchor,1416);
+  sample(1650,1); // after original 220ms impact window, first rebound reading
+  sample(1670,1); // sustained renewed low gravity
+  sample(1690,25); // distinct re-impact
+  assert.equal(ctx.completed?.credit,false,'couch-like re-impact must not receive credit');
+  assert.match(ctx.flightFailureReason,/Repeated airborne impact after rebound/);
+});
