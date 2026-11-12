@@ -334,3 +334,11 @@ test('one-tap retry discards stale launch and first-impact evidence before armin
   assert.equal(context.motionTrace.length, 0, 'retry starts a fresh diagnostic trace');
   assert.equal(elements.get('activate').disabled, true, 'retry must not double-arm');
 });
+
+test('public scoreboard does not imply a sensor score is a verified hand catch', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /Sensor-reported score posted \(unverified; not proof of a hand catch\)/);
+  assert.match(html, /Unverified sensor-reported leaderboard/);
+  assert.doesNotMatch(html, /textContent='Score posted!'/);
+  assert.match(html, /handCatchVerified\s*:\s*false/);
+});
