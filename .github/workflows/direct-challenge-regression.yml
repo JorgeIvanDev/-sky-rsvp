@@ -1,7 +1,7 @@
 name: Direct challenge regression
 on:
   push:
-    paths: ['direct-challenge.html','cnidaria-motion-core.mjs','cnidaria-motion-core.test.mjs','direct-challenge.test.mjs','tests/direct-challenge-oauth.test.mjs','tests/direct-challenge-creation.test.mjs','.github/workflows/direct-challenge-regression.yml']
+    paths: ['direct-challenge.html','cnidaria-motion-core.mjs','cnidaria-motion-core.test.mjs','gauntlet-sprint3.test.mjs','direct-challenge.test.mjs','tests/direct-challenge-oauth.test.mjs','tests/direct-challenge-creation.test.mjs','.github/workflows/direct-challenge-regression.yml']
   pull_request:
     paths: ['direct-challenge.html','direct-challenge.test.mjs','tests/direct-challenge-oauth.test.mjs','tests/direct-challenge-creation.test.mjs']
 jobs:
@@ -12,5 +12,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test cnidaria-motion-core.test.mjs direct-challenge.test.mjs tests/direct-challenge-oauth.test.mjs tests/direct-challenge-creation.test.mjs
+      - run: node --test cnidaria-motion-core.test.mjs gauntlet-sprint3.test.mjs direct-challenge.test.mjs tests/direct-challenge-oauth.test.mjs tests/direct-challenge-creation.test.mjs
       - run: node tests/motion-regression.js
