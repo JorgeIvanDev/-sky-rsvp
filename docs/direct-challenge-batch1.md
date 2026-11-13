@@ -1,0 +1,10 @@
+-- CNIDARIA Batch 1 live database schema snapshot, 2026-11-13.
+-- The canonical schema and functions were applied using Supabase SQL; retain as audit/reference.
+-- Tables: public.cnt_direct_challenges and public.cnt_direct_challenge_invites.
+-- RPCs: cnt_create_direct_challenge(text,timestamptz), cnt_preview_direct_challenge(uuid),
+-- cnt_respond_direct_challenge(uuid,boolean).
+-- RLS enabled on both tables; participants may SELECT challenge rows; invites are not directly exposed.
+-- Only authenticated users may execute the RPCs. Each checks auth.uid().
+-- Invite tokens are UUID v4 values, stored as MD5 digests of random UUID text.
+-- IMPORTANT: this file is a schema manifest, NOT a replayable full migration.
+-- Obtain full pg_get_functiondef/pg_get_tabledef and generate a canonical migration before fresh installs.
