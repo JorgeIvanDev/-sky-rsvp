@@ -302,8 +302,9 @@ test('production impact-review state machine does not bridge missing frames into
   assert.equal(rebound.completed?.credited, false, 'rebound must not receive catch credit');
   const interrupted = replay([[1016,1],[1150,1],[1166,25]]);
   assert.equal(interrupted.impactReboundDetected, false, '130 ms missing frames break the low-gravity sequence');
-  assert.equal(interrupted.completed, undefined, 'interrupted sequence alone must not end the review');
-  assert.equal(interrupted.impactReviewSamples, 3);
+  assert.equal(interrupted.completed?.credited, false, '130 ms missing frames must terminate review without catch credit');
+  assert.match(interrupted.flightFailureReason, /Post-impact sensor gap/);
+  assert.equal(interrupted.impactReviewSamples, 1, 'only the first continuous post-impact sample is counted');
   const gap = replay([[1016,1],[1290,1]]);
   assert.match(gap.flightFailureReason, /Post-impact sensor gap/, 'large sensor gap fails closed');
   assert.equal(gap.completed?.credited, false);
