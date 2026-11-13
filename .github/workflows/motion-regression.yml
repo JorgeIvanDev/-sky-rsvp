@@ -4,12 +4,14 @@ on:
     paths:
       - 'tests/motion-regression.js'
       - 'tests/engine-sanity.js'
+      - 'tests/production-impact-replay.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   pull_request:
     paths:
       - 'tests/motion-regression.js'
       - 'tests/engine-sanity.js'
+      - 'tests/production-impact-replay.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   workflow_dispatch:
@@ -26,3 +28,5 @@ jobs:
         run: node tests/motion-regression.js
       - name: Check browser engine syntax and test alignment
         run: node tests/engine-sanity.js
+      - name: Replay production post-impact sensor sequences
+        run: node --test tests/production-impact-replay.test.mjs
