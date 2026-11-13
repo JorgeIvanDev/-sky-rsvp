@@ -98,3 +98,26 @@ test('gap before first post-impact reading fails closed',()=>{
  assert.equal(ctx.impactReviewSamples,0);
  assert.match(ctx.flightFailureReason,/Post-impact sensor gap/);
 });
+
+test('large hand-like impact spikes alone do not trigger couch rebound rejection',()=>{
+ // Synthetic stress sequence, NOT the user's incomplete 21-frame hand trace.
+ // High acceleration is possible during a genuine hand catch; only a
+ // low-gravity interval followed by re-impact is treated as rebound evidence.
+ const magnitudes=[38.91,11.42,18.94,20.65,14.24,16.67,13.63];
+ const readings=Array.from({length:21},(_,i)=>[
+  1000+Math.round((i+1)*350/21),magnitudes[i%magnitudes.length]
+ ]);
+ const ctx=replay(readings);
+ assert.equal(ctx.impactReviewSamples,21);
+ assert.equal(ctx.impactReboundDetected,false);
+ assert.equal(ctx.completed?.credited,true,
+  'sufficient impact-review coverage earns only unverified gameplay credit');
+ assert.match(ctx.flightFailureReason,/hand catch cannot be verified/);
+});
+test('two isolated near-weightless samples separated by gravity never become a rebound',()=>{
+ const readings=[[1020,1],[1040,9.8],[1060,1],[1080,25],
+  [1100,9.8],[1120,9.8],[1140,9.8],[1160,9.8]];
+ const ctx=replay(readings);
+ assert.equal(ctx.impactReboundDetected,false);
+ assert.equal(ctx.completed,undefined);
+});
