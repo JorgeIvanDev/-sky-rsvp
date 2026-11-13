@@ -8,6 +8,7 @@ on:
       - 'index.html'
       - 'tests/rsvp-create-response-guard.test.cjs'
       - 'tests/direct-challenge-oauth.test.mjs'
+      - 'tests/direct-challenge-response.test.mjs'
       - '.github/workflows/rsvp-security.yml'
   pull_request:
     paths:
@@ -17,6 +18,7 @@ on:
       - 'index.html'
       - 'tests/rsvp-create-response-guard.test.cjs'
       - 'tests/direct-challenge-oauth.test.mjs'
+      - 'tests/direct-challenge-response.test.mjs'
       - '.github/workflows/rsvp-security.yml'
   workflow_dispatch:
 permissions:
@@ -34,6 +36,8 @@ jobs:
         run: node tests/rsvp-create-response-guard.test.cjs
       - name: Direct challenge Google OAuth invite continuity regression
         run: node --test --test-reporter=spec tests/direct-challenge-oauth.test.mjs
+      - name: Direct challenge response confirmation regression
+        run: node --test --test-reporter=spec tests/direct-challenge-response.test.mjs
       - name: Challenge policy regression tests
         run: node --test --test-reporter=spec rsvp/challenge-policy.test.mjs
       - name: Atomic one-attempt challenge regression tests
