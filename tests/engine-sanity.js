@@ -15,7 +15,11 @@ for(const [name,pattern] of [
  ['consecutive strong impacts',/impactCount=0/],
  ['gentle stable readings',/gentleSettleSamples>=3/],
  ['spin excludes catch impact',/if\(r&&m<2\.5\)/],
- ['first impact height',/complete\(firstImpactFeet,true\)/],
+ ['first impact height preserved for review',/beginImpactReview\(firstImpactFeet,now\)/],
+ ['strong impact height preserved for review',/beginImpactReview\(strongFirstFeet,now\)/],
+ ['post-impact 350ms review',/now-impactReviewAt>=350/],
+ ['post-impact minimum coverage',/impactReviewSamples<8/],
+ ['rebound rejects catch',/if\(impactReboundDetected\)/],
  ['sensor gap guard',/now-lastMotionAt>250/]
 ])assert.match(motion,pattern,name+' invariant missing');
 console.log('PASS: '+scripts.length+' inline scripts parse and engine guards present');
