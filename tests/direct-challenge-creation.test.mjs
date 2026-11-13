@@ -6,7 +6,7 @@ const html=readFileSync(new URL('../direct-challenge.html',import.meta.url),'utf
 const script=html.split('<script type="module">')[1].split('</script>')[0];
 function handler(id){const marker="$('"+id+"').onclick=";const start=script.indexOf(marker);assert.ok(start>=0);const end=script.indexOf("\n",start);return script.slice(start,end);}
 test('OAuth invitation preview runs even if challenge list refresh fails',()=>{
- assert.match(script,/if\(session\)\{run\(refresh\);if\(invite\)run\(preview\)\}/);
+ assert.match(script,/if\(session\)\{run\(refresh\);if\(invite\)run\(preview\);/);
  assert.doesNotMatch(script,/await refresh\(\);await preview\(\)/);
 });
 test('challenge create disables during network request and re-enables after failures',()=>{
