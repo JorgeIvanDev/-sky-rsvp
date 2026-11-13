@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createLedger, awardCNT, createMeeting, simulateDeposit, simulateCheckIn, expireMeeting, CNT_MAX_SUPPLY } from './cnt-core.mjs';
 const award = (l, activity, proofId, day='2026-11-13') => awardCNT(l, {playerId:'alice',activity,proofId,day});
 test('all four activities mint to one shared CNT balance', () => {
- const l=createLedger(); for(const [a,i] of ['toss','direct_challenge','event_attendance','lock_to_meet'].entries()) assert.ok(award(l,a,'p'+i).awarded>0);
+ const l=createLedger(); for(const [i,a] of ['toss','direct_challenge','event_attendance','lock_to_meet'].entries()) assert.ok(award(l,a,'p'+i).awarded>0);
  assert.equal(l.balances.alice,27); assert.equal(l.minted,27);
 });
 test('idempotency prevents replay minting',()=>{const l=createLedger();award(l,'toss','proof');assert.equal(award(l,'toss','proof').reason,'duplicate');assert.equal(l.minted,2)});
