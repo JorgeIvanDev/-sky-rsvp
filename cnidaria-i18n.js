@@ -29,6 +29,16 @@ for(const [key,selector] of Object.entries(extraSelectors)){const el=document.qu
 const question=document.getElementById('question');if(question)question.placeholder=extra[lang].placeholder;
 if(document.querySelector('.creature')){const intro=document.querySelector('main > p');if(intro)intro.textContent=lang==='es'?'Tu pequeño amigo sospechosamente servicial.':lang==='pt'?'Seu amiguinho suspeitosamente prestativo.':'Your suspiciously helpful little friend.';const heading=document.querySelector('.eyebrow');if(heading)heading.textContent=lang==='es'?'MASCOTA EXPERIMENTAL · NO ES EL JUEGO EN VIVO':lang==='pt'?'MASCOTE EXPERIMENTAL · NÃO É O JOGO AO VIVO':'EXPERIMENTAL MASCOT · NOT THE LIVE GAME'}const picker=document.getElementById('cnidaria-language');if(picker){picker.value=lang;picker.setAttribute('aria-label',dict.language)}
 }
+// Reapply translated labels when the game updates button states after an attempt.
+const observer=new MutationObserver(records=>{
+ if(records.some(r=>r.type==='childList'&&r.target?.id==='cnidaria-language'))return;
+ if(window.CnidariaI18n?.language==='en')return;
+ if(observerBusy)return;
+ observerBusy=true;
+ queueMicrotask(()=>{try{apply()}finally{observerBusy=false}});
+});
+let observerBusy=false;
+observer.observe(document.body,{subtree:true,childList:true});
 const picker=document.createElement('select');picker.id='cnidaria-language';picker.setAttribute('aria-label','Language / Idioma');picker.style.cssText='position:fixed;right:12px;top:12px;z-index:9999;background:#122438;color:white;border:1px solid #5c8499;border-radius:9px;padding:7px 9px;font:600 13px system-ui;max-width:130px';picker.innerHTML='<option value="en">🇺🇸 English</option><option value="es">🇨🇴 Español</option><option value="pt">🇧🇷 Português</option>';picker.addEventListener('change',()=>{lang=choose(picker.value);try{localStorage.setItem('cnidaria-language',lang)}catch{}apply();document.dispatchEvent(new CustomEvent('cnidaria:languagechange',{detail:{language:lang}}))});document.body.appendChild(picker);apply();
 document.addEventListener('cnidaria:translate',apply);
 window.CnidariaI18n=Object.freeze({get language(){return lang},t:(key)=>messages[lang][key]||messages.en[key]||key,apply});
