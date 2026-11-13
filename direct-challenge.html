@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id);
 const PENDING='cnidaria-pending-direct-challenge-v1';
 const params=new URLSearchParams(location.search);
 let invite=params.get('challenge');
-if(!invite){try{const saved=JSON.parse(sessionStorage.getItem(PENDING)||'null');if(saved&&Date.now()-saved.at<15*60*1000&&typeof saved.token==='string')invite=saved.token}catch{}}
+if(!invite){try{const saved=JSON.parse(sessionStorage.getItem(PENDING)||'null');if(saved&&Number.isFinite(saved.at)&&saved.at<=Date.now()&&Date.now()-saved.at<15*60*1000&&typeof saved.token==='string')invite=saved.token}catch{}}
 if(invite&&!/^[A-Za-z0-9_-]{16,256}$/.test(invite)){invite=null}
 $('google-login').addEventListener('click',()=>{if(invite)try{sessionStorage.setItem(PENDING,JSON.stringify({token:invite,at:Date.now()}))}catch{}});
 
