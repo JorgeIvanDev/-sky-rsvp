@@ -5,6 +5,8 @@ export function classifyNatasIntent(input) {
   const text=String(input??"").trim().slice(0,500);
   if (!text) return {type:"help"};
   if (/seed[\s-]*phrase|private[\s-]*key|recovery[\s-]*phrase|mnemonic|password|contrase(?:ñ|n)a|senha|frase[\s-]*(?:semilla|de[\s-]*recupera(?:ción|cao|ção)?)|chave[\s-]*privada|clave[\s-]*privada/i.test(text)) return {type:"secret_refusal"};
+  // Asking to share a challenge does not authorize money movement or actual delivery.
+  if (/(?:send|share|enviar|mandar|compartir|compartilhar)\s+(?:(?:a|my|um|un|o|el)\s+)?(?:challenge|desaf[ií]o|reto|desafio)\b/i.test(text) && !/\b(?:sats?|bsv|bitcoin|money|dinero|dinheiro|funds?|wallet|carteira|billetera|pagar|pay|bet|wager|aposta|apostar|transfer|withdraw|retirar)\b/i.test(text)) return {type:"challenges"};
   if (/send|transfer|withdraw|stake|bet|wager|pay|sign[\s-]*transaction|env[ií](?:a|ar|e|o)|mand(?:a|ar|e)\s+(?:dinero|sats|bitcoin|bsv)|transferir|retirar[\s-]*dinero|apostar|pagar|transfer[eê]ncia|saque|sacar[\s-]*dinero|enviar[\s-]*(?:dinero|sats)|enviar[\s-]*(?:bitcoin|bsv)/i.test(text)) return {type:"transaction_refusal"};
   if (/wallet|log.?in|sign.?in|identity|address|billetera|cartera|iniciar sesi[oó]n|identidad|carteira|entrar na conta/i.test(text)) return {type:"wallet_help"};
   if (/rank|leaderboard|hall of fame|personal best|score|clasificaci[oó]n|puntuaci[oó]n|r[aá]nking|puntaje|sal[oã]o da fama|pontua[cç][aã]o/i.test(text)) return {type:"rankings"};
