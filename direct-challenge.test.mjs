@@ -10,3 +10,9 @@ test('incoming token preview is not hidden by unrelated accepted or completed ch
   assert.ok(!preview[1].includes("current.some"),'other games must not suppress incoming invitation');
   assert.ok(!preview[1].includes("status==='accepted'"),'existing accepted games are unrelated');
 });
+
+test('pending OAuth invitation recovery rejects future timestamps and expires within 15 minutes',()=>{
+  assert.ok(h.includes('Number.isFinite(saved.at)'));
+  assert.ok(h.includes('saved.at<=Date.now()'));
+  assert.ok(h.includes('Date.now()-saved.at<15*60*1000'));
+});
