@@ -6,6 +6,8 @@ on:
       - 'rsvp/**'
       - 'supabase/**'
       - 'index.html'
+      - 'cnidaria-i18n.js'
+      - 'cnidaria-i18n.test.mjs'
       - '.github/workflows/wallet-tests.yml'
   pull_request:
     paths:
@@ -26,4 +28,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run recovery phrase and encrypted vault tests
-        run: node --test wallet/*.test.mjs rsvp/*.test.mjs
+        run: node --test wallet/*.test.mjs rsvp/*.test.mjs cnidaria-i18n.test.mjs
