@@ -23,3 +23,10 @@ test('successful challenge creation survives a failed list refresh',()=>{
  assert.match(code,/status\('Challenge created\. Share the link\.'/);
  assert.match(code,/try\{await refresh\(\)\}catch\(e\)/);
 });
+
+test('challenge creation refuses missing, malformed and oversized invite tokens',()=>{
+ const code=handler('create');
+ assert.match(code,/typeof token!=='string'/);
+ assert.match(code,/\^\[A-Za-z0-9_-\]\{16,256\}\$/);
+ assert.match(code,/Server did not return a valid invitation token/);
+});
