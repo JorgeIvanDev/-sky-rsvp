@@ -4,6 +4,7 @@ on:
     paths:
       - 'cnt-core.mjs'
       - 'cnt-core.test.mjs'
+      - 'cnt-next.test.mjs'
       - 'cnt-lab.html'
       - '.github/workflows/cnt-tests.yml'
   pull_request:
@@ -20,4 +21,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test cnt-core.test.mjs
+      - run: node --test cnt-core.test.mjs cnt-next.test.mjs

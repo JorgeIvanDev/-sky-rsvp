@@ -11,3 +11,9 @@ Status: simulated accounting only. **Not an issued BSV token, real escrow, live 
 - Never collect private keys or automatically forfeit money based only on device location.
 - Existing CNIDARIA toss gates and RSVP flows are untouched by this prototype.
 - Try the standalone lab at /cnt-lab.html.
+
+## Iteration 2
+- CNT Lab stores a demo ledger in browser localStorage and validates totals on reload. This is not a secure server ledger; users can edit local data.
+- Demo proof records have explicit player/activity/proof/day/evidence structure and idempotency checks. The `demo_attestation` is intentionally untrusted and cannot authorize real token issuance.
+- Meeting cancellation returns simulated deposits to participants who deposited, before check-in. Expiration requires manual review rather than automatic confiscation.
+- Real next step: authenticated server event ingestion with trusted event verification and atomic database constraints.

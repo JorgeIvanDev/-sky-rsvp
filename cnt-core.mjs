@@ -55,3 +55,41 @@ export function expireMeeting(ledger, meetingId, now) {
   m.settlement = { type: 'manual_review_required', note: 'No automatic forfeiture based on spoofable location evidence' };
   return m;
 }
+
+export function cancelMeeting(ledger, meetingId, playerId) {
+ const m=ledger.commitments[meetingId]; if(!m || ![m.inviter,m.invitee].includes(playerId)) throw new Error('Not participant');
+ if(m.status==='completed'||m.status==='expired'||m.status==='cancelled') throw new Error('Meeting closed');
+ if(m.checkedIn.length) throw new Error('Check-in started; manual review required');
+ m.status='cancelled';
+ m.settlement={type:'simulated_refund_depositors',players:[...m.deposits],satsEach:m.sats};
+ return m;
+}
+export function validateActivityProof(proof) {
+ if(!proof || typeof proof!=='object' || Array.isArray(proof)) throw new Error('Invalid proof');
+ const {playerId,activity,proofId,day,evidence}=proof;
+ requireId(playerId,'playerId');requireId(proofId,'proofId');
+ if(!CNT_ACTIVITIES[activity]) throw new Error('Unknown activity');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(day||'') || new Date(day+'T00:00:00Z').toISOString().slice(0,10)!==day) throw new Error('Invalid day');
+ if(!evidence || typeof evidence!=='object' || Array.isArray(evidence) || evidence.kind!=='demo_attestation' || evidence.verified!==true) throw new Error('Unverified proof');
+ return {playerId,activity,proofId,day};
+}
+export function awardFromDemoProof(ledger,proof) {
+ // Demo-only. A client-controlled attestation is NOT a trusted production proof.
+ return awardCNT(ledger,validateActivityProof(proof));
+}
+export function validateLedger(snapshot) {
+ if(!snapshot || snapshot.version!==1 || !snapshot.balances || !Array.isArray(snapshot.awards) || !snapshot.commitments) throw new Error('Invalid ledger snapshot');
+ const fresh=createLedger();
+ for(const a of snapshot.awards) {
+   if(!a || !CNT_ACTIVITIES[a.activity] || typeof a.amount!=='number' || a.amount!==CNT_ACTIVITIES[a.activity].reward) throw new Error('Invalid award record');
+   const result=awardCNT(fresh,{playerId:a.playerId,activity:a.activity,proofId:a.proofId,day:a.day});
+   if(result.awarded!==a.amount || result.ledger.awards.at(-1).key!==a.key) throw new Error('Invalid award history');
+ }
+ if(fresh.minted!==snapshot.minted || JSON.stringify(fresh.balances)!==JSON.stringify(snapshot.balances)) throw new Error('Ledger totals mismatch');
+ for(const [id,m] of Object.entries(snapshot.commitments)){
+   requireId(id,'meetingId');
+   if(!m || m.meetingId!==id || !['proposed','locked_simulated','completed','expired','cancelled'].includes(m.status) || !Array.isArray(m.deposits) || !Array.isArray(m.checkedIn) || !Number.isSafeInteger(m.sats) || m.sats<=0 || !Number.isFinite(m.deadline)) throw new Error('Invalid meeting snapshot');
+   fresh.commitments[id]=m;
+ }
+ return fresh;
+}
