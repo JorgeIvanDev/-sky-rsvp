@@ -71,3 +71,30 @@ test('post-impact gap of 101ms rejects before counting the delayed reading',()=>
  assert.equal(ctx.impactReviewSamples,1);
  assert.match(ctx.flightFailureReason,/Post-impact sensor gap/);
 });
+
+test('350ms observation with only seven readings never receives gameplay credit',()=>{
+ const readings=Array.from({length:7},(_,i)=>[1000+(i+1)*50,9.8]);
+ const ctx=replay(readings);
+ assert.equal(ctx.completed?.credited,false);
+ assert.equal(ctx.impactReviewSamples,7);
+ assert.match(ctx.flightFailureReason,/sample coverage insufficient/);
+});
+test('eight continuous post-impact readings at 350ms meet the minimum coverage gate',()=>{
+ const readings=Array.from({length:8},(_,i)=>[1000+Math.round((i+1)*350/8),9.8]);
+ const ctx=replay(readings);
+ assert.equal(ctx.completed?.credited,true);
+ assert.equal(ctx.impactReviewSamples,8);
+ assert.equal(ctx.impactReboundDetected,false);
+});
+test('re-impact after low-gravity rebound rejects even after initially stable readings',()=>{
+ const ctx=replay([[1020,9.8],[1040,9.8],[1060,1.1],[1080,1.3],[1100,26],[1120,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.equal(ctx.impactReboundDetected,true);
+ assert.match(ctx.flightFailureReason,/Rebound after impact/);
+});
+test('gap before first post-impact reading fails closed',()=>{
+ const ctx=replay([[1101,9.8],[1120,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.equal(ctx.impactReviewSamples,0);
+ assert.match(ctx.flightFailureReason,/Post-impact sensor gap/);
+});
