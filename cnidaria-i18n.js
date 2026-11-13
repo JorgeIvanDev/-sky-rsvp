@@ -35,7 +35,7 @@ const observer=new MutationObserver(records=>{
  if(window.CnidariaI18n?.language==='en')return;
  if(observerBusy)return;
  observerBusy=true;
- queueMicrotask(()=>{try{apply()}finally{observerBusy=false}});
+ queueMicrotask(()=>{observer.disconnect();try{apply()}finally{observerBusy=false;observer.observe(document.body,{subtree:true,childList:true})}});
 });
 let observerBusy=false;
 observer.observe(document.body,{subtree:true,childList:true});
