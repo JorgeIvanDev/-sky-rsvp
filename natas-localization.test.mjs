@@ -31,3 +31,12 @@ test('unknown language falls back to English without side effects',()=>{
  assert.ok(result.reply.startsWith('Follow the game'));
  assert.deepEqual(result.actions,[]);
 });
+
+test('English invitation guidance explains challenge gate without claiming live RSVP access',()=>{
+ const result=answerNatas('invitation',{language:'en-US'});
+ assert.equal(result.intent,'invitations');
+ assert.match(result.reply,/Complete one challenge attempt/);
+ assert.match(result.reply,/winning is not required/);
+ assert.match(result.reply,/cannot read or change live RSVPs/);
+ assert.deepEqual(result.actions,[]);
+});
