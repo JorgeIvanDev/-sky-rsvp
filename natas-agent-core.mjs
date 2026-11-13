@@ -23,7 +23,7 @@ export function answerNatas(input, context={}) {
     wallet_help:"Your wallet can help prove your identity by signing a one-time login message. Never share your seed phrase. Wallet login isn't connected to this demo yet.",
     rankings: context.personalBest != null ? hello+"Your reported personal best is "+String(context.personalBest)+" (from the supplied game context). I can't verify live rankings in this demo." : "The Hall of Fame tracks qualifying personal bests. I can't read your live rank yet.",
     challenges:"Want a rematch? I'm emotionally prepared. Actual challenge creation will need the game's authenticated API.",
-    invitations:"Invitations and RSVP are part of the game, but I won't change an RSVP without asking. This demo can't read or modify live invitations.",
+    invitations:"Invitations and RSVP are part of the game. Complete one challenge attempt to reveal an invitation and respond; winning is not required. This demo cannot read or change live RSVPs.",
     game_help:"Follow the game's instructions, keep the area clear, and never throw toward people, animals, or breakable objects. The motion sensor can't guarantee a safe catch.",
     help:"I'm Natas. Like nautical. Ask me about the Hall of Fame, wallet sign-in, challenges, invitations, or how to play."
   };
