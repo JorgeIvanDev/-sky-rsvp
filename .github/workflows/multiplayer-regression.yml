@@ -1,0 +1,25 @@
+name: Multiplayer regression
+on:
+  push:
+    paths:
+      - 'multiplayer-beta.html'
+      - 'multiplayer-utils.mjs'
+      - 'multiplayer-utils.test.mjs'
+      - '.github/workflows/multiplayer-regression.yml'
+  pull_request:
+    paths:
+      - 'multiplayer-beta.html'
+      - 'multiplayer-utils.mjs'
+      - 'multiplayer-utils.test.mjs'
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test multiplayer-utils.test.mjs
+      - name: Static page contract
+        run: |
+          node --input-type=module -e "import fs from 'node:fs'; const html=fs.readFileSync('multiplayer-beta.html','utf8'); for(const s of ['multiplayer-utils.mjs','cnt_preview_invitation','cnt_meeting_lobby','Continue with Google'])if(!html.includes(s))throw Error('Missing '+s);"
