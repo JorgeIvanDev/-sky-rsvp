@@ -5,6 +5,9 @@ on:
       - 'cnt-core.mjs'
       - 'cnt-core.test.mjs'
       - 'cnt-next.test.mjs'
+      - 'cnt-meet-utils.mjs'
+      - 'cnt-meet-utils.test.mjs'
+      - 'meeting-checkin.html'
       - 'cnt-lab.html'
       - '.github/workflows/cnt-tests.yml'
   pull_request:
@@ -21,4 +24,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test cnt-core.test.mjs cnt-next.test.mjs
+      - run: node --test cnt-core.test.mjs cnt-next.test.mjs cnt-meet-utils.test.mjs
