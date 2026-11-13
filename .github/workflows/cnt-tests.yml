@@ -1,0 +1,23 @@
+name: CNT prototype tests
+on:
+  push:
+    paths:
+      - 'cnt-core.mjs'
+      - 'cnt-core.test.mjs'
+      - 'cnt-lab.html'
+      - '.github/workflows/cnt-tests.yml'
+  pull_request:
+    paths:
+      - 'cnt-core.mjs'
+      - 'cnt-core.test.mjs'
+      - 'cnt-lab.html'
+      - '.github/workflows/cnt-tests.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test cnt-core.test.mjs
