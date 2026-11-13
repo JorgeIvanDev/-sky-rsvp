@@ -60,3 +60,11 @@ test('all three locales expose safe RSVP choices',()=>{
    }
  }
 });
+
+test('invitation selectors target static text and never overwrite sender or preview',()=>{
+ const html=readFileSync(new URL('./index.html',import.meta.url),'utf8');
+ assert.match(html,/id="incomingInvite"[\s\S]*?id="incomingFrom"[\s\S]*?id="incomingPreview"[\s\S]*?<p class="sub">The invitation is locked/);
+ assert.match(source,/invited:'#incomingInvite > \.eyebrow'/);
+ assert.match(source,/locked:'#incomingInvite > p\.sub:nth-of-type\(4\)'/);
+ assert.doesNotMatch(source,/locked:'[^']*incomingPreview/);
+});
