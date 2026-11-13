@@ -9,7 +9,7 @@ export function classifyNatasIntent(input) {
   if (/wallet|log.?in|sign.?in|identity|address|billetera|cartera|iniciar sesi[oó]n|identidad|carteira|entrar na conta/i.test(text)) return {type:"wallet_help"};
   if (/rank|leaderboard|hall of fame|personal best|score|clasificaci[oó]n|puntuaci[oó]n|r[aá]nking|puntaje|sal[oã]o da fama|pontua[cç][aã]o/i.test(text)) return {type:"rankings"};
   if (/challenge|rematch|friend|opponent|desaf[ií]o|reto|revancha|amigo|desafio|amigos/i.test(text)) return {type:"challenges"};
-  if (/invite|rsvp|event|turkey hall|invitaci[oó]n|confirmar asistencia|evento|convite|presen[cç]a/i.test(text)) return {type:"invitations"};
+  if (/invit(?:e|ation|ations)|rsvp|events?|turkey hall|invitaci[oó]n|confirmar asistencia|evento|convite|presen[cç]a/i.test(text)) return {type:"invitations"};
   if (/how|play|toss|catch|rules|c[oó]mo jugar|jugar|lanzar|atrapar|reglas|como jogar|jogar|lan[cç]ar|pegar|regras/i.test(text)) return {type:"game_help"};
   return {type:"help"};
 }
