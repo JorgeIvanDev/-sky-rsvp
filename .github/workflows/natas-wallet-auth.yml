@@ -5,6 +5,7 @@ on:
       - 'natas-agent-core.mjs'
       - 'natas-agent-core.test.mjs'
       - 'natas-multilingual-safety.test.mjs'
+      - 'natas-localization.test.mjs'
       - 'natas-player-tools.mjs'
       - 'natas-player-tools.test.mjs'
       - 'natas-wallet-auth.mjs'
@@ -23,6 +24,7 @@ jobs:
           node-version: '22'
       - run: node natas-agent-core.test.mjs
       - run: node natas-multilingual-safety.test.mjs
+      - run: node --test natas-localization.test.mjs
       - run: node natas-wallet-auth.test.mjs
       - run: node natas-wallet-challenges.test.mjs
       - run: node natas-read-tools.test.mjs
