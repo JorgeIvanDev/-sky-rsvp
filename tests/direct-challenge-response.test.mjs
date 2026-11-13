@@ -13,7 +13,7 @@ async function exercise(payload,accept=true){
   const elements=new Map();
   const $=id=>{if(!elements.has(id))elements.set(id,{disabled:false,hidden:false,textContent:''});return elements.get(id)};
   let refreshed=0,cleared=0;
-  const ctx={$,invite:'test-token',rpc:async()=>payload,status:()=>{},sessionStorage:{removeItem:()=>cleared++},refresh:async()=>{refreshed++},Error};
+  const ctx={$,PENDING:'cnidaria-pending-direct-challenge-v1',invite:'test-token',rpc:async()=>payload,status:()=>{},sessionStorage:{removeItem:()=>cleared++},refresh:async()=>{refreshed++},Error};
   runInNewContext(code+';globalThis.invoke=respond',ctx);
   let error;
   try{await ctx.invoke(accept)}catch(e){error=e}
