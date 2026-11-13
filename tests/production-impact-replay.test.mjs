@@ -43,3 +43,31 @@ test('350ms of continuous readings earns only unverified gameplay credit',()=>{
  assert.equal(ctx.impactReviewSamples,21);
  assert.equal(ctx.impactReboundDetected,false);
 });
+
+test('sparse but uninterrupted post-impact sampling is not sufficient evidence',()=>{
+ const ctx=replay([[1080,9.8],[1160,9.8],[1240,9.8],[1320,9.8],[1400,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.equal(ctx.impactReviewSamples,5);
+ assert.match(ctx.flightFailureReason,/sample coverage insufficient/);
+});
+test('exactly 100ms between post-impact frames remains eligible for continued review',()=>{
+ const ctx=replay([[1100,9.8],[1200,9.8],[1300,9.8]]);
+ assert.equal(ctx.completed,undefined);
+ assert.equal(ctx.impactReviewSamples,3);
+});
+test('one isolated low-g frame followed by impact does not establish a rebound',()=>{
+ const ctx=replay([[1020,1],[1040,25],[1060,9.8]]);
+ assert.equal(ctx.impactReboundDetected,false);
+ assert.equal(ctx.completed,undefined);
+});
+test('two consecutive low-g readings without a later impact do not by themselves prove a bounce',()=>{
+ const ctx=replay([[1020,1],[1040,1],[1060,9.8],[1080,9.8]]);
+ assert.equal(ctx.impactReboundDetected,false);
+ assert.equal(ctx.completed,undefined);
+});
+test('post-impact gap of 101ms rejects before counting the delayed reading',()=>{
+ const ctx=replay([[1020,9.8],[1121,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.equal(ctx.impactReviewSamples,1);
+ assert.match(ctx.flightFailureReason,/Post-impact sensor gap/);
+});
