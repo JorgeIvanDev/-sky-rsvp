@@ -11,7 +11,7 @@ const source=html.slice(start,end);
 function run(readings){
  const nodes=new Map();
  const ctx={state:'armed',lastMotionAt:0,lastLaunchImpulse:0,lowStart:0,
-  motionTrace:[],Math,Number,clearTimeout:()=>{},setTimeout:()=>1,
+  motionTrace:[],flightWatchdog:0,Math,Number,clearTimeout:()=>{},setTimeout:()=>1,
   performance:{now:()=>ctx.clock},
   $:id=>{if(!nodes.has(id))nodes.set(id,{textContent:''});return nodes.get(id)},
   complete:()=>{ctx.state='done'}};
