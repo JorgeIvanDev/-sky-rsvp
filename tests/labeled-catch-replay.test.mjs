@@ -495,3 +495,9 @@ test('production impact-review replays 350 ms of readings without claiming hand 
   assert.deepEqual({feet:context.completed?.feet,credited:context.completed?.credited}, {feet:3.03,credited:true}, '350ms of adequately sampled settling can earn unverified gameplay credit; this is not a verified hand catch');
   assert.equal(context.state, 'done', 'production finalizes review at the observed 350ms boundary');
 });
+
+test('production post-impact review fails closed on gaps over 100ms',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.match(html,/if\(state==='impact-review'\)\{\s*if\(now-lastMotionAt>100\)\{flightFailureReason='Post-impact sensor gap: catch unverified';complete\(impactReviewFeet,false\);return\}/);
+ assert.match(html,/if\(now-impactReviewAt>=350\)\{if\(impactReviewSamples<8\)/);
+});

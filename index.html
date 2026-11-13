@@ -80,7 +80,7 @@ function motion(e){
  if(!a||![a.x,a.y,a.z].every(Number.isFinite))return;
  const now=performance.now(),m=Math.hypot(a.x,a.y,a.z),r=e.rotationRate;const spin=r?Math.hypot(r.alpha||0,r.beta||0,r.gamma||0):0;motionTrace.push({ms:Math.round(now),state,g:Number(m.toFixed(2)),spin:Number(spin.toFixed(1))});if(motionTrace.length>1200)motionTrace.shift();
  if(state==='impact-review'){
-   if(now-lastMotionAt>250){flightFailureReason='Post-impact sensor gap: catch unverified';complete(impactReviewFeet,false);return}
+   if(now-lastMotionAt>100){flightFailureReason='Post-impact sensor gap: catch unverified';complete(impactReviewFeet,false);return}
    // Missing intermediate sensor frames cannot count as consecutive rebound evidence.
    if(now-lastMotionAt>100)impactReboundLowSamples=0;
    lastMotionAt=now;impactReviewSamples++;
