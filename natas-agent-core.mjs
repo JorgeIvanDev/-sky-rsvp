@@ -4,13 +4,13 @@
 export function classifyNatasIntent(input) {
   const text=String(input??"").trim().slice(0,500);
   if (!text) return {type:"help"};
-  if (/seed phrase|private key|recovery phrase|mnemonic|password/i.test(text)) return {type:"secret_refusal"};
-  if (/send|transfer|withdraw|stake|bet|wager|pay|sign transaction/i.test(text)) return {type:"transaction_refusal"};
-  if (/wallet|log.?in|sign.?in|identity|address/i.test(text)) return {type:"wallet_help"};
-  if (/rank|leaderboard|hall of fame|personal best|score/i.test(text)) return {type:"rankings"};
-  if (/challenge|rematch|friend|opponent/i.test(text)) return {type:"challenges"};
-  if (/invite|rsvp|event|turkey hall/i.test(text)) return {type:"invitations"};
-  if (/how|play|toss|catch|rules/i.test(text)) return {type:"game_help"};
+  if (/seed phrase|private key|recovery phrase|mnemonic|password|contraseña|senha|frase semilla|frase de recupera/i.test(text)) return {type:"secret_refusal"};
+  if (/send|transfer|withdraw|stake|bet|wager|pay|sign transaction|enviar dinero|transferir|retirar dinero|apostar|pagar|transferência|saque/i.test(text)) return {type:"transaction_refusal"};
+  if (/wallet|log.?in|sign.?in|identity|address|billetera|cartera|iniciar sesi[oó]n|identidad|carteira|entrar na conta/i.test(text)) return {type:"wallet_help"};
+  if (/rank|leaderboard|hall of fame|personal best|score|clasificaci[oó]n|puntuaci[oó]n|r[aá]nking|puntaje|sal[oã]o da fama|pontua[cç][aã]o/i.test(text)) return {type:"rankings"};
+  if (/challenge|rematch|friend|opponent|desaf[ií]o|reto|revancha|amigo|desafio|amigos/i.test(text)) return {type:"challenges"};
+  if (/invite|rsvp|event|turkey hall|invitaci[oó]n|confirmar asistencia|evento|convite|presen[cç]a/i.test(text)) return {type:"invitations"};
+  if (/how|play|toss|catch|rules|c[oó]mo jugar|jugar|lanzar|atrapar|reglas|como jogar|jogar|lan[cç]ar|pegar|regras/i.test(text)) return {type:"game_help"};
   return {type:"help"};
 }
 export function answerNatas(input, context={}) {
@@ -27,5 +27,28 @@ export function answerNatas(input, context={}) {
     game_help:"Follow the game's instructions, keep the area clear, and never throw toward people, animals, or breakable objects. The motion sensor can't guarantee a safe catch.",
     help:"I'm Natas. Like nautical. Ask me about the Hall of Fame, wallet sign-in, challenges, invitations, or how to play."
   };
-  return {intent,reply:answers[intent],actions:[]};
+  const lang=String(context.language||'en').toLowerCase().split('-')[0];
+  const localized={
+    es:{
+      secret_refusal:'¡Alto ahí! Nunca compartas tu frase semilla, clave privada ni contraseña. Ni siquiera conmigo.',
+      transaction_refusal:'No puedo mover dinero ni hacer apuestas. Cualquier acción con tu billetera necesita un proceso seguro y tu autorización.',
+      wallet_help:'Tu billetera puede verificar tu identidad firmando un mensaje de un solo uso. Nunca compartas tu frase semilla. Esta demo todavía no tiene inicio de sesión.',
+      rankings:context.personalBest!=null?'Tu mejor marca registrada es '+String(context.personalBest)+'. No puedo verificar la clasificación en vivo desde esta demo.':'El Salón de la Fama muestra las mejores marcas. Todavía no puedo consultar tu puesto en vivo.',
+      challenges:'¿Quieres revancha? Yo ya estoy listo. Para enviar retos reales hace falta conectar el servicio autenticado del juego.',
+      invitations:'Las invitaciones y confirmaciones son parte del juego. Primero completas un intento del desafío; luego puedes ver la invitación y responder. Esta demo no puede modificar tus respuestas.',
+      game_help:'Sigue las instrucciones, despeja el área y nunca lances el teléfono hacia personas, animales ni objetos frágiles. Los sensores no garantizan una atrapada segura.',
+      help:'Soy Natas, el calamar del café. Pregúntame por el Salón de la Fama, la billetera, los desafíos, las invitaciones o cómo jugar.'
+    },
+    pt:{
+      secret_refusal:'Opa! Nunca compartilhe sua frase de recuperação, chave privada ou senha. Nem comigo.',
+      transaction_refusal:'Não posso transferir dinheiro nem fazer apostas. Ações na carteira exigem um processo seguro e sua autorização.',
+      wallet_help:'Sua carteira pode comprovar sua identidade assinando uma mensagem única. Nunca compartilhe sua frase de recuperação. O login ainda não está conectado nesta demonstração.',
+      rankings:context.personalBest!=null?'Seu melhor resultado informado é '+String(context.personalBest)+'. Não consigo verificar o ranking ao vivo nesta demonstração.':'O Hall da Fama registra os melhores resultados. Ainda não consigo consultar sua posição ao vivo.',
+      challenges:'Quer revanche? Estou pronto. Para criar desafios reais, precisamos da API autenticada do jogo.',
+      invitations:'Convites e confirmações fazem parte do jogo. Primeiro complete uma tentativa do desafio; depois veja o convite e responda. Esta demonstração não altera confirmações.',
+      game_help:'Siga as instruções, libere o espaço e nunca lance o celular em direção a pessoas, animais ou objetos frágeis. Os sensores não garantem uma pegada segura.',
+      help:'Sou Natas, a lula do café. Pergunte sobre o Hall da Fama, carteira, desafios, convites ou como jogar.'
+    }
+  };
+  return {intent,reply:localized[lang]?.[intent]||answers[intent],actions:[]};
 }
