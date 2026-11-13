@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {parseInvite,makeInviteUrl,remainingLabel,participantStatus} from './cnt-meet-utils.mjs';
 test('invitation round trip',()=>{const url=makeInviteUrl('https://example.org/meeting-checkin.html?utm_source=x',{id:'meet_abc_1',name:'Coffee & brunch',deadline:1800000000000});const parsed=parseInvite(new URL(url).search);assert.deepEqual(parsed,{id:'meet_abc_1',name:'Coffee & brunch',deadline:1800000000000});assert.equal(new URL(url).searchParams.has('utm_source'),false)});
 test('malformed invite IDs rejected',()=>{assert.equal(parseInvite('?meet=../../secret&until=1000'),null);assert.equal(parseInvite('?meet=meet_ok&until=bad'),null)});
-test('countdown handles expiry',()=>{assert.equal(remainingLabel(1000,1001),'Check-in window expired');assert.match(remainingLabel(61000,1000),/1h 0m/)});
+test('countdown handles expiry',()=>{assert.equal(remainingLabel(1000,1001),'Check-in window expired');assert.match(remainingLabel(61000,1000),/0h 1m/)});
 test('participant status tracks check-ins',()=>{const m={checkedIn:['alice']};assert.equal(participantStatus(m,'alice',{}),'checked in');assert.equal(participantStatus(m,'bob',{bob:'accepted'}),'accepted')});

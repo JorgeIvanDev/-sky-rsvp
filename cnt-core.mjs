@@ -33,7 +33,7 @@ export function createMeeting(ledger, { meetingId, inviter, invitee, sats, deadl
 }
 export function simulateDeposit(ledger, meetingId, playerId) {
   const m = ledger.commitments[meetingId]; if (!m || ![m.inviter,m.invitee].includes(playerId)) throw new Error('Not participant');
-  if (m.status === 'completed' || m.status === 'expired') throw new Error('Meeting closed');
+  if (m.status === 'completed' || m.status === 'expired' || m.status === 'cancelled') throw new Error('Meeting closed');
   if (!m.deposits.includes(playerId)) m.deposits.push(playerId);
   if (m.deposits.length === 2) m.status = 'locked_simulated';
   return m;
