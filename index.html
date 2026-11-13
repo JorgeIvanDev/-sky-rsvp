@@ -236,4 +236,4 @@ byId('missJump').onclick=()=>byId('gameAnchor').scrollIntoView({behavior:'smooth
 byId('missReply').onclick=async()=>{if(!current)return;const text='I miss you too, '+current.from+'! 💚';try{await send(text,'');byId('missReplyStatus').textContent='Choose a conversation in the share sheet to send your reply. Nothing is sent automatically.'}catch(e){if(e.name!=='AbortError')byId('missReplyStatus').textContent=text}};
 try{const values=new URLSearchParams(location.hash.slice(1)).getAll('miss');if(values.length>1)throw Error('Ambiguous challenge');if(values.length===1){current=dec(values[0]);byId('missIncoming').classList.remove('hidden');byId('missIncomingFrom').textContent=current.from+' misses '+(current.to||'you')+'!';byId('missIncomingMessage').textContent=current.message;byId('missIncoming').scrollIntoView({block:'start'});}}catch(e){byId('missStatus').textContent='Could not open challenge: '+e.message}
 })();
-</script></body></html>
+</script><script src="./cnidaria-i18n.js" defer></script></body></html>
