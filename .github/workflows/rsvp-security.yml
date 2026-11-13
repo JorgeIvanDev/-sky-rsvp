@@ -4,11 +4,15 @@ on:
     paths:
       - 'rsvp/**'
       - 'supabase/**'
+      - 'direct-challenge.html'
+      - 'tests/direct-challenge-oauth.test.mjs'
       - '.github/workflows/rsvp-security.yml'
   pull_request:
     paths:
       - 'rsvp/**'
       - 'supabase/**'
+      - 'direct-challenge.html'
+      - 'tests/direct-challenge-oauth.test.mjs'
       - '.github/workflows/rsvp-security.yml'
   workflow_dispatch:
 permissions:
@@ -22,6 +26,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Direct challenge Google OAuth invite continuity regression
+        run: node --test --test-reporter=spec tests/direct-challenge-oauth.test.mjs
       - name: Challenge policy regression tests
         run: node --test --test-reporter=spec rsvp/challenge-policy.test.mjs
       - name: Atomic one-attempt challenge regression tests
