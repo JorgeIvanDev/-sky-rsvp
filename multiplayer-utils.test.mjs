@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {validInvite,meetingAction,formatLobby} from './multiplayer-utils.mjs';
+test('validates complete UUID invitation tokens',()=>{assert.equal(validInvite('f342cf49-5b86-4196-baff-bbdccb217dbb'),true);for(const x of ['','../admin','f342cf49','x'.repeat(36)])assert.equal(validInvite(x),false)});
+test('meeting state actions',()=>{const future='2099-01-01T00:00:00Z',past='2000-01-01T00:00:00Z';assert.equal(meetingAction('accepted',future),'checkin');assert.equal(meetingAction('proposed',future),'waiting');assert.equal(meetingAction('completed',past),'completed');assert.equal(meetingAction('accepted',past),'expired');assert.equal(meetingAction('cancelled',future),'closed')});
+test('lobby summary shows counts and state',()=>{const s=formatLobby({meeting_status:'accepted',participant_count:2,checked_in_count:1,meeting_deadline:'2099-01-01T00:00:00Z'});assert.match(s,/2\/2 participants/);assert.match(s,/1\/2 checked in/)});
