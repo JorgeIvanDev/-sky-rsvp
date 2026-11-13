@@ -5,6 +5,7 @@ on:
       - 'tests/motion-regression.js'
       - 'tests/engine-sanity.js'
       - 'tests/production-impact-replay.test.mjs'
+      - 'tests/production-launch-replay.test.mjs'
       - 'tests/mobile-retry.test.mjs'
       - 'tests/labeled-catch-replay.test.mjs'
       - 'tests/labeled-catch-examples.json'
@@ -15,6 +16,7 @@ on:
       - 'tests/motion-regression.js'
       - 'tests/engine-sanity.js'
       - 'tests/production-impact-replay.test.mjs'
+      - 'tests/production-launch-replay.test.mjs'
       - 'tests/mobile-retry.test.mjs'
       - 'tests/labeled-catch-replay.test.mjs'
       - 'tests/labeled-catch-examples.json'
@@ -36,6 +38,8 @@ jobs:
         run: node tests/engine-sanity.js
       - name: Execute mobile retry and permission recovery regression
         run: node --test tests/mobile-retry.test.mjs
+      - name: Replay production launch and sensor-pause sequences
+        run: node --test tests/production-launch-replay.test.mjs
       - name: Replay production post-impact sensor sequences
         run: node --test tests/production-impact-replay.test.mjs
       - name: Preserve user-labeled couch and hand evidence without synthetic sensor samples
