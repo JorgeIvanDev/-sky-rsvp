@@ -14,4 +14,7 @@ assert.match(respondToPlayerQuestion("challenge someone",snapshot).reply,/2 pend
 assert.equal(respondToPlayerQuestion("send 500 sats",snapshot).actions.length,0);
 assert.match(respondToPlayerQuestion("my seed phrase",snapshot).reply,/Never share/);
 assert.throws(()=>respondToPlayerQuestion("rank",null),/Authorized/);
-console.log("Natas player tool checks passed: 11");
+assert.throws(()=>respondToPlayerQuestion("rank",{playerId:"player-1",personalBest:999,globalRank:1}),/Authorized/);
+assert.throws(()=>respondToPlayerQuestion("rank",{...snapshot}),/Authorized/);
+assert.equal(Object.isFrozen(snapshot),true);
+console.log("Natas player tool checks passed: 14");
