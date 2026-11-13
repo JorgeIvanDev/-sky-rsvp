@@ -9,6 +9,13 @@ const stored=()=>{try{return localStorage.getItem('cnidaria-language')}catch{ret
 const choose=(v)=>{const code=String(v||'').toLowerCase().split('-')[0];return messages[code]?code:'en'};
 let lang=choose(stored()||navigator.languages?.[0]||navigator.language||'en');
 const originals=new WeakMap();
+const localizedStatic={
+ en:{invitationDetails:'💌 INVITATION DETAILS',responseName:'YOUR NAME FOR THE HOST',copyResponse:'COPY RESPONSE',shareResponse:'SHARE RESPONSE',calendar:'ADD TO CALENDAR (.ICS)',hostDashboard:'COPY PRIVATE DASHBOARD LINK'},
+ es:{invitationDetails:'💌 DETALLES DE LA INVITACIÓN',responseName:'TU NOMBRE PARA EL ANFITRIÓN',copyResponse:'COPIAR RESPUESTA',shareResponse:'COMPARTIR RESPUESTA',calendar:'AÑADIR AL CALENDARIO (.ICS)',hostDashboard:'COPIAR ENLACE PRIVADO DEL ANFITRIÓN'},
+ pt:{invitationDetails:'💌 DETALHES DO CONVITE',responseName:'SEU NOME PARA O ANFITRIÃO',copyResponse:'COPIAR RESPOSTA',shareResponse:'COMPARTILHAR RESPOSTA',calendar:'ADICIONAR AO CALENDÁRIO (.ICS)',hostDashboard:'COPIAR LINK PRIVADO DO ANFITRIÃO'}
+};
+const localizedSelectors={invitationDetails:'#inviteReveal h2',responseName:'label[for="guestReplyName"]',copyResponse:'#copyReply',shareResponse:'#shareReply',calendar:'#calendarInvite',hostDashboard:'#copyHostDashboard'};
+
 const extra={
   en:{ask:'Ask Natas',send:'Ask',placeholder:'Ask me anything about the game…',play:'How do I play?',fame:'Hall of Fame?',friends:'Challenge friends?',why:'Why Natas?',status:'Read-only demo · No wallet connected',teaser:'Mystery invitation',host:'YOUR NAME FOR THE HOST'},
   es:{ask:'Pregúntale a Natas',send:'Preguntar',placeholder:'Pregúntame sobre el juego…',play:'¿Cómo se juega?',fame:'¿Salón de la Fama?',friends:'¿Retar a amigos?',why:'¿Por qué Natas?',status:'Demo de solo lectura · Sin billetera conectada',teaser:'Invitación misteriosa',host:'TU NOMBRE PARA EL ANFITRIÓN'},
@@ -17,6 +24,7 @@ const extra={
 const extraSelectors={ask:'.panel strong',send:'#askForm button',play:'[data-q="play"]',fame:'[data-q="fame"]',friends:'[data-q="friends"]',why:'[data-q="name"]',status:'#status',teaser:'#incomingTitle'};
 
 function apply(){document.documentElement.lang=lang;const dict=messages[lang];for(const [key,sel] of Object.entries(selectors)){const el=document.querySelector(sel);if(!el)continue;if(!originals.has(el))originals.set(el,el.textContent);const original=originals.get(el);if(lang==='en'){if(key==='reveal'&&el.disabled===false)continue;el.textContent=original;continue}if(key==='reveal'&&!el.disabled)continue;if(key==='create'&&el.disabled)continue;el.textContent=dict[key]||original}
+for(const [key,selector] of Object.entries(localizedSelectors)){const el=document.querySelector(selector);if(!el)continue;if(!originals.has(el))originals.set(el,el.textContent);el.textContent=localizedStatic[lang][key]}
 for(const [key,selector] of Object.entries(extraSelectors)){const el=document.querySelector(selector);if(!el)continue;if(key==='status'&&el.textContent!==extra.en.status&&el.textContent!==extra.es.status&&el.textContent!==extra.pt.status)continue;if(key==='teaser'&&!/^(Mystery invitation|Invitación misteriosa|Convite misterioso)$/.test(el.textContent.trim()))continue;el.textContent=extra[lang][key]}
 const question=document.getElementById('question');if(question)question.placeholder=extra[lang].placeholder;
 if(document.querySelector('.creature')){const intro=document.querySelector('main > p');if(intro)intro.textContent=lang==='es'?'Tu pequeño amigo sospechosamente servicial.':lang==='pt'?'Seu amiguinho suspeitosamente prestativo.':'Your suspiciously helpful little friend.';const heading=document.querySelector('.eyebrow');if(heading)heading.textContent=lang==='es'?'MASCOTA EXPERIMENTAL · NO ES EL JUEGO EN VIVO':lang==='pt'?'MASCOTE EXPERIMENTAL · NÃO É O JOGO AO VIVO':'EXPERIMENTAL MASCOT · NOT THE LIVE GAME'}const picker=document.getElementById('cnidaria-language');if(picker){picker.value=lang;picker.setAttribute('aria-label',dict.language)}
