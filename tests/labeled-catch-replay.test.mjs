@@ -225,7 +225,7 @@ test('couch drop retains multiple distinct re-impacts without manufacturing post
 
 test('production review guards sample gaps and timeouts before granting impact credit', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(html, /if\(now-lastMotionAt>250\)\{flightFailureReason='Post-impact sensor gap/);
+  assert.match(html, /if\(now-lastMotionAt>100\)\{flightFailureReason='Post-impact sensor gap/);
   assert.match(html, /impactReviewTimer=setTimeout\(\(\)=>\{if\(state==='impact-review'\)/);
   assert.match(html, /if\(impactReboundDetected\)\{flightFailureReason='Rebound after impact/);
   assert.match(html, /if\(impactReviewSamples<8\)/);
