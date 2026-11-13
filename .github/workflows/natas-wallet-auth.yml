@@ -2,6 +2,9 @@ name: Natas optional wallet-link security tests
 on:
   push:
     paths:
+      - 'natas-agent-core.mjs'
+      - 'natas-agent-core.test.mjs'
+      - 'natas-multilingual-safety.test.mjs'
       - 'natas-player-tools.mjs'
       - 'natas-player-tools.test.mjs'
       - 'natas-wallet-auth.mjs'
@@ -18,6 +21,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: node natas-agent-core.test.mjs
+      - run: node natas-multilingual-safety.test.mjs
       - run: node natas-wallet-auth.test.mjs
       - run: node natas-wallet-challenges.test.mjs
       - run: node natas-read-tools.test.mjs
