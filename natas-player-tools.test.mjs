@@ -1,0 +1,17 @@
+import {strict as assert} from "node:assert";
+import {buildPlayerSnapshot,respondToPlayerQuestion} from "./natas-player-tools.mjs";
+const session={authenticated:true,playerId:"player-1"};
+const game={playerId:"player-1",nickname:"Ace",personalBest:5.4,globalRank:14,rivalAhead:{nickname:"Mike",score:5.6},pendingChallenges:2};
+assert.throws(()=>buildPlayerSnapshot(null,game),/Authenticated/);
+assert.throws(()=>buildPlayerSnapshot({authenticated:false,playerId:"player-1"},game),/Authenticated/);
+assert.throws(()=>buildPlayerSnapshot(session,{...game,playerId:"player-2"}),/mismatch/);
+assert.throws(()=>buildPlayerSnapshot(session,{...game,globalRank:-1}),/Invalid rank/);
+const snapshot=buildPlayerSnapshot(session,game);
+assert.equal(snapshot.playerId,"player-1");
+assert.match(respondToPlayerQuestion("who is ahead of me?",snapshot).reply,/Mike at 5.6/);
+assert.match(respondToPlayerQuestion("what is my personal best?",snapshot).reply,/5.4/);
+assert.match(respondToPlayerQuestion("challenge someone",snapshot).reply,/2 pending/);
+assert.equal(respondToPlayerQuestion("send 500 sats",snapshot).actions.length,0);
+assert.match(respondToPlayerQuestion("my seed phrase",snapshot).reply,/Never share/);
+assert.throws(()=>respondToPlayerQuestion("rank",null),/Authorized/);
+console.log("Natas player tool checks passed: 11");
