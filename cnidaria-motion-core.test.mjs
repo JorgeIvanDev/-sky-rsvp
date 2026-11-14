@@ -172,3 +172,15 @@ test('observed replay does not invent flight from separated low-g readings',asyn
  const broken=[{ms:0,m:30},{ms:20,m:.5},{ms:140,m:.5},...seq(160,780,20,9.8).map((s,i)=>({...s,m:i%2?.5:9.8})),{ms:800,m:20},{ms:820,m:30},...seq(840,1200,20,9.8)];
  assert.equal(replayObserved(broken).ok,false);
 });
+
+test('post-deadline sample cannot retroactively establish settled catch-like motion',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ // Impact at 866ms: deadline 1216ms. The 1230ms sample only closes the window.
+ const tumbling=seq(898,1202,16,15);
+ const twoBefore=tumbling.map(s=>s.ms>=1186?{...s,m:9.8}:s);
+ const late=[...base,...twoBefore,{ms:1230,m:9.8}];
+ assert.equal(replayObserved(late).reason,'no stable post-impact settling');
+ const threeBefore=tumbling.map(s=>s.ms>=1170?{...s,m:9.8}:s);
+ assert.equal(replayObserved([...base,...threeBefore,{ms:1230,m:15}]).classification,'catch-like only');
+});
