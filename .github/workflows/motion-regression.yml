@@ -10,6 +10,8 @@ on:
       - 'tests/mobile-trace-export.test.mjs'
       - 'tests/labeled-catch-replay.test.mjs'
       - 'tests/labeled-catch-examples.json'
+      - 'cnidaria-motion-core.mjs'
+      - 'cnidaria-motion-core.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   pull_request:
@@ -22,6 +24,8 @@ on:
       - 'tests/mobile-trace-export.test.mjs'
       - 'tests/labeled-catch-replay.test.mjs'
       - 'tests/labeled-catch-examples.json'
+      - 'cnidaria-motion-core.mjs'
+      - 'cnidaria-motion-core.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   workflow_dispatch:
@@ -34,6 +38,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Run shared motion replay regression
+        run: node --test cnidaria-motion-core.test.mjs
       - name: Run motion regression checks
         run: node tests/motion-regression.js
       - name: Check browser engine syntax and test alignment
