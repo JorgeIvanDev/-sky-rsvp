@@ -8,11 +8,11 @@ const start=html.indexOf("$('submit-toss').onclick=()=>run(async()=>{");
 const end=html.indexOf("\n$('accept').onclick",start);
 assert.ok(start>=0&&end>start,'production submit handler must be extractable');
 const code=html.slice(start,end);
-async function exercise(payload,{refreshError=false,rpcError=false}={}){
+async function exercise(payload,{refreshError=false,rpcError=false,expiresAt='2099-01-01T00:00:00Z'}={}){
  const elements=new Map();
  const $=id=>{if(!elements.has(id))elements.set(id,{disabled:false,dataset:{challenge:'test-challenge'},value:'850',checked:true,textContent:''});return elements.get(id)};
  let refreshes=0,error=null;
- const ctx={$,Number,Error,Array,submitBusy:false,chosenExpiresAt:'2099-01-01T00:00:00Z',Date,run:fn=>Promise.resolve().then(fn).catch(e=>{error=e}),rpc:async()=>{if(rpcError)throw Error('network unavailable');return payload},refresh:async()=>{refreshes++;if(refreshError)throw Error('refresh unavailable')}};
+ const ctx={$,Number,Error,Array,submitBusy:false,chosenExpiresAt:expiresAt,Date,run:fn=>Promise.resolve().then(fn).catch(e=>{error=e}),rpc:async()=>{if(rpcError)throw Error('network unavailable');return payload},refresh:async()=>{refreshes++;if(refreshError)throw Error('refresh unavailable')}};
  runInNewContext(code,ctx);
  await ctx.$('submit-toss').onclick();
  return {error,refreshes,elements};
@@ -52,4 +52,15 @@ test('uncertain transport failure requires refresh before retry',async()=>{
  assert.match(String(x.error?.message),/network unavailable/);
  assert.equal(x.refreshes,0);
  assert.equal(x.elements.get('submit-toss').disabled,true);
+});
+
+test('expired selected challenge is blocked before RPC',async()=>{
+ const x=await exercise([{result:'waiting'}],{expiresAt:'2000-01-01T00:00:00Z'});
+ assert.match(String(x.error?.message),/Challenge expired/);
+ assert.equal(x.refreshes,0);
+});
+test('missing expiry is blocked before RPC',async()=>{
+ const x=await exercise([{result:'waiting'}],{expiresAt:null});
+ assert.match(String(x.error?.message),/Challenge expired/);
+ assert.equal(x.refreshes,0);
 });
