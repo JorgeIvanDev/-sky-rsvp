@@ -54,3 +54,11 @@ test('nearby high-g samples remain one impact cluster, not an invented bounce',a
 });
 
 test('collector rejects null, undefined and non-object sensor events without crashing',()=>{const c=createMotionTrace();for(const value of [null,undefined,0,'bad',[],{}]){assert.equal(c.add(value),false);assert.equal(c.samples.length,0)}assert.equal(c.add({timestamp:100,magnitude:9.8}),true);assert.equal(c.samples[0].ms,0)});
+
+
+test('armed launch window cannot bridge a pre-flight sensor interruption',()=>{
+ const interrupted=[{ms:0,m:30},{ms:20,m:.5},{ms:40,m:.5},{ms:400,m:.5},{ms:420,m:.5},{ms:440,m:.5},{ms:460,m:.5},{ms:480,m:.5},{ms:500,m:.5},{ms:520,m:.5},{ms:540,m:.5},{ms:560,m:.5},{ms:580,m:.5},{ms:600,m:.5},{ms:620,m:.5},{ms:640,m:.5},{ms:660,m:.5},{ms:680,m:.5},{ms:700,m:.5},{ms:720,m:.5},{ms:740,m:.5},{ms:760,m:.5},{ms:780,m:.5},{ms:800,m:.5},{ms:820,m:.5},{ms:840,m:.5},{ms:860,m:22},{ms:880,m:28}];
+ assert.equal(replay(interrupted).ok,false,'old launch impulse cannot arm a delayed freefall');
+ const resumed=[...interrupted.slice(0,4),{ms:416,m:30},...seq(432,850,16,.5),{ms:866,m:18},{ms:882,m:160}];
+ assert.equal(replay(resumed).ok,true,'a fresh impulse can still start a flight');
+});
