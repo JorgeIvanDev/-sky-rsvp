@@ -95,7 +95,9 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSa
  // Require actual near-gravity settling in the final 150ms. An uninterrupted
  // high-acceleration tumble must not qualify merely by having enough samples.
  const deadline=impactAt+observationMs;
- const settling=post.filter(s=>s.ms>impactAt&&s.ms>=deadline-150&&s.ms<=deadline+maxGapMs);
+ // Only evidence collected by the 350ms deadline may establish settling. The first
+ // later sample closes the observation window, but must not retroactively prove a catch.
+ const settling=post.filter(s=>s.ms>impactAt&&s.ms>=deadline-150&&s.ms<=deadline);
  if(settling.filter(s=>s.m>=7&&s.m<=13).length<3)return {ok:false,reason:'no stable post-impact settling'};
  return {...candidate,observationMs,classification:'catch-like only'};
 }
