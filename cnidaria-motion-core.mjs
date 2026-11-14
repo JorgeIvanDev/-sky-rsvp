@@ -2,6 +2,15 @@
  * Browser-safe and deterministic. A positive result is catch-like motion, NOT proof of a hand catch.
  */
 export function replay(samples){
+ // Validate the complete trace before scoring; an early catch-like event must not mask corrupted trailing samples.
+ if(!Array.isArray(samples))return {ok:false,reason:'invalid sensor sample'};
+ let checkedMs=-Infinity;
+ for(const sample of samples){
+  if(!sample||typeof sample!=='object')return {ok:false,reason:'invalid sensor sample'};
+  const {ms,m,spin=0}=sample;
+  if(!Number.isFinite(ms)||!Number.isFinite(m)||m<0||!Number.isFinite(spin)||ms<0||ms<=checkedMs)return {ok:false,reason:'invalid sensor sample'};
+  checkedMs=ms;
+ }
  let previousMs=-Infinity;let state='armed',launch=-Infinity,low=null,flightStart=0,freefall=0,last=0,impactStart=0,impactCount=0,firstFeet=0,strongFirstFeet=0,strongAt=0,stable=0,peakSpin=0;
  for(const {ms,m,spin=0} of samples){
   // A discontinuous or malformed sensor stream cannot establish a catch-like event.

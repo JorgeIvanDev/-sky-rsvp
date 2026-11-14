@@ -13,6 +13,8 @@ test('shared replay fails closed on malformed and out-of-order sensor data',()=>
  for(const sample of [{ms:NaN,m:9.8},{ms:866,m:Infinity},{ms:866,m:-1},{ms:866,m:9.8,spin:NaN},{ms:-1,m:9.8}]){
   assert.equal(replay([...flight,sample,{ms:882,m:160.2}]).ok,false);
  }
- assert.equal(replay([...flight,{ms:850,m:18},{ms:866,m:19}]).reason,'invalid sensor sample');
+ assert.equal(replay([...flight,{ms:836,m:18},{ms:866,m:19}]).reason,'invalid sensor sample');
  assert.equal(replay([...flight,{ms:850,m:18},{ms:850,m:19}]).reason,'invalid sensor sample');
+ assert.equal(replay([...valid,{ms:882,m:10}]).reason,'invalid sensor sample');
+ assert.equal(replay([...valid,{ms:900,m:NaN}]).reason,'invalid sensor sample');
 });
