@@ -22,3 +22,5 @@ test('toss submit is single-flight and ambiguous failures require refresh',()=>{
 test('motion sample count includes only accepted trace samples',()=>{assert.match(h,/if\(!motionTrace\.add\(\{timestamp:e\.timeStamp,magnitude\}\)\)return;motionSamples\+\+/);assert.doesNotMatch(h,/motionSamples\+\+;motionPeak=.*?motionTrace\.add/s)});
 
 test('expired accepted challenges cannot be selected for new tosses',()=>{assert.match(h,/r\.status==='accepted'&&Number\.isFinite\(Date\.parse\(r\.expires_at\)\)&&Date\.parse\(r\.expires_at\)>Date\.now\(\)/)});
+
+test('toss submission checks expiry of selected challenge',()=>{assert.ok(h.includes("chosenExpiresAt=activeRows.find"));assert.ok(h.includes("Challenge expired. Refresh your challenges."))});

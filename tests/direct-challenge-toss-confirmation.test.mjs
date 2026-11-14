@@ -12,7 +12,7 @@ async function exercise(payload,{refreshError=false,rpcError=false}={}){
  const elements=new Map();
  const $=id=>{if(!elements.has(id))elements.set(id,{disabled:false,dataset:{challenge:'test-challenge'},value:'850',checked:true,textContent:''});return elements.get(id)};
  let refreshes=0,error=null;
- const ctx={$,Number,Error,Array,submitBusy:false,run:fn=>Promise.resolve().then(fn).catch(e=>{error=e}),rpc:async()=>{if(rpcError)throw Error('network unavailable');return payload},refresh:async()=>{refreshes++;if(refreshError)throw Error('refresh unavailable')}};
+ const ctx={$,Number,Error,Array,submitBusy:false,chosenExpiresAt:'2099-01-01T00:00:00Z',Date,run:fn=>Promise.resolve().then(fn).catch(e=>{error=e}),rpc:async()=>{if(rpcError)throw Error('network unavailable');return payload},refresh:async()=>{refreshes++;if(refreshError)throw Error('refresh unavailable')}};
  runInNewContext(code,ctx);
  await ctx.$('submit-toss').onclick();
  return {error,refreshes,elements};
