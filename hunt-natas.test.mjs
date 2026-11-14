@@ -1,1 +1,3 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {natasHuntHint} from './hunt-natas.mjs';test('hint is read-only and language aware',()=>{const hunt={clues:[{answer:'planet'}]};assert.match(natasHuntHint(hunt,0,'es').message,/Pista de Natas/);assert.deepEqual(natasHuntHint(hunt,0).actions,[])});test('no secret or payment operations',()=>{const result=natasHuntHint({clues:[{answer:'sun'}]},0);assert.doesNotMatch(result.message,/sun/i);assert.equal(result.actions.length,0)})
+
+test('Natas hint falls back safely for unsupported languages',()=>{const hunt={clues:[{answer:'clock'}]};assert.match(natasHuntHint(hunt,0,'de').message,/Natas hint/);assert.deepEqual(natasHuntHint(hunt,2),{message:'The hunt is complete.',actions:[]})});

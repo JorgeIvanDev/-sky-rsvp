@@ -18,3 +18,6 @@ test('shared replay fails closed on malformed and out-of-order sensor data',()=>
  assert.equal(replay([...valid,{ms:882,m:10}]).reason,'invalid sensor sample');
  assert.equal(replay([...valid,{ms:900,m:NaN}]).reason,'invalid sensor sample');
 });
+
+test('invalid samples after a successful-looking catch never produce a score',()=>{const valid=[...flight,{ms:866,m:17.84},{ms:882,m:160.2}];for(const extra of [{ms:899,m:-.1},{ms:899,m:Infinity},{ms:882,m:1},{ms:900,m:1,spin:NaN}]){const r=replay([...valid,extra]);assert.equal(r.ok,false);assert.equal(r.reason,'invalid sensor sample')}});
+test('trace collector refuses bad timestamps and spin never creates a scored toss',()=>{const c=createMotionTrace();assert.equal(c.add({timestamp:100,magnitude:10}),true);assert.equal(c.add({timestamp:NaN,magnitude:10}),false);assert.equal(c.add({timestamp:90,magnitude:10}),false);assert.equal(c.add({timestamp:116,magnitude:-2}),false);assert.equal(c.evaluate().ok,false)});
