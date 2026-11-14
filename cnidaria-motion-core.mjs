@@ -15,6 +15,9 @@ export function replay(samples){
  for(const {ms,m,spin=0} of samples){
   // A discontinuous or malformed sensor stream cannot establish a catch-like event.
   if(!Number.isFinite(ms)||!Number.isFinite(m)||m<0||!Number.isFinite(spin)||ms<0||ms<=previousMs)return {ok:false,reason:'invalid sensor sample'};
+  // Never stitch an armed low-g launch window across a sensor interruption.
+  // Flight has its own gap rejection below; this protects the pre-flight transition.
+  if(state==='armed'&&previousMs!==-Infinity&&ms-previousMs>250){launch=-Infinity;low=null;}
   previousMs=ms;
   if(state==='armed'){
    if(m>13&&m<65)launch=ms;
