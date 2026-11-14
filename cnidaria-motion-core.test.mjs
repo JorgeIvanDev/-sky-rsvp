@@ -37,7 +37,7 @@ test('post-impact observation accepts the first sample after a deadline',async()
 test('post-impact gaps and renewed freefall remain disqualifying',async()=>{const {replayObserved}=await import('./cnidaria-motion-core.mjs');const base=[...flight,{ms:866,m:18},{ms:882,m:160}];assert.equal(replayObserved([...base,{ms:1100,m:9.8},{ms:1250,m:9.8}]).reason,'post-impact sensor gap');assert.equal(replayObserved([...base,...seq(898,994,16,9.8),...seq(1010,1090,16,.5),{ms:1106,m:26},...seq(1122,1250,16,9.8)]).ok,false)});
 
 test('motion collector rejects invalid capacity and spin without corrupting state',()=>{for(const maxSamples of [0,-1,1.5,Infinity,100001])assert.throws(()=>createMotionTrace({maxSamples}));const c=createMotionTrace();assert.equal(c.add({timestamp:100,magnitude:9.8,spin:Infinity}),false);assert.equal(c.samples.length,0);assert.equal(c.add({timestamp:101,magnitude:9.8,spin:0}),true);assert.equal(c.samples[0].ms,0)});
-test('invalid observation settings fail closed',async()=>{const {replayObserved}=await import('./cnidaria-motion-core.mjs');for(const options of [{observationMs:349},{observationMs:NaN},{maxGapMs:0},{maxGapMs:Infinity}])assert.equal(replayObserved([],options).reason,'invalid observation settings')});
+test('invalid observation settings fail closed',async()=>{const {replayObserved}=await import('./cnidaria-motion-core.mjs');for(const options of [{observationMs:349},{observationMs:NaN},{maxGapMs:0},{maxGapMs:Infinity},{minPostSamples:7},{minPostSamples:8.5}])assert.equal(replayObserved([],options).reason,'invalid observation settings')});
 
 test('separated high-g couch bounce is not a catch even without sustained low-g',async()=>{
  const {replayObserved}=await import('./cnidaria-motion-core.mjs');
@@ -122,4 +122,14 @@ test('post-impact low-g requires contiguous samples, not a fabricated 50ms run a
  assert.equal(replayObserved(sparse,{maxGapMs:100}).ok,true);
  const continuous=[...base,...seq(898,978,16,9.8),{ms:994,m:.5},{ms:1010,m:.5},{ms:1026,m:.5},{ms:1042,m:.5},...seq(1058,1250,16,9.8)];
  assert.equal(replayObserved(continuous).reason,'renewed low-g after impact');
+});
+
+
+test('shared observed replay requires eight post-impact samples even when timing gaps are permitted',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const sparse=[...base,{ms:950,m:9.8},{ms:1020,m:9.8},{ms:1090,m:9.8},{ms:1160,m:9.8},{ms:1230,m:9.8}];
+ assert.equal(replayObserved(sparse).reason,'insufficient post-impact samples');
+ const dense=[...base,...seq(898,1250,16,9.8)];
+ assert.equal(replayObserved(dense).ok,true);
 });
