@@ -32,3 +32,6 @@ test('observed scoring waits for 350ms and rejects couch re-impact',async()=>{
  assert.equal(replayObserved([...base,...seq(898,994,16,9.8),...seq(1010,1090,16,.5),{ms:1106,m:26},...seq(1122,1250,16,9.8)]).ok,false);
  assert.equal(replayObserved([...base,{ms:1100,m:9.8},{ms:1250,m:9.8}]).reason,'post-impact sensor gap');
 });
+
+test('post-impact observation accepts the first sample after a deadline',async()=>{const {replayObserved}=await import('./cnidaria-motion-core.mjs');const base=[...flight,{ms:866,m:18},{ms:882,m:160}];const tail=seq(898,1250,16,9.8);assert.equal(replayObserved([...base,...tail]).ok,true);const exactly=[...base,...seq(898,1202,16,9.8),{ms:1216,m:9.8}];assert.equal(replayObserved(exactly).ok,true);assert.equal(replayObserved([...base,...seq(898,1202,16,9.8)]).reason,'incomplete post-impact observation')});
+test('post-impact gaps and renewed freefall remain disqualifying',async()=>{const {replayObserved}=await import('./cnidaria-motion-core.mjs');const base=[...flight,{ms:866,m:18},{ms:882,m:160}];assert.equal(replayObserved([...base,{ms:1100,m:9.8},{ms:1250,m:9.8}]).reason,'post-impact sensor gap');assert.equal(replayObserved([...base,...seq(898,994,16,9.8),...seq(1010,1090,16,.5),{ms:1106,m:26},...seq(1122,1250,16,9.8)]).ok,false)});

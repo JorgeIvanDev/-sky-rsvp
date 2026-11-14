@@ -60,8 +60,10 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
   if(flight&&s.m>16){impactAt=s.ms;break;}
  }
  if(impactAt===null)return {ok:false,reason:'no impact to observe'};
- const post=samples.filter(s=>s.ms>=impactAt&&s.ms<=impactAt+observationMs);
- if(!post.length||post[post.length-1].ms<impactAt+observationMs)return {ok:false,reason:'incomplete post-impact observation'};
+ // Include the first sample on/after the deadline: real sensors rarely land exactly at 350ms.
+ const endIndex=samples.findIndex(s=>s.ms>=impactAt+observationMs);
+ if(endIndex<0)return {ok:false,reason:'incomplete post-impact observation'};
+ const post=samples.slice(samples.findIndex(s=>s.ms>=impactAt),endIndex+1);
  for(let i=1;i<post.length;i++)if(post[i].ms-post[i-1].ms>maxGapMs)return {ok:false,reason:'post-impact sensor gap'};
  // A second high-g cluster following a pause or low-g interval is a bounce, not a stable catch.
  let quiet=false,lowRun=0,lastMs=impactAt;
