@@ -78,3 +78,28 @@ test('a single low-g sample after impact is not a fabricated 48ms freefall run',
  const consecutive=[...base,{ms:898,m:.5},{ms:914,m:.5},{ms:930,m:.5},{ms:946,m:.5},...seq(962,1250,16,9.8)];
  assert.equal(replayObserved(consecutive).reason,'renewed low-g after impact');
 });
+
+ 
+// Timings are anchored to the two user-labeled 2026-11-11 sessions.
+// The full raw recordings are not available in this repository: these are
+// synthetic boundary replays, NOT evidence that either real trace passes.
+test('2026-11-11 labeled couch-drop timing: 8016ms re-impact invalidates first impact at 7683ms',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const low=seq(7000,7660,20,.5);
+ const first=[{ms:6900,m:30},...low,{ms:7683,m:21},{ms:7703,m:24}];
+ const settled=seq(7723,8003,20,9.8);
+ const bounce=[{ms:8016,m:24},{ms:8036,m:22},{ms:8050,m:23},{ms:8070,m:9.8},...seq(8100,8180,20,.5),{ms:8250,m:24},...seq(8270,8370,20,9.8)];
+ const result=replayObserved([...first,...settled,...bounce]);
+ assert.equal(result.ok,false);
+ assert.equal(result.reason,'separated post-impact spike');
+});
+test('2026-11-11 labeled hand-catch sampling pattern: 21 observations over 350ms can complete review',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const pre=[{ms:0,m:30},...seq(100,700,20,.5),{ms:720,m:21},{ms:740,m:24}];
+ const post=seq(760,1120,18,9.8);
+ assert.equal(post.length,21);
+ const result=replayObserved([...pre,...post]);
+ assert.equal(result.ok,true);
+ assert.equal(result.classification,'catch-like only');
+ assert.equal(replayObserved([...pre,...post.slice(0,-3)]).reason,'incomplete post-impact observation');
+});
