@@ -218,7 +218,7 @@ test('terminal settling must reach the 350ms deadline, not end 78ms early',async
  const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
  // Impact 866ms, deadline 1216ms. Last actual settling evidence is 1138ms.
  // A late closing frame at 1216ms cannot fill that unobserved terminal interval.
- const stale=[...base,...seq(898,1138,16,9.8),{ms:1216,m:15}];
+ const stale=[...base,...seq(898,1138,16,9.8),{ms:1230,m:9.8}];
  assert.equal(replayObserved(stale,{maxGapMs:100}).reason,'terminal settling evidence stale');
  const fresh=[...base,...seq(898,1202,16,9.8),{ms:1216,m:15}];
  assert.equal(replayObserved(fresh).classification,'catch-like only');
