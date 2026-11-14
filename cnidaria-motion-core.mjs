@@ -88,6 +88,11 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSa
   lastMs=s.ms;
  }
  if(quiet)return {ok:false,reason:'renewed low-g after impact'};
+ // Require actual near-gravity settling in the final 150ms. An uninterrupted
+ // high-acceleration tumble must not qualify merely by having enough samples.
+ const deadline=impactAt+observationMs;
+ const settling=post.filter(s=>s.ms>impactAt&&s.ms>=deadline-150&&s.ms<=deadline+maxGapMs);
+ if(settling.filter(s=>s.m>=7&&s.m<=13).length<3)return {ok:false,reason:'no stable post-impact settling'};
  return {...candidate,observationMs,classification:'catch-like only'};
 }
 
