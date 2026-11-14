@@ -56,6 +56,16 @@ test('nearby high-g samples remain one impact cluster, not an invented bounce',a
 test('collector rejects null, undefined and non-object sensor events without crashing',()=>{const c=createMotionTrace();for(const value of [null,undefined,0,'bad',[],{}]){assert.equal(c.add(value),false);assert.equal(c.samples.length,0)}assert.equal(c.add({timestamp:100,magnitude:9.8}),true);assert.equal(c.samples[0].ms,0)});
 
 
+test('launch requires consecutive low-g readings, not a sparse 100ms jump',()=>{
+ const sparse=[{ms:0,m:30},{ms:20,m:.5},{ms:120,m:.5},...seq(140,840,20,.5),{ms:860,m:20},{ms:880,m:30}];
+ // A later genuine contiguous low-g window may launch; the original 20ms sample cannot be its start.
+ const continuous=[{ms:0,m:30},...seq(20,840,20,.5),{ms:860,m:20},{ms:880,m:30}];
+ assert.equal(replay(continuous).ok,true);
+ assert.equal(replay(sparse).ok,true);
+ const broken=[{ms:0,m:30},{ms:20,m:.5},{ms:120,m:.5},{ms:140,m:9.8},{ms:160,m:.5},{ms:180,m:9.8},{ms:200,m:.5},{ms:220,m:9.8},{ms:240,m:.5},{ms:260,m:9.8},{ms:280,m:.5},{ms:300,m:9.8},{ms:320,m:.5},{ms:340,m:9.8},{ms:360,m:.5},{ms:380,m:9.8},{ms:400,m:.5},{ms:420,m:9.8},{ms:440,m:.5},{ms:460,m:9.8},{ms:480,m:.5},{ms:500,m:9.8},{ms:520,m:.5},{ms:540,m:9.8},{ms:560,m:.5},{ms:580,m:9.8},{ms:600,m:.5},{ms:620,m:9.8},{ms:640,m:.5},{ms:660,m:9.8},{ms:680,m:.5},{ms:700,m:9.8},{ms:720,m:.5},{ms:740,m:9.8},{ms:760,m:.5},{ms:780,m:9.8},{ms:800,m:.5},{ms:820,m:9.8},{ms:840,m:.5},{ms:860,m:20},{ms:880,m:30}];
+ assert.equal(replay(broken).ok,false);
+});
+
 test('armed launch window cannot bridge a pre-flight sensor interruption',()=>{
  const interrupted=[{ms:0,m:30},{ms:20,m:.5},{ms:40,m:.5},{ms:400,m:.5},{ms:420,m:.5},{ms:440,m:.5},{ms:460,m:.5},{ms:480,m:.5},{ms:500,m:.5},{ms:520,m:.5},{ms:540,m:.5},{ms:560,m:.5},{ms:580,m:.5},{ms:600,m:.5},{ms:620,m:.5},{ms:640,m:.5},{ms:660,m:.5},{ms:680,m:.5},{ms:700,m:.5},{ms:720,m:.5},{ms:740,m:.5},{ms:760,m:.5},{ms:780,m:.5},{ms:800,m:.5},{ms:820,m:.5},{ms:840,m:.5},{ms:860,m:22},{ms:880,m:28}];
  assert.equal(replay(interrupted).ok,false,'old launch impulse cannot arm a delayed freefall');
