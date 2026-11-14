@@ -16,3 +16,5 @@ test('pending OAuth invitation recovery rejects future timestamps and expires wi
   assert.ok(h.includes('saved.at<=Date.now()'));
   assert.ok(h.includes('Date.now()-saved.at<15*60*1000'));
 });
+
+test('toss submit is single-flight and ambiguous failures require refresh',()=>{assert.match(h,/if\(submitBusy\)return/);assert.match(h,/submitBusy=true/);assert.match(h,/submitBusy=false/);assert.match(h,/Submission status unknown\. Refresh challenges/);assert.doesNotMatch(h,/if\(!confirmed&&\$\('submit-toss'\)\.dataset\.challenge===id\)\$\('submit-toss'\)\.disabled=false/)});
