@@ -32,3 +32,10 @@ test('native challenge share uses invitation URL with safe fallback',()=>{assert
 
 test('authenticated challenge list refreshes while page is visible',()=>{assert.match(h,/setInterval\(syncChallenges,12000\)/);assert.match(h,/document\.visibilityState!=='visible'/);assert.match(h,/session\?\.access_token/);assert.match(h,/visibilitychange/)});
 test('rematch prepares new deadline and keeps previous result',()=>{assert.match(h,/Rematch prepared\. Press Create challenge/);assert.match(h,/\$\('deadline'\)\.value=new Date\(Date\.now\(\)\+86400000\)/)});
+
+test('Google OAuth callback fails closed on missing refresh token, invalid TTL, or unavailable storage',()=>{
+ assert.match(h,/access&&refresh&&Number\.isFinite\(ttl\)&&ttl>0&&ttl<=86400/);
+ assert.match(h,/Incomplete Google sign-in response\. Please sign in again\./);
+ assert.match(h,/Unable to save Google session\. Enable browser storage/);
+ assert.match(h,/history\.replaceState\(null,'',location\.pathname\+location\.search\)/);
+});
