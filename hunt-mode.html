@@ -4,6 +4,7 @@ What has hands but cannot clap? | clock
 What falls but never rises? | rain
 What has a neck but no head? | bottle</textarea></label><button id="create">Launch custom hunt</button></div></details><small>Answers stay in this browser. No GPS, wallet, blockchain, or AI service is connected yet. Don't put private addresses in public invitations.</small></section><section id="play" hidden><div id="seal" aria-hidden="true">🧭</div><div id="progress" class="step"></div><div id="progress-track" role="progressbar" aria-label="Hunt progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-bar"></div></div><h2 id="prompt"></h2><label for="answer" class="step">YOUR DISCOVERY</label><input id="answer" autocomplete="off" placeholder="Enter your discovery"><button id="check">Unlock next clue</button><p id="message" role="status" aria-live="polite"></p><div class="quick-actions"><button id="hint">Need a hint?</button><button id="restart">Exit hunt</button></div><a id="gauntlet" href="./direct-challenge.html" hidden>Finish with a Gauntlet challenge →</a></section></main><script type="module">
 import {validateHunt,advanceHunt} from './hunt-core.mjs';
+import {natasHuntHint} from './hunt-natas.mjs';
 const $=id=>document.getElementById(id);
 let hunt=null,index=0,misses=0;
 const sample=[['What shines above us by day?','sun'],['What has keys but no locks?','piano'],['What has hands but cannot clap?','clock'],['What falls but never rises?','rain'],['What has a neck but no head?','bottle']];
@@ -22,7 +23,7 @@ function launch(data){hunt=validateHunt(data);index=0;misses=0;$('creator').hidd
 $('demo').onclick=()=>launch({name:'The Five Clues',clues:sample.map(([prompt,answer])=>({prompt,answer}))});
 $('create').onclick=()=>{try{const clues=$('clues').value.split('\n').filter(x=>x.trim()).map(line=>{const at=line.indexOf('|');return {prompt:at<0?line:line.slice(0,at),answer:at<0?'':line.slice(at+1)}});launch({name:$('name').value,clues})}catch(e){alert(e.message)}};
 $('check').onclick=()=>{const result=advanceHunt(hunt,index,$('answer').value);index=result.index;$('answer').value='';render();if(result.correct){misses=0;if(!result.complete)message('✦ Discovery unlocked! On to the next one.','good')}else{misses++;message(misses>1?'Not yet. Try another idea—or tap Hint.':'The trail is still open. Look again.','bad')}};
-$('hint').onclick=()=>{const a=hunt.clues[index].answer;message('Natas hint: '+a[0].toUpperCase()+'… ('+a.length+' characters)','good')};
+$('hint').onclick=()=>{message(natasHuntHint(hunt,index,navigator.language).message,'good')};
 $('answer').addEventListener('keydown',e=>{if(e.key==='Enter')$('check').click()});
 $('restart').onclick=()=>{$('play').hidden=true;$('creator').hidden=false;hunt=null;index=0;message('')};
 </script></body></html>
