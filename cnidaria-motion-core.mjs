@@ -79,7 +79,7 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSa
  for(let i=1;i<post.length;i++)if(post[i].ms-post[i-1].ms>maxGapMs)return {ok:false,reason:'post-impact sensor gap'};
  // A few widely spaced frames cannot establish a settled catch-like trajectory.
  // Neither the triggering impact nor subsequent impact-cluster spikes count as settling observations.
- if(post.filter(s=>s.ms>impactAt&&s.m<=16).length<minPostSamples)return {ok:false,reason:'insufficient post-impact samples'};
+ if(post.filter(s=>s.ms>impactAt&&s.ms<=impactAt+observationMs&&s.m<=16).length<minPostSamples)return {ok:false,reason:'insufficient post-impact samples'};
  // A second high-g cluster following a pause or low-g interval is a bounce, not a stable catch.
  let quiet=false,lowRun=0,lastMs=impactAt,lastHighMs=impactAt,previousLow=false;
  for(const s of post.slice(1)){
