@@ -12,7 +12,7 @@ async function exercise(payload,{refreshError=false,rpcError=false}={}){
  const elements=new Map();
  const $=id=>{if(!elements.has(id))elements.set(id,{disabled:false,dataset:{challenge:'test-challenge'},value:'850',checked:true,textContent:''});return elements.get(id)};
  let refreshes=0,error=null;
- const ctx={$,Number,Error,Array,run:fn=>Promise.resolve().then(fn).catch(e=>{error=e}),rpc:async()=>{if(rpcError)throw Error('network unavailable');return payload},refresh:async()=>{refreshes++;if(refreshError)throw Error('refresh unavailable')}};
+ const ctx={$,Number,Error,Array,submitBusy:false,run:fn=>Promise.resolve().then(fn).catch(e=>{error=e}),rpc:async()=>{if(rpcError)throw Error('network unavailable');return payload},refresh:async()=>{refreshes++;if(refreshError)throw Error('refresh unavailable')}};
  runInNewContext(code,ctx);
  await ctx.$('submit-toss').onclick();
  return {error,refreshes,elements};
@@ -30,7 +30,7 @@ for(const [label,payload] of [['empty',[]],['null',null],['unknown',[{result:'un
   const x=await exercise(payload);
   assert.match(String(x.error?.message),/not confirmed/);
   assert.equal(x.refreshes,0);
-  assert.equal(x.elements.get('play-result')?.textContent||'','');
+  assert.match(x.elements.get('play-result')?.textContent||'',/Submission status unknown/);
  });
 }
 
@@ -47,9 +47,9 @@ test('confirmed winning toss remains locked when list refresh fails',async()=>{
  assert.equal(x.elements.get('submit-toss').disabled,true);
  assert.match(x.elements.get('play-result').textContent,/You won/);
 });
-test('unconfirmed submission can retry after transport failure',async()=>{
+test('uncertain transport failure requires refresh before retry',async()=>{
  const x=await exercise(null,{rpcError:true});
  assert.match(String(x.error?.message),/network unavailable/);
  assert.equal(x.refreshes,0);
- assert.equal(x.elements.get('submit-toss').disabled,false);
+ assert.equal(x.elements.get('submit-toss').disabled,true);
 });
