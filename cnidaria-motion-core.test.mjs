@@ -52,3 +52,5 @@ test('nearby high-g samples remain one impact cluster, not an invented bounce',a
  const base=[...flight,{ms:866,m:18},{ms:882,m:160},{ms:914,m:19},...seq(930,1250,16,9.8)];
  assert.equal(replayObserved(base).ok,true);
 });
+
+test('collector rejects null, undefined and non-object sensor events without crashing',()=>{const c=createMotionTrace();for(const value of [null,undefined,0,'bad',[],{}]){assert.equal(c.add(value),false);assert.equal(c.samples.length,0)}assert.equal(c.add({timestamp:100,magnitude:9.8}),true);assert.equal(c.samples[0].ms,0)});

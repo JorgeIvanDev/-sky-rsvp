@@ -82,7 +82,9 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
 export function createMotionTrace({maxSamples=1500}={}){
   if(!Number.isInteger(maxSamples)||maxSamples<1||maxSamples>100000)throw Error('Invalid motion trace capacity');
   const samples=[];let first=null;
-  return {samples,add({timestamp,magnitude,spin=0}){
+  return {samples,add(sample){
+    if(!sample||typeof sample!=='object')return false;
+    const {timestamp,magnitude,spin=0}=sample;
     if(!Number.isFinite(timestamp)||!Number.isFinite(magnitude)||magnitude<0||!Number.isFinite(spin))return false;
     if(first===null)first=timestamp;
     const ms=Math.round(timestamp-first);
