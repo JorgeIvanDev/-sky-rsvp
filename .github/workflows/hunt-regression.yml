@@ -1,0 +1,15 @@
+name: Hunt Mode regression
+on:
+  push:
+    paths: ['hunt-mode.html','hunt-core.mjs','hunt-core.test.mjs','.github/workflows/hunt-regression.yml']
+  pull_request:
+    paths: ['hunt-mode.html','hunt-core.mjs','hunt-core.test.mjs','.github/workflows/hunt-regression.yml']
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test hunt-core.test.mjs
