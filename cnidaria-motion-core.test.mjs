@@ -38,3 +38,17 @@ test('post-impact gaps and renewed freefall remain disqualifying',async()=>{cons
 
 test('motion collector rejects invalid capacity and spin without corrupting state',()=>{for(const maxSamples of [0,-1,1.5,Infinity,100001])assert.throws(()=>createMotionTrace({maxSamples}));const c=createMotionTrace();assert.equal(c.add({timestamp:100,magnitude:9.8,spin:Infinity}),false);assert.equal(c.samples.length,0);assert.equal(c.add({timestamp:101,magnitude:9.8,spin:0}),true);assert.equal(c.samples[0].ms,0)});
 test('invalid observation settings fail closed',async()=>{const {replayObserved}=await import('./cnidaria-motion-core.mjs');for(const options of [{observationMs:349},{observationMs:NaN},{maxGapMs:0},{maxGapMs:Infinity}])assert.equal(replayObserved([],options).reason,'invalid observation settings')});
+
+test('separated high-g couch bounce is not a catch even without sustained low-g',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const tail=[...seq(898,1058,16,9.8),{ms:1074,m:24},...seq(1090,1250,16,9.8)];
+ const result=replayObserved([...base,...tail]);
+ assert.equal(result.ok,false);
+ assert.equal(result.reason,'separated post-impact spike');
+});
+test('nearby high-g samples remain one impact cluster, not an invented bounce',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160},{ms:914,m:19},...seq(930,1250,16,9.8)];
+ assert.equal(replayObserved(base).ok,true);
+});
