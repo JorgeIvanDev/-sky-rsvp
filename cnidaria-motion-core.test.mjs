@@ -103,3 +103,13 @@ test('2026-11-11 labeled hand-catch sampling pattern: 21 observations over 350ms
  assert.equal(result.classification,'catch-like only');
  assert.equal(replayObserved([...pre,...post.slice(0,-3)]).reason,'incomplete post-impact observation');
 });
+
+
+test('post-impact low-g requires contiguous samples, not a fabricated 50ms run across a 100ms interval',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const sparse=[...base,...seq(898,978,16,9.8),{ms:994,m:.5},{ms:1094,m:.5},...seq(1110,1250,16,9.8)];
+ assert.equal(replayObserved(sparse,{maxGapMs:100}).ok,true);
+ const continuous=[...base,...seq(898,978,16,9.8),{ms:994,m:.5},{ms:1010,m:.5},{ms:1026,m:.5},{ms:1042,m:.5},...seq(1058,1250,16,9.8)];
+ assert.equal(replayObserved(continuous).reason,'renewed low-g after impact');
+});
