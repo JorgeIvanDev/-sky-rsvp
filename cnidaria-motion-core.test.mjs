@@ -205,3 +205,10 @@ test('late tumbling after brief settling does not pass 350ms review',async()=>{
  const sustained=[...base,...prefix,...brief,{ms:1210,m:9.8},{ms:1230,m:15}];
  assert.equal(replayObserved(sustained).classification,'catch-like only');
 });
+
+test('isolated final gravity reading cannot hide renewed late tumbling',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const tail=seq(898,1202,16,15).map(s=>[1106,1122,1138,1202].includes(s.ms)?{...s,m:9.8}:s);
+ assert.equal(replayObserved([...base,...tail,{ms:1230,m:15}]).reason,'unstable at observation deadline');
+});
