@@ -112,6 +112,10 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSa
   else{terminalRun=0;terminalPrevious=-Infinity;}
  }
  if(terminalRun<3)return {ok:false,reason:'unstable at observation deadline'};
+ // Do not infer a terminal catch from settling that ended well before the deadline.
+ // The closing sample may arrive after the deadline and is not settling evidence.
+ const lastSettling=settling.at(-1);
+ if(!lastSettling||deadline-lastSettling.ms>50)return {ok:false,reason:'terminal settling evidence stale'};
  return {...candidate,observationMs,classification:'catch-like only'};
 }
 
