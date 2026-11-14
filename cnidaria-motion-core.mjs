@@ -74,7 +74,7 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
  // A second high-g cluster following a pause or low-g interval is a bounce, not a stable catch.
  let quiet=false,lowRun=0,lastMs=impactAt,lastHighMs=impactAt,previousLow=false;
  for(const s of post.slice(1)){
-  if(s.m<2.5)lowRun=previousLow?lowRun+Math.min(s.ms-lastMs,50):0;else lowRun=0;
+  if(s.m<2.5)lowRun=previousLow&&s.ms-lastMs<=50?lowRun+(s.ms-lastMs):0;else lowRun=0;
   previousLow=s.m<2.5;
   if(lowRun>=48)quiet=true;
   if(s.m>16&&s.ms-lastHighMs>80)return {ok:false,reason:'separated post-impact spike'};
