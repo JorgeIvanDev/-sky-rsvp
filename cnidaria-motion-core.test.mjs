@@ -162,3 +162,13 @@ test('isolated settling sample does not establish stable post-impact observation
  const tail=seq(898,1250,16,15).map(s=>s.ms===1218?{...s,m:9.8}:s);
  assert.equal(replayObserved([...base,...tail]).reason,'no stable post-impact settling');
 });
+
+
+test('observed replay does not invent flight from separated low-g readings',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const samples=[{ms:0,m:30},{ms:20,m:.5},{ms:140,m:.5},{ms:160,m:9.8},...seq(180,780,20,.5),{ms:800,m:20},{ms:820,m:30},...seq(840,1200,20,9.8)];
+ // A fresh contiguous window can still establish a valid candidate.
+ assert.equal(replayObserved(samples).ok,true);
+ const broken=[{ms:0,m:30},{ms:20,m:.5},{ms:140,m:.5},...seq(160,780,20,9.8).map((s,i)=>({...s,m:i%2?.5:9.8})),{ms:800,m:20},{ms:820,m:30},...seq(840,1200,20,9.8)];
+ assert.equal(replayObserved(broken).ok,false);
+});
