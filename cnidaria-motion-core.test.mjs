@@ -144,3 +144,21 @@ test('impact trigger does not count toward eight required post-impact observatio
  assert.equal(replayObserved([...base,...eight]).ok,true);
  assert.equal(replayObserved([...base,...eight]).classification,'catch-like only');
 });
+
+
+test('continuous post-impact tumbling cannot masquerade as a settled catch',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const tumbling=[...base,...seq(898,1250,16,15)];
+ const result=replayObserved(tumbling);
+ assert.equal(result.ok,false);
+ assert.equal(result.reason,'no stable post-impact settling');
+ const settled=[...base,...seq(898,1090,16,15),...seq(1106,1250,16,9.8)];
+ assert.equal(replayObserved(settled).classification,'catch-like only');
+});
+test('isolated settling sample does not establish stable post-impact observation',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const tail=seq(898,1250,16,15).map(s=>s.ms===1218?{...s,m:9.8}:s);
+ assert.equal(replayObserved([...base,...tail]).reason,'no stable post-impact settling');
+});
