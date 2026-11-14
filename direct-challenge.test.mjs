@@ -24,3 +24,6 @@ test('motion sample count includes only accepted trace samples',()=>{assert.matc
 test('expired accepted challenges cannot be selected for new tosses',()=>{assert.match(h,/r\.status==='accepted'&&Number\.isFinite\(Date\.parse\(r\.expires_at\)\)&&Date\.parse\(r\.expires_at\)>Date\.now\(\)/)});
 
 test('toss submission checks expiry of selected challenge',()=>{assert.ok(h.includes("chosenExpiresAt=activeRows.find"));assert.ok(h.includes("Challenge expired. Refresh your challenges."))});
+
+test('Gauntlet has branded Open Graph metadata from original Natas artwork',()=>{assert.match(h,/og:title/);assert.match(h,/natas-gauntlet-preview\.svg/)});
+test('removed matches can be restored without deleting shared records',()=>{assert.match(h,/showRemoved\?hidden\[r\.id\]==='removed'/);assert.match(h,/show-removed.*?onclick/s);assert.match(h,/Open Removed to restore it/)});
