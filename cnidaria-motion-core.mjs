@@ -49,9 +49,9 @@ export function replay(samples){
  * This cannot establish that a human hand caught the phone.
  */
 export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
+ if(!Number.isFinite(observationMs)||observationMs<350||!Number.isFinite(maxGapMs)||maxGapMs<=0)return {ok:false,reason:'invalid observation settings'};
  const candidate=replay(samples);
  if(!candidate.ok)return candidate;
- if(!Number.isFinite(observationMs)||observationMs<350||!Number.isFinite(maxGapMs)||maxGapMs<=0)return {ok:false,reason:'invalid observation settings'};
  // Locate the first impact after a sustained low-g flight, not the highest later spike.
  let lowStart=null,flight=false,impactAt=null;
  for(const s of samples){
@@ -78,12 +78,13 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
 }
 
 export function createMotionTrace({maxSamples=1500}={}){
+  if(!Number.isInteger(maxSamples)||maxSamples<1||maxSamples>100000)throw Error('Invalid motion trace capacity');
   const samples=[];let first=null;
   return {samples,add({timestamp,magnitude,spin=0}){
-    if(!Number.isFinite(timestamp)||!Number.isFinite(magnitude)||magnitude<0)return false;
+    if(!Number.isFinite(timestamp)||!Number.isFinite(magnitude)||magnitude<0||!Number.isFinite(spin))return false;
     if(first===null)first=timestamp;
     const ms=Math.round(timestamp-first);
     if(samples.length>=maxSamples||ms<0||(samples.length&&ms<=samples[samples.length-1].ms))return false;
-    samples.push({ms,m:magnitude,spin:Number.isFinite(spin)?spin:0});return true;
+    samples.push({ms,m:magnitude,spin});return true;
   },evaluate(){return replayObserved(samples)},reset(){samples.length=0;first=null}};
 }
