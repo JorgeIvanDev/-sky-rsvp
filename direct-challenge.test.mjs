@@ -20,3 +20,5 @@ test('pending OAuth invitation recovery rejects future timestamps and expires wi
 test('toss submit is single-flight and ambiguous failures require refresh',()=>{assert.match(h,/if\(submitBusy\)return/);assert.match(h,/submitBusy=true/);assert.match(h,/submitBusy=false/);assert.match(h,/Submission status unknown\. Refresh challenges/);assert.doesNotMatch(h,/if\(!confirmed&&\$\('submit-toss'\)\.dataset\.challenge===id\)\$\('submit-toss'\)\.disabled=false/)});
 
 test('motion sample count includes only accepted trace samples',()=>{assert.match(h,/if\(!motionTrace\.add\(\{timestamp:e\.timeStamp,magnitude\}\)\)return;motionSamples\+\+/);assert.doesNotMatch(h,/motionSamples\+\+;motionPeak=.*?motionTrace\.add/s)});
+
+test('expired accepted challenges cannot be selected for new tosses',()=>{assert.match(h,/r\.status==='accepted'&&Number\.isFinite\(Date\.parse\(r\.expires_at\)\)&&Date\.parse\(r\.expires_at\)>Date\.now\(\)/)});

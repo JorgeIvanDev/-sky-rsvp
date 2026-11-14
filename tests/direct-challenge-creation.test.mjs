@@ -30,3 +30,5 @@ test('challenge creation refuses missing, malformed and oversized invite tokens'
  assert.match(code,/\^\[A-Za-z0-9_-\]\{16,256\}\$/);
  assert.match(code,/Server did not return a valid invitation token/);
 });
+
+test('challenge creation caps expiry to 30 days',()=>{assert.match(handler('create'),/30\*86400000/);assert.match(handler('create'),/expiration within 30 days/)});

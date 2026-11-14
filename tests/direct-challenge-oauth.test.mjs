@@ -23,3 +23,7 @@ test('OAuth return restores recent pending invite',()=>assert.equal(restore('',{
 test('expired pending invite is rejected',()=>assert.equal(restore('',{token,at:1}).invite,null));
 test('malformed invite tokens are rejected',()=>assert.equal(restore('?challenge=%3Cscript%3E').invite,null));
 test('no invite is invented without saved or query token',()=>assert.equal(restore('').invite,null));
+
+test('future-dated pending invite cannot be restored',()=>assert.equal(restore('',{token,at:1000001}).invite,null));
+test('pending invite exactly at 15 minute limit expires',()=>assert.equal(restore('',{token,at:1000000-15*60*1000}).invite,null));
+test('oversized pending token cannot be restored',()=>assert.equal(restore('',{token:'x'.repeat(257),at:999000}).invite,null));
