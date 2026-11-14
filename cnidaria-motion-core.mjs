@@ -44,6 +44,37 @@ export function replay(samples){
 }
 
 /** Collect timestamped acceleration magnitudes without making claims about physical flight. */
+/** Conservative post-impact review for live scoring. A replay hit is only a candidate:
+ * subsequent bounces, renewed freefall, or missing 350ms observation invalidate it.
+ * This cannot establish that a human hand caught the phone.
+ */
+export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
+ const candidate=replay(samples);
+ if(!candidate.ok)return candidate;
+ if(!Number.isFinite(observationMs)||observationMs<350||!Number.isFinite(maxGapMs)||maxGapMs<=0)return {ok:false,reason:'invalid observation settings'};
+ // Locate the first impact after a sustained low-g flight, not the highest later spike.
+ let lowStart=null,flight=false,impactAt=null;
+ for(const s of samples){
+  if(s.m<2.5){if(lowStart===null)lowStart=s.ms;if(s.ms-lowStart>=100)flight=true;}
+  else if(!flight)lowStart=null;
+  if(flight&&s.m>16){impactAt=s.ms;break;}
+ }
+ if(impactAt===null)return {ok:false,reason:'no impact to observe'};
+ const post=samples.filter(s=>s.ms>=impactAt&&s.ms<=impactAt+observationMs);
+ if(!post.length||post[post.length-1].ms<impactAt+observationMs)return {ok:false,reason:'incomplete post-impact observation'};
+ for(let i=1;i<post.length;i++)if(post[i].ms-post[i-1].ms>maxGapMs)return {ok:false,reason:'post-impact sensor gap'};
+ // A second high-g cluster following a pause or low-g interval is a bounce, not a stable catch.
+ let quiet=false,lowRun=0,lastMs=impactAt;
+ for(const s of post.slice(1)){
+  if(s.m<2.5)lowRun+=Math.min(s.ms-lastMs,50);else lowRun=0;
+  if(lowRun>=48)quiet=true;
+  if(quiet&&s.m>16)return {ok:false,reason:'re-impact after freefall'};
+  lastMs=s.ms;
+ }
+ if(quiet)return {ok:false,reason:'renewed low-g after impact'};
+ return {...candidate,observationMs,classification:'catch-like only'};
+}
+
 export function createMotionTrace({maxSamples=1500}={}){
   const samples=[];let first=null;
   return {samples,add({timestamp,magnitude,spin=0}){
@@ -52,5 +83,5 @@ export function createMotionTrace({maxSamples=1500}={}){
     const ms=Math.round(timestamp-first);
     if(samples.length>=maxSamples||ms<0||(samples.length&&ms<=samples[samples.length-1].ms))return false;
     samples.push({ms,m:magnitude,spin:Number.isFinite(spin)?spin:0});return true;
-  },evaluate(){return replay(samples)},reset(){samples.length=0;first=null}};
+  },evaluate(){return replayObserved(samples)},reset(){samples.length=0;first=null}};
 }
