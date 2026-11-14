@@ -53,8 +53,8 @@ export function replay(samples){
  * subsequent bounces, renewed freefall, or missing 350ms observation invalidate it.
  * This cannot establish that a human hand caught the phone.
  */
-export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
- if(!Number.isFinite(observationMs)||observationMs<350||!Number.isFinite(maxGapMs)||maxGapMs<=0)return {ok:false,reason:'invalid observation settings'};
+export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSamples=8}={}){
+ if(!Number.isFinite(observationMs)||observationMs<350||!Number.isFinite(maxGapMs)||maxGapMs<=0||!Number.isInteger(minPostSamples)||minPostSamples<8)return {ok:false,reason:'invalid observation settings'};
  const candidate=replay(samples);
  if(!candidate.ok)return candidate;
  // Locate the first impact after a sustained low-g flight, not the highest later spike.
@@ -73,6 +73,8 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
  if(endIndex<0)return {ok:false,reason:'incomplete post-impact observation'};
  const post=samples.slice(samples.findIndex(s=>s.ms>=impactAt),endIndex+1);
  for(let i=1;i<post.length;i++)if(post[i].ms-post[i-1].ms>maxGapMs)return {ok:false,reason:'post-impact sensor gap'};
+ // A few widely spaced frames cannot establish a settled catch-like trajectory.
+ if(post.length<minPostSamples)return {ok:false,reason:'insufficient post-impact samples'};
  // A second high-g cluster following a pause or low-g interval is a bounce, not a stable catch.
  let quiet=false,lowRun=0,lastMs=impactAt,lastHighMs=impactAt,previousLow=false;
  for(const s of post.slice(1)){
