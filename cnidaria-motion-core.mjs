@@ -98,7 +98,12 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSa
  // Only evidence collected by the 350ms deadline may establish settling. The first
  // later sample closes the observation window, but must not retroactively prove a catch.
  const settling=post.filter(s=>s.ms>impactAt&&s.ms>=deadline-150&&s.ms<=deadline);
- if(settling.filter(s=>s.m>=7&&s.m<=13).length<3)return {ok:false,reason:'no stable post-impact settling'};
+ let stableRun=0,stablePrevious=-Infinity;
+ for(const s of settling){
+  if(s.m>=7&&s.m<=13){stableRun=s.ms-stablePrevious<=50?stableRun+1:1;stablePrevious=s.ms;if(stableRun>=3)break;}
+  else{stableRun=0;stablePrevious=-Infinity;}
+ }
+ if(stableRun<3)return {ok:false,reason:'no stable post-impact settling'};
  return {...candidate,observationMs,classification:'catch-like only'};
 }
 
