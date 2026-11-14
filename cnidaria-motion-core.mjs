@@ -11,7 +11,7 @@ export function replay(samples){
   if(!Number.isFinite(ms)||!Number.isFinite(m)||m<0||!Number.isFinite(spin)||ms<0||ms<=checkedMs)return {ok:false,reason:'invalid sensor sample'};
   checkedMs=ms;
  }
- let previousMs=-Infinity;let state='armed',launch=-Infinity,low=null,flightStart=0,freefall=0,last=0,impactStart=0,impactCount=0,firstFeet=0,strongFirstFeet=0,strongAt=0,stable=0,peakSpin=0;
+ let previousMs=-Infinity,previousLowMs=-Infinity;let state='armed',launch=-Infinity,low=null,flightStart=0,freefall=0,last=0,impactStart=0,impactCount=0,firstFeet=0,strongFirstFeet=0,strongAt=0,stable=0,peakSpin=0;
  for(const {ms,m,spin=0} of samples){
   // A discontinuous or malformed sensor stream cannot establish a catch-like event.
   if(!Number.isFinite(ms)||!Number.isFinite(m)||m<0||!Number.isFinite(spin)||ms<0||ms<=previousMs)return {ok:false,reason:'invalid sensor sample'};
@@ -22,9 +22,11 @@ export function replay(samples){
   if(state==='armed'){
    if(m>13&&m<65)launch=ms;
    if(m<2.5&&ms-launch<450){
-    if(low===null)low=ms;
+    // Require continuous low-g evidence; a sparse sensor stream cannot invent a launch.
+    if(low===null||ms-previousLowMs>50)low=ms;
     if(ms-low>=100){state='flying';flightStart=low;last=ms;}
    }else low=null;
+   previousLowMs=ms;
    continue;
   }
   if(ms-last>250)return {ok:false,reason:'sensor gap'};
