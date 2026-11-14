@@ -106,8 +106,12 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSa
  if(stableRun<3)return {ok:false,reason:'no stable post-impact settling'};
  // Settling must persist through the end of the observed window. A brief
  // near-gravity interval followed by renewed tumbling is not a stable catch.
- const finalObserved=settling[settling.length-1];
- if(!finalObserved||finalObserved.m<7||finalObserved.m>13)return {ok:false,reason:'unstable at observation deadline'};
+ let terminalRun=0,terminalPrevious=-Infinity;
+ for(const s of settling){
+  if(s.m>=7&&s.m<=13){terminalRun=s.ms-terminalPrevious<=50?terminalRun+1:1;terminalPrevious=s.ms;}
+  else{terminalRun=0;terminalPrevious=-Infinity;}
+ }
+ if(terminalRun<3)return {ok:false,reason:'unstable at observation deadline'};
  return {...candidate,observationMs,classification:'catch-like only'};
 }
 
