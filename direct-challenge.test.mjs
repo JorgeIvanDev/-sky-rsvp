@@ -29,3 +29,6 @@ test('Gauntlet has branded Open Graph metadata from original Natas artwork',()=>
 test('removed matches can be restored without deleting shared records',()=>{assert.match(h,/showRemoved\?hidden\[r\.id\]==='removed'/);assert.match(h,/show-removed.*?onclick/s);assert.match(h,/Open Removed to restore it/)});
 
 test('native challenge share uses invitation URL with safe fallback',()=>{assert.match(h,/id="native-share" disabled/);assert.match(h,/navigator\.share\(\{title:/);assert.match(h,/url\}\)/);assert.match(h,/e\?\.name==='AbortError'/);assert.match(h,/navigator\.clipboard\.writeText\(url\)/)});
+
+test('authenticated challenge list refreshes while page is visible',()=>{assert.match(h,/setInterval\(syncChallenges,12000\)/);assert.match(h,/document\.visibilityState!=='visible'/);assert.match(h,/session\?\.access_token/);assert.match(h,/visibilitychange/)});
+test('rematch prepares new deadline and keeps previous result',()=>{assert.match(h,/Rematch prepared\. Press Create challenge/);assert.match(h,/\$\('deadline'\)\.value=new Date\(Date\.now\(\)\+86400000\)/)});
