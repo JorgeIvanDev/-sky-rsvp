@@ -58,10 +58,14 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSa
  const candidate=replay(samples);
  if(!candidate.ok)return candidate;
  // Locate the first impact after a sustained low-g flight, not the highest later spike.
- let lowStart=null,flight=false,flightAt=null,impactAt=null;
+ let lowStart=null,flight=false,flightAt=null,impactAt=null,previousFlightSampleMs=-Infinity;
  for(const s of samples){
-  if(s.m<2.5){if(lowStart===null)lowStart=s.ms;if(s.ms-lowStart>=100){if(!flight)flightAt=lowStart;flight=true;}}
-  else if(!flight)lowStart=null;
+  if(s.m<2.5){
+   // A launch needs consecutive low-g frames; missing frames cannot manufacture airtime.
+   if(lowStart===null||s.ms-previousFlightSampleMs>50)lowStart=s.ms;
+   if(s.ms-lowStart>=100){if(!flight)flightAt=lowStart;flight=true;}
+  }else if(!flight)lowStart=null;
+  previousFlightSampleMs=s.ms;
   if(flight&&s.m>16){impactAt=s.ms;break;}
  }
  if(impactAt===null)return {ok:false,reason:'no impact to observe'};
