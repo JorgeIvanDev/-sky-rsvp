@@ -62,3 +62,19 @@ test('armed launch window cannot bridge a pre-flight sensor interruption',()=>{
  const resumed=[...interrupted.slice(0,4),{ms:416,m:30},...seq(432,850,16,.5),{ms:866,m:18},{ms:882,m:160}];
  assert.equal(replay(resumed).ok,true,'a fresh impulse can still start a flight');
 });
+
+test('observed catch-like result fails on missing flight samples before impact',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const sparse=[...flight.filter(s=>s.ms<400||s.ms>560),{ms:866,m:18},{ms:882,m:160},...seq(898,1250,16,9.8)];
+ assert.equal(replayObserved(sparse).reason,'pre-impact sensor gap');
+ const complete=[...flight,{ms:866,m:18},{ms:882,m:160},...seq(898,1250,16,9.8)];
+ assert.equal(replayObserved(complete).ok,true);
+});
+test('a single low-g sample after impact is not a fabricated 48ms freefall run',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const tail=[{ms:930,m:.5},...seq(946,1250,16,9.8)];
+ assert.equal(replayObserved([...base,...tail]).ok,true);
+ const consecutive=[...base,{ms:898,m:.5},{ms:914,m:.5},{ms:930,m:.5},{ms:946,m:.5},...seq(962,1250,16,9.8)];
+ assert.equal(replayObserved(consecutive).reason,'renewed low-g after impact');
+});
