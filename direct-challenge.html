@@ -68,7 +68,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('focus',()=>{void syncChallenges()});
 window.addEventListener('pagehide',()=>clearInterval(syncTimer));
 const hash=new URLSearchParams(location.hash.slice(1));if(hash.has('error')){status('Google sign-in failed: '+(hash.get('error_description')||hash.get('error')));history.replaceState(null,'',location.pathname+location.search)}
-if(hash.has('access_token')){session={access_token:hash.get('access_token'),refresh_token:hash.get('refresh_token'),expires_at:Date.now()+Number(hash.get('expires_in')||3600)*1000};localStorage.setItem(STORE,JSON.stringify(session));history.replaceState(null,'',location.pathname+location.search)}
+if(hash.has('access_token')){const access=hash.get('access_token'),refresh=hash.get('refresh_token'),ttl=Number(hash.get('expires_in'));if(access&&refresh&&Number.isFinite(ttl)&&ttl>0&&ttl<=86400){session={access_token:access,refresh_token:refresh,expires_at:Date.now()+ttl*1000};try{localStorage.setItem(STORE,JSON.stringify(session))}catch{session=null;status('Unable to save Google session. Enable browser storage and sign in again.')}}else{session=null;status('Incomplete Google sign-in response. Please sign in again.')}history.replaceState(null,'',location.pathname+location.search)}
 if(invite){$('incoming').hidden=false;if(!params.has('challenge')){const restored=new URL(location.href);restored.searchParams.set('challenge',invite);history.replaceState(null,'',restored.pathname+restored.search)}}
 let motionEnabled=false,motionActive=false,motionStarted=0,motionSamples=0,motionPeak=0;const motionTrace=createMotionTrace();
 $('active-challenge').onchange=()=>{chosenChallenge=$('active-challenge').value;run(refresh)};
