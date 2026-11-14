@@ -66,11 +66,13 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
  const post=samples.slice(samples.findIndex(s=>s.ms>=impactAt),endIndex+1);
  for(let i=1;i<post.length;i++)if(post[i].ms-post[i-1].ms>maxGapMs)return {ok:false,reason:'post-impact sensor gap'};
  // A second high-g cluster following a pause or low-g interval is a bounce, not a stable catch.
- let quiet=false,lowRun=0,lastMs=impactAt;
+ let quiet=false,lowRun=0,lastMs=impactAt,lastHighMs=impactAt;
  for(const s of post.slice(1)){
   if(s.m<2.5)lowRun+=Math.min(s.ms-lastMs,50);else lowRun=0;
   if(lowRun>=48)quiet=true;
+  if(s.m>16&&s.ms-lastHighMs>80)return {ok:false,reason:'separated post-impact spike'};
   if(quiet&&s.m>16)return {ok:false,reason:'re-impact after freefall'};
+  if(s.m>16)lastHighMs=s.ms;
   lastMs=s.ms;
  }
  if(quiet)return {ok:false,reason:'renewed low-g after impact'};
