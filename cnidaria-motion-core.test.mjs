@@ -184,3 +184,13 @@ test('post-deadline sample cannot retroactively establish settled catch-like mot
  const threeBefore=tumbling.map(s=>s.ms>=1170?{...s,m:9.8}:s);
  assert.equal(replayObserved([...base,...threeBefore,{ms:1230,m:15}]).classification,'catch-like only');
 });
+
+
+test('three scattered gravity samples cannot fake consecutive settling',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const tail=seq(898,1250,16,15).map(s=>[1106,1170,1202].includes(s.ms)?{...s,m:9.8}:s);
+ assert.equal(replayObserved([...base,...tail]).reason,'no stable post-impact settling');
+ const consecutive=seq(898,1250,16,15).map(s=>[1170,1186,1202].includes(s.ms)?{...s,m:9.8}:s);
+ assert.equal(replayObserved([...base,...consecutive]).classification,'catch-like only');
+});
