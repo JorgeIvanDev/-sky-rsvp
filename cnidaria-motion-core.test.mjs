@@ -194,3 +194,14 @@ test('three scattered gravity samples cannot fake consecutive settling',async()=
  const consecutive=seq(898,1250,16,15).map(s=>[1170,1186,1202].includes(s.ms)?{...s,m:9.8}:s);
  assert.equal(replayObserved([...base,...consecutive]).classification,'catch-like only');
 });
+
+test('late tumbling after brief settling does not pass 350ms review',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const prefix=seq(898,1154,16,15);
+ const brief=[{ms:1170,m:9.8},{ms:1186,m:9.8},{ms:1202,m:9.8}];
+ const renewed=[...base,...prefix,...brief,{ms:1210,m:15},{ms:1230,m:15}];
+ assert.equal(replayObserved(renewed).reason,'unstable at observation deadline');
+ const sustained=[...base,...prefix,...brief,{ms:1210,m:9.8},{ms:1230,m:15}];
+ assert.equal(replayObserved(sustained).classification,'catch-like only');
+});
