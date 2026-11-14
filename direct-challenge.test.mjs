@@ -50,3 +50,11 @@ test('refresh response requires both tokens and a bounded expiry, and clears sta
  assert.match(h,/Session expired or refresh response invalid\. Sign in again\./);
  assert.match(h,/Unable to save refreshed session\. Enable browser storage/);
 });
+
+
+test('challenge sync uses one polling timer and one visibility listener',()=>{
+ assert.equal((h.match(/setInterval\(syncChallenges,12000\)/g)||[]).length,1);
+ assert.equal((h.match(/document\.addEventListener\('visibilitychange'/g)||[]).length,1);
+ assert.doesNotMatch(h,/setInterval\(\(\)=>\{if\(!document\.hidden&&!motionActive\)run\(refresh\)\},20000\)/);
+ assert.match(h,/window\.addEventListener\('pagehide',\(\)=>clearInterval\(syncTimer\)\)/);
+});
