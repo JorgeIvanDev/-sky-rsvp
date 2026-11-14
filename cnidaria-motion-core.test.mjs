@@ -21,3 +21,14 @@ test('shared replay fails closed on malformed and out-of-order sensor data',()=>
 
 test('invalid samples after a successful-looking catch never produce a score',()=>{const valid=[...flight,{ms:866,m:17.84},{ms:882,m:160.2}];for(const extra of [{ms:899,m:-.1},{ms:899,m:Infinity},{ms:882,m:1},{ms:900,m:1,spin:NaN}]){const r=replay([...valid,extra]);assert.equal(r.ok,false);assert.equal(r.reason,'invalid sensor sample')}});
 test('trace collector refuses bad timestamps and spin never creates a scored toss',()=>{const c=createMotionTrace();assert.equal(c.add({timestamp:100,magnitude:10}),true);assert.equal(c.add({timestamp:NaN,magnitude:10}),false);assert.equal(c.add({timestamp:90,magnitude:10}),false);assert.equal(c.add({timestamp:116,magnitude:-2}),false);assert.equal(c.evaluate().ok,false)});
+
+test('observed scoring waits for 350ms and rejects couch re-impact',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ assert.equal(replayObserved(base).ok,false);
+ assert.equal(replayObserved(base).reason,'incomplete post-impact observation');
+ const settled=[...base,...seq(898,1250,16,9.8)];
+ assert.equal(replayObserved(settled).ok,true);
+ assert.equal(replayObserved([...base,...seq(898,994,16,9.8),...seq(1010,1090,16,.5),{ms:1106,m:26},...seq(1122,1250,16,9.8)]).ok,false);
+ assert.equal(replayObserved([...base,{ms:1100,m:9.8},{ms:1250,m:9.8}]).reason,'post-impact sensor gap');
+});
