@@ -1,0 +1,4 @@
+/** URL-safe local hunt invitation descriptor. Not an authenticated server session. */
+export function createLocalHuntInvite({name,clueCount,code}){const title=String(name||'').trim();if(title.length<3||title.length>80||!Number.isInteger(clueCount)||clueCount<1||clueCount>20||!/^[A-Za-z0-9_-]{12,64}$/.test(String(code||'')))throw Error('Invalid local invite');return {version:1,title,clueCount,code,mode:'local-preview'}}
+export function publicHuntInvite(invite){const i=createLocalHuntInvite({name:invite?.title,clueCount:invite?.clueCount,code:invite?.code});return {version:i.version,title:i.title,clueCount:i.clueCount,mode:i.mode}}
+export function parseLocalHuntInvite(value){const obj=JSON.parse(String(value));if(obj?.version!==1||obj?.mode!=='local-preview')throw Error('Unsupported invite');return createLocalHuntInvite({name:obj.title,clueCount:obj.clueCount,code:obj.code})}
