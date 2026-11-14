@@ -56,22 +56,26 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100}={}){
  const candidate=replay(samples);
  if(!candidate.ok)return candidate;
  // Locate the first impact after a sustained low-g flight, not the highest later spike.
- let lowStart=null,flight=false,impactAt=null;
+ let lowStart=null,flight=false,flightAt=null,impactAt=null;
  for(const s of samples){
-  if(s.m<2.5){if(lowStart===null)lowStart=s.ms;if(s.ms-lowStart>=100)flight=true;}
+  if(s.m<2.5){if(lowStart===null)lowStart=s.ms;if(s.ms-lowStart>=100){if(!flight)flightAt=lowStart;flight=true;}}
   else if(!flight)lowStart=null;
   if(flight&&s.m>16){impactAt=s.ms;break;}
  }
  if(impactAt===null)return {ok:false,reason:'no impact to observe'};
+ // Do not score a flight reconstructed through missing pre-impact sensor data.
+ const flightSamples=samples.filter(s=>s.ms>=flightAt&&s.ms<=impactAt);
+ for(let i=1;i<flightSamples.length;i++)if(flightSamples[i].ms-flightSamples[i-1].ms>maxGapMs)return {ok:false,reason:'pre-impact sensor gap'};
  // Include the first sample on/after the deadline: real sensors rarely land exactly at 350ms.
  const endIndex=samples.findIndex(s=>s.ms>=impactAt+observationMs);
  if(endIndex<0)return {ok:false,reason:'incomplete post-impact observation'};
  const post=samples.slice(samples.findIndex(s=>s.ms>=impactAt),endIndex+1);
  for(let i=1;i<post.length;i++)if(post[i].ms-post[i-1].ms>maxGapMs)return {ok:false,reason:'post-impact sensor gap'};
  // A second high-g cluster following a pause or low-g interval is a bounce, not a stable catch.
- let quiet=false,lowRun=0,lastMs=impactAt,lastHighMs=impactAt;
+ let quiet=false,lowRun=0,lastMs=impactAt,lastHighMs=impactAt,previousLow=false;
  for(const s of post.slice(1)){
-  if(s.m<2.5)lowRun+=Math.min(s.ms-lastMs,50);else lowRun=0;
+  if(s.m<2.5)lowRun=previousLow?lowRun+Math.min(s.ms-lastMs,50):0;else lowRun=0;
+  previousLow=s.m<2.5;
   if(lowRun>=48)quiet=true;
   if(s.m>16&&s.ms-lastHighMs>80)return {ok:false,reason:'separated post-impact spike'};
   if(quiet&&s.m>16)return {ok:false,reason:'re-impact after freefall'};
