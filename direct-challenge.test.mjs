@@ -39,3 +39,14 @@ test('Google OAuth callback fails closed on missing refresh token, invalid TTL, 
  assert.match(h,/Unable to save Google session\. Enable browser storage/);
  assert.match(h,/history\.replaceState\(null,'',location\.pathname\+location\.search\)/);
 });
+
+test('OAuth errors invalidate prior session and cannot be overridden by a token fragment',()=>{
+ assert.match(h,/if\(hash\.has\('error'\)\)\{session=null;try\{localStorage\.removeItem\(STORE\)\}/);
+ assert.match(h,/if\(!hash\.has\('error'\)&&hash\.has\('access_token'\)\)/);
+});
+test('refresh response requires both tokens and a bounded expiry, and clears stale credentials on failure',()=>{
+ assert.match(h,/!r\.ok\|\|!d\?\.access_token\|\|!d\?\.refresh_token/);
+ assert.match(h,/!Number\.isFinite\(ttl\)\|\|ttl<=0\|\|ttl>86400/);
+ assert.match(h,/Session expired or refresh response invalid\. Sign in again\./);
+ assert.match(h,/Unable to save refreshed session\. Enable browser storage/);
+});
