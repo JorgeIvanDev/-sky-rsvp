@@ -223,3 +223,15 @@ test('terminal settling must reach the 350ms deadline, not end 78ms early',async
  const fresh=[...base,...seq(898,1202,16,9.8),{ms:1230,m:15}];
  assert.equal(replayObserved(fresh).classification,'catch-like only');
 });
+
+test('post-deadline closing frame cannot supply the eighth required observation',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ // Impact at 866ms; deadline 1216ms. Seven readings are within
+ // the review window and the eighth arrives after it.
+ const seven=[898,948,998,1048,1098,1148,1198].map(ms=>({ms,m:9.8}));
+ const late=[...base,...seven,{ms:1220,m:9.8}];
+ assert.equal(replayObserved(late).reason,'insufficient post-impact samples');
+ const eight=[...base,...seven,{ms:1210,m:9.8},{ms:1220,m:15}];
+ assert.equal(replayObserved(eight).classification,'catch-like only');
+});
