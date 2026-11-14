@@ -133,3 +133,14 @@ test('shared observed replay requires eight post-impact samples even when timing
  const dense=[...base,...seq(898,1250,16,9.8)];
  assert.equal(replayObserved(dense).ok,true);
 });
+
+test('impact trigger does not count toward eight required post-impact observations',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ const seven=[932,988,1044,1100,1156,1212,1250].map(ms=>({ms,m:9.8,spin:0}));
+ const insufficient=replayObserved([...base,...seven]);
+ assert.equal(insufficient.reason,'insufficient post-impact samples');
+ const eight=[{ms:898,m:9.8,spin:0},...seven];
+ assert.equal(replayObserved([...base,...eight]).ok,true);
+ assert.equal(replayObserved([...base,...eight]).classification,'catch-like only');
+});
