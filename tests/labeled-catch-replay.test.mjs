@@ -285,7 +285,7 @@ test('production impact-review state machine does not bridge missing frames into
     const elements = new Map();
     const context = {
       state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
-      impactReviewFeet: 3, impactReviewSamples: 0, impactReboundLowSamples: 0,
+      impactReviewFeet: 3, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0,
       impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
       Math, Number, performance: { now: () => context.clock },
       $: id => { if (!elements.has(id)) elements.set(id, {textContent: ''}); return elements.get(id); },
@@ -377,7 +377,7 @@ test('production impact-review replays 350ms with 21 measured readings, sparse c
     const elements = new Map();
     const context = {
       state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
-      impactReviewFeet: 3, impactReviewSamples: 0, impactReboundLowSamples: 0,
+      impactReviewFeet: 3, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0,
       impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
       Math, Number, performance: {now: () => context.clock},
       $: id => {if (!elements.has(id)) elements.set(id, {textContent: ''}); return elements.get(id);},
@@ -478,7 +478,7 @@ test('production impact-review replays 350 ms of readings without claiming hand 
   const source = html.slice(start, end);
   const context = {
     state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
-    impactReviewFeet: 3.03, impactReviewSamples: 0, impactReboundLowSamples: 0,
+    impactReviewFeet: 3.03, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0,
     impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
     Math, Number, performance: {now: () => context.clock},
     $: () => ({textContent: ''}),
