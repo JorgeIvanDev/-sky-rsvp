@@ -54,7 +54,7 @@ export function replay(samples){
  * This cannot establish that a human hand caught the phone.
  */
 export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSamples=8}={}){
- if(!Number.isFinite(observationMs)||observationMs<350||!Number.isFinite(maxGapMs)||maxGapMs<=0||!Number.isInteger(minPostSamples)||minPostSamples<8)return {ok:false,reason:'invalid observation settings'};
+ if(!Number.isFinite(observationMs)||observationMs<350||!Number.isFinite(maxGapMs)||maxGapMs<=0||maxGapMs>100||!Number.isInteger(minPostSamples)||minPostSamples<8)return {ok:false,reason:'invalid observation settings'};
  const candidate=replay(samples);
  if(!candidate.ok)return candidate;
  // Locate the first impact after a sustained low-g flight, not the highest later spike.
