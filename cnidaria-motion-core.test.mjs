@@ -284,3 +284,15 @@ test('collector rejects relative timestamp overflow and unsafe precision without
  assert.equal(trace.add({timestamp:Number.MAX_VALUE,magnitude:9.8}),false);
  assert.deepEqual(trace.samples.map(s=>s.ms),[0]);
 });
+
+
+test('replay refuses fractional or unsafe timestamp precision even when a catch-like pattern precedes it',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const good=[...flight,{ms:866,m:18},{ms:882,m:160},...seq(898,1250,16,9.8)];
+ assert.equal(replayObserved(good).classification,'catch-like only');
+ for(const ms of [900.5,Number.MAX_SAFE_INTEGER+2,1e20]){
+  const corrupt=[...good,{ms,m:9.8}].sort((a,b)=>a.ms-b.ms);
+  assert.equal(replay(corrupt).reason,'invalid sensor sample');
+  assert.equal(replayObserved(corrupt).reason,'invalid sensor sample');
+ }
+});
