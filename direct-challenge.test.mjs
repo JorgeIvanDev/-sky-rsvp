@@ -91,8 +91,8 @@ test('copy-link action handles missing or rejected mobile clipboard without losi
 test('ambiguous toss submission remains locked during background refresh',()=>{
  assert.match(h,/uncertainTossChallenge=null/);
  assert.match(h,/uncertainTossChallenge=id/);
- assert.match(h,/\$\('submit-toss'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
- assert.match(h,/\$\('airtime'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(h,/\$\('submit-toss'\)\.disabled=submitBusy\|\|!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(h,/\$\('airtime'\)\.disabled=submitBusy\|\|!!mine\|\|uncertainTossChallenge===active\.id/);
  assert.match(h,/Reload this page and check challenge history before trying again/);
 });
 
