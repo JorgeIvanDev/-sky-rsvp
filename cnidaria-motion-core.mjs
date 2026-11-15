@@ -53,7 +53,10 @@ export function replay(samples){
  * subsequent bounces, renewed freefall, or missing 350ms observation invalidate it.
  * This cannot establish that a human hand caught the phone.
  */
-export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSamples=8}={}){
+export function replayObserved(samples,options={}){
+ // Malformed external configuration must fail closed instead of throwing during a live toss.
+ if(!options||typeof options!=='object'||Array.isArray(options))return {ok:false,reason:'invalid observation settings'};
+ const {observationMs=350,maxGapMs=100,minPostSamples=8}=options;
  if(!Number.isFinite(observationMs)||observationMs<350||!Number.isFinite(maxGapMs)||maxGapMs<=0||maxGapMs>100||!Number.isInteger(minPostSamples)||minPostSamples<8)return {ok:false,reason:'invalid observation settings'};
  const candidate=replay(samples);
  if(!candidate.ok)return candidate;
