@@ -38,7 +38,7 @@ body.viewing-invitation .logo{opacity:.28!important}
 <div id="result" class="hidden" role="alertdialog" aria-modal="true"><div class="inner"><div class="brand">CNIDARIA · FLIGHT RESULT</div><div class="number" id="finalHeight">0.0</div><div class="sub">FEET ESTIMATED</div><h2 id="verdict">SORRY LOSER.<br>YOU DIDN'T MAKE THE CUT.</h2><p id="reason">TRY AGAIN.</p><p id="next" class="sub"></p><button id="again">TRY AGAIN</button></div></div>
 <div id="engineBuild" style="text-align:center;font-size:11px;color:#8cae9c;letter-spacing:.07em;padding:8px 12px" aria-label="CNIDARIA engine build">ENGINE BUILD · loading</div>
 <script>
-const API='https://hwkxuczipnaqzhbnaurw.supabase.co/rest/v1/cnidaria_scores',KEY='sb_publishable_4qpeic_k8BJKdgQLoBlNsw_wrpP72Q_';const $=id=>document.getElementById(id),G=9.80665,FT=3.28084;let sensor=false,state='off',failures=0,lowStart=0,flightStart=0,impactCount=0,armedAt=0,finalFeet=0,settleTimer=null,spinPeak=0,flightPeak=0,flightSamples=0,lastLaunchImpulse=0,lastMotionAt=0,impactStartedAt=0,firstImpactFeet=0,flightFailureReason='No confirmed catch',flightWatchdog=null,impactReviewTimer=null,impactReviewAt=0,impactReviewFeet=0,impactReviewSamples=0,impactReboundLowSamples=0,impactReboundDetected=false,flightReboundLowSamples=0,flightReboundAt=0,flightReboundAnchor=0,motionTrace=[],lastFlightTrace=[],freefallMs=0,freefallLastAt=0,airborneLostAt=0;const target=()=>Math.max(3,5-failures);
+const API='https://hwkxuczipnaqzhbnaurw.supabase.co/rest/v1/cnidaria_scores',KEY='sb_publishable_4qpeic_k8BJKdgQLoBlNsw_wrpP72Q_';const $=id=>document.getElementById(id),G=9.80665,FT=3.28084;let sensor=false,state='off',failures=0,lowStart=0,flightStart=0,impactCount=0,armedAt=0,finalFeet=0,settleTimer=null,spinPeak=0,flightPeak=0,flightSamples=0,lastLaunchImpulse=0,lastMotionAt=0,impactStartedAt=0,firstImpactFeet=0,flightFailureReason='No confirmed catch',flightWatchdog=null,impactReviewTimer=null,impactReviewAt=0,impactReviewFeet=0,impactReviewSamples=0,impactStableSamples=0,impactStableAt=0,impactReboundLowSamples=0,impactReboundDetected=false,flightReboundLowSamples=0,flightReboundAt=0,flightReboundAnchor=0,motionTrace=[],lastFlightTrace=[],freefallMs=0,freefallLastAt=0,airborneLostAt=0;const target=()=>Math.max(3,5-failures);
 function labels(){$('target').textContent=target()+' FT.';$('tries').textContent='Failed attempts: '+failures;$('rules').textContent=target()===3?'MAXIMUM MERCY: 3 FT + CATCH-LIKE SIGNAL':'EVERY FAILURE LOWERS THE TARGET BY 1 FT · CURRENT '+target()+' FT'}
 // Unlocks last only for this page session; reloading requires another attempt.
 let challengeAttempted=false;
@@ -85,13 +85,15 @@ function motion(e){
  if(state==='impact-review'){
    if(now-lastMotionAt>100){flightFailureReason='Post-impact sensor gap: catch unverified';complete(impactReviewFeet,false);return}
    lastMotionAt=now;impactReviewSamples++;
+   // Gameplay credit needs terminal near-gravity settling, not merely 350ms of spikes.
+   if(m>=7&&m<=13){impactStableSamples=impactStableAt&&now-impactStableAt<=50?impactStableSamples+1:1;impactStableAt=now}else{impactStableSamples=0;impactStableAt=0}
    // A renewed near-weightless interval followed by another impact is consistent with a cushion rebound.
    // Do not use impact magnitude or spin alone: legitimate hand catches can have large spikes.
    if(m<2.5)impactReboundLowSamples++;else if(m>16){if(impactReboundLowSamples>=2)impactReboundDetected=true;impactReboundLowSamples=0}else impactReboundLowSamples=0;
    if(impactReboundDetected){flightFailureReason='Rebound after impact: possible couch landing; catch unverified';complete(impactReviewFeet,false);return}
    $('status').textContent='IMPACT · CHECKING SETTLE';
    $('detail').textContent='Collecting post-impact motion ('+Math.round(now-impactReviewAt)+' ms)';
-   if(now-impactReviewAt>=350){if(impactReviewSamples<8){flightFailureReason='Post-impact sample coverage insufficient: hand catch unverified';complete(impactReviewFeet,false)}else{flightFailureReason='Impact observed; hand catch cannot be verified from motion alone';complete(impactReviewFeet,true)}}
+   if(now-impactReviewAt>=350){if(impactReviewSamples<8){flightFailureReason='Post-impact sample coverage insufficient: hand catch unverified';complete(impactReviewFeet,false)}else if(impactStableSamples<3){flightFailureReason='Post-impact motion did not settle: hand catch unverified';complete(impactReviewFeet,false)}else{flightFailureReason='Impact observed; hand catch cannot be verified from motion alone';complete(impactReviewFeet,true)}}
    return;
  }
  // A flight must follow a recent launch impulse; a stationary low-gravity glitch is not a toss.
