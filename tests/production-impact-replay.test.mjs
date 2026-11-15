@@ -131,3 +131,26 @@ test('long impact turbulence must settle for three terminal readings before cred
  assert.equal(unstable.completed?.credited,false);
  assert.match(unstable.flightFailureReason,/did not settle/);
 });
+
+test('terminal settling cannot bridge 60ms sensor gaps even with 350ms coverage',()=>{
+ const readings=Array.from({length:18},(_,i)=>[1017+i*17,25]);
+ const ctx=replay([...readings,[1320,9.8],[1380,9.8],[1400,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.match(ctx.flightFailureReason,/did not settle/);
+});
+
+test('late impact resets terminal settling; three new consecutive stable frames required',()=>{
+ const readings=Array.from({length:16},(_,i)=>[1018+i*18,25]);
+ const ctx=replay([...readings,[1306,9.8],[1324,9.8],[1342,25],[1360,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.equal(ctx.impactStableSamples,1);
+ assert.match(ctx.flightFailureReason,/did not settle/);
+});
+
+test('post-impact nonfinite clock cannot manufacture settling or elapsed coverage',()=>{
+ const ctx=replay([[1020,9.8],[1040,9.8],[Number.POSITIVE_INFINITY,9.8],[1060,9.8]]);
+ assert.equal(ctx.completed,undefined);
+ assert.equal(ctx.impactReviewSamples,3);
+ assert.equal(ctx.impactStableSamples,3);
+ assert.equal(ctx.lastMotionAt,1060);
+});
