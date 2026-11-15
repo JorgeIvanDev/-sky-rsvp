@@ -58,3 +58,11 @@ test('challenge sync uses one polling timer and one visibility listener',()=>{
  assert.doesNotMatch(h,/setInterval\(\(\)=>\{if\(!document\.hidden&&!motionActive\)run\(refresh\)\},20000\)/);
  assert.match(h,/window\.addEventListener\('pagehide',\(\)=>clearInterval\(syncTimer\)\)/);
 });
+
+test('ambiguous invitation responses fail closed rather than enabling a duplicate accept or decline',()=>{
+ const response=h.match(/async function respond\(accept\)\{([\s\S]*?)\n\$\('submit-toss'\)/);
+ assert.ok(response,'production response handler exists');
+ assert.match(response[1],/catch\(e\)\{\$\('accept'\)\.disabled=\$\('decline'\)\.disabled=true/);
+ assert.match(response[1],/Response status unknown\. Reload this invitation before retrying/);
+ assert.doesNotMatch(response[1],/catch\(e\)\{\$\('accept'\)\.disabled=\$\('decline'\)\.disabled=false/);
+});
