@@ -325,3 +325,13 @@ test('post-impact closing frame still enforces sensor continuity and cannot repl
  assert.equal(replayObserved([...base,...settled,{ms:1320,m:9.8}]).reason,'post-impact sensor gap');
  assert.equal(replayObserved([...base,...settled.slice(0,3),{ms:1230,m:9.8}]).reason,'post-impact sensor gap');
 });
+
+
+test('malformed live observation options fail closed without throwing',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const valid=[...flight,{ms:866,m:18},{ms:882,m:160},...seq(898,1250,16,9.8)];
+ for(const options of [null,false,0,'350',[],NaN]){
+  assert.deepEqual(replayObserved(valid,options),{ok:false,reason:'invalid observation settings'});
+ }
+ assert.equal(replayObserved(valid,{}).classification,'catch-like only');
+});
