@@ -84,6 +84,9 @@ function motion(e){
  const spin=r?Math.hypot(r.alpha||0,r.beta||0,r.gamma||0):0;motionTrace.push({ms:Math.round(now),state,g:Number(m.toFixed(2)),spin:Number(spin.toFixed(1))});if(motionTrace.length>1200)motionTrace.shift();
  if(state==='impact-review'){
    if(now-lastMotionAt>100){flightFailureReason='Post-impact sensor gap: catch unverified';complete(impactReviewFeet,false);return}
+   // Sensor gaps cannot bridge consecutive rebound evidence or terminal settling.
+   // Keep the 100ms hard-failure gate above, but require fresh adjacent frames.
+   if(now-lastMotionAt>50){impactReboundLowSamples=0;impactStableSamples=0;impactStableAt=0;}
    lastMotionAt=now;impactReviewSamples++;
    // Gameplay credit needs terminal near-gravity settling, not merely 350ms of spikes.
    if(m>=7&&m<=13){impactStableSamples=impactStableAt&&now-impactStableAt<=50?impactStableSamples+1:1;impactStableAt=now}else{impactStableSamples=0;impactStableAt=0}
