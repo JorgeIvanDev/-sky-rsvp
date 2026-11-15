@@ -9,11 +9,12 @@ test('OAuth invitation preview runs even if challenge list refresh fails',()=>{
  assert.match(script,/if\(session\)\{run\(refresh\);if\(invite\)run\(preview\)\}/);
  assert.doesNotMatch(script,/await refresh\(\);await preview\(\)/);
 });
-test('challenge create disables during network request and re-enables after failures',()=>{
+test('challenge create unlocks only after confirmed success and locks ambiguous failures',()=>{
  const code=handler('create');
  assert.match(code,/if\(\$\('create'\)\.disabled\)return/);
  assert.match(code,/\$\('create'\)\.disabled=true/);
- assert.match(code,/finally\{\$\('create'\)\.disabled=false\}/);
+ assert.match(code,/finally\{if\(creationConfirmed\)\$\('create'\)\.disabled=false\}/);
+ assert.match(code,/Challenge creation status unknown/);
 });
 test('challenge creation rejects expired deadlines before RPC',()=>{
  assert.match(handler('create'),/date\.getTime\(\)<=Date\.now\(\)/);
