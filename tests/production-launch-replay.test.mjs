@@ -39,3 +39,11 @@ test('sensor gap during launch low gravity resets continuity',()=>{
  const ctx=run([[1000,20],[1020,1],[1210,1],[1250,1],[1290,1]]);
  assert.equal(ctx.state,'armed');
 });
+
+test('armed launch cannot accumulate 100ms of low gravity across a 90ms sensor gap',()=>{
+ const ctx=run([[1000,20],[1020,1],[1110,1],[1130,1],[1150,1],[1170,1]]);
+ assert.equal(ctx.state,'armed');
+ const fresh=run([[1000,20],[1020,1],[1110,1],[1130,1],[1150,1],[1170,1],[1190,1],[1210,1]]);
+ assert.equal(fresh.state,'flying');
+ assert.equal(fresh.flightStart,1110);
+});
