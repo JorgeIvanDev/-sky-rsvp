@@ -42,3 +42,10 @@ test('native share failure falls back to clipboard but cancellation does not',()
  assert.match(code,/await navigator\.clipboard\.writeText\(url\)/);
  assert.doesNotMatch(code,/Share sheet unavailable\.[^']*'\);return/);
 });
+
+
+test('ambiguous score submission locks every score input through refresh',()=>{
+ assert.match(script,/\$\('submit-toss'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(script,/\$\('airtime'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(script,/\$\('caught'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
+});
