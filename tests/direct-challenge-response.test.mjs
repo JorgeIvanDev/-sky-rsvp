@@ -30,10 +30,10 @@ test('decline requires confirmed declined state',async()=>{
 for(const [label,payload] of [['empty response',[]],['null response',null],['wrong state',[{challenge_status:'pending'}]],['opposite state',[{challenge_status:'declined'}]]]){
  test(label+' must not claim acceptance',async()=>{
   const x=await exercise(payload);
-  assert.match(String(x.error?.message),/could not be confirmed/);
+  assert.match(String(x.error?.message),/Response status unknown.*Reload this invitation/);
   assert.equal(x.refreshed,0);assert.equal(x.cleared,0);
-  assert.equal(x.elements.get('accept').disabled,false);
-  assert.equal(x.elements.get('decline').disabled,false);
+  assert.equal(x.elements.get('accept').disabled,true);
+  assert.equal(x.elements.get('decline').disabled,true);
  });
 }
 
