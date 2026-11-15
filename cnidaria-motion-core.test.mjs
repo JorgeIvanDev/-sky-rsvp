@@ -335,3 +335,23 @@ test('malformed live observation options fail closed without throwing',async()=>
  }
  assert.equal(replayObserved(valid,{}).classification,'catch-like only');
 });
+
+
+test('trace constructor fails predictably for malformed configuration',()=>{
+ for(const options of [null,false,0,'1500',[],NaN]){
+  assert.throws(()=>createMotionTrace(options),/Invalid motion trace settings/);
+ }
+ const trace=createMotionTrace({maxSamples:2});
+ assert.equal(trace.add({timestamp:100,magnitude:9.8}),true);
+ assert.equal(trace.add({timestamp:120,magnitude:9.8}),true);
+ assert.equal(trace.samples.length,2);
+});
+
+test('array-shaped sensor events never enter a live trace',()=>{
+ const trace=createMotionTrace();
+ const fake=[100,9.8];fake.timestamp=100;fake.magnitude=9.8;
+ assert.equal(trace.add(fake),false);
+ assert.equal(trace.samples.length,0);
+ assert.equal(trace.add({timestamp:100,magnitude:9.8}),true);
+ assert.deepEqual(trace.samples,[{ms:0,m:9.8,spin:0}]);
+});
