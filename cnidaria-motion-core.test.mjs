@@ -254,3 +254,17 @@ test('rolling couch impacts cannot evade bounce detection by arriving less than 
  const short=[...base,{ms:914,m:19},...seq(930,1250,16,9.8)];
  assert.equal(replayObserved(short).classification,'catch-like only');
 });
+
+
+test('trace collector rejects negative timestamps without poisoning its time origin',()=>{
+ const trace=createMotionTrace({maxSamples:2});
+ assert.equal(trace.add({timestamp:-100,magnitude:9.8}),false);
+ assert.equal(trace.add({timestamp:100,magnitude:9.8}),true);
+ assert.equal(trace.add({timestamp:99,magnitude:9.8}),false);
+ assert.equal(trace.add({timestamp:120,magnitude:9.8}),true);
+ assert.deepEqual(trace.samples.map(s=>s.ms),[0,20]);
+ assert.equal(trace.add({timestamp:140,magnitude:9.8}),false);
+ trace.reset();
+ assert.equal(trace.add({timestamp:200,magnitude:9.8}),true);
+ assert.equal(trace.samples[0].ms,0);
+});
