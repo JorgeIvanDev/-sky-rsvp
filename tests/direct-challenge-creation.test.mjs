@@ -33,3 +33,12 @@ test('challenge creation refuses missing, malformed and oversized invite tokens'
 });
 
 test('challenge creation caps expiry to 30 days',()=>{assert.match(handler('create'),/30\*86400000/);assert.match(handler('create'),/expiration within 30 days/)});
+
+test('native share failure falls back to clipboard but cancellation does not',()=>{
+ const code=handler('native-share');
+ assert.match(code,/if\(e\?\.name==='AbortError'\)\{status\('Sharing cancelled\.'\);return\}/);
+ assert.match(code,/Share sheet unavailable\. Trying to copy the challenge link/);
+ assert.match(code,/if\(!navigator\.clipboard\?\.writeText\)throw Error\('Clipboard unavailable'\)/);
+ assert.match(code,/await navigator\.clipboard\.writeText\(url\)/);
+ assert.doesNotMatch(code,/Share sheet unavailable\.[^']*'\);return/);
+});
