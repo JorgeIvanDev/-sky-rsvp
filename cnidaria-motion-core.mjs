@@ -132,7 +132,9 @@ export function createMotionTrace({maxSamples=1500}={}){
     if(samples.length>=maxSamples)return false;
     const origin=first===null?timestamp:first;
     const ms=Math.round(timestamp-origin);
-    if(ms<0||(samples.length&&ms<=samples[samples.length-1].ms))return false;
+    // Finite absolute timestamps can still overflow when subtracted. Never store
+    // an infinite relative time or a rounded timestamp beyond safe integer precision.
+    if(!Number.isSafeInteger(ms)||ms<0||(samples.length&&ms<=samples[samples.length-1].ms))return false;
     if(first===null)first=timestamp;
     samples.push({ms,m:magnitude,spin});return true;
   },evaluate(){return replayObserved(samples)},reset(){samples.length=0;first=null}};
