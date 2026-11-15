@@ -95,3 +95,12 @@ test('ambiguous toss submission remains locked during background refresh',()=>{
  assert.match(h,/\$\('airtime'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
  assert.match(h,/Reload this page and check challenge history before trying again/);
 });
+
+test('polling cannot unlock score controls while submission request is in flight',()=>{
+ const refresh=h.match(/async function refresh\(\)\{([\s\S]*?)\nasync function preview/);
+ assert.ok(refresh,'production refresh handler exists');
+ for(const id of ['submit-toss','airtime','caught']){
+  assert.ok(refresh[1].includes("$('"+id+"').disabled=submitBusy||!!mine||uncertainTossChallenge===active.id"),id+' must stay locked');
+ }
+ assert.match(h,/submitBusy=true;\$\('submit-toss'\)\.disabled=true/);
+});
