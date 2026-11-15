@@ -66,3 +66,14 @@ test('ambiguous invitation responses fail closed rather than enabling a duplicat
  assert.match(response[1],/Response status unknown\. Reload this invitation before retrying/);
  assert.doesNotMatch(response[1],/catch\(e\)\{\$\('accept'\)\.disabled=\$\('decline'\)\.disabled=false/);
 });
+
+test('ambiguous challenge creation stays locked until reload to prevent duplicate invitations',()=>{
+ const create=h.match(/\$\('create'\)\.onclick=\(\)=>run\(async\(\)=>\{([\s\S]*?)\n\$\('refresh'\)\.onclick/);
+ assert.ok(create,'create handler exists');
+ assert.match(create[1],/if\(\$\('create'\)\.disabled\)return/);
+ assert.match(create[1],/let creationConfirmed=false/);
+ assert.match(create[1],/creationConfirmed=true/);
+ assert.match(create[1],/if\(creationConfirmed\)\$\('create'\)\.disabled=false/);
+ assert.match(create[1],/Challenge creation status unknown\. Do not press Create again/);
+ assert.doesNotMatch(create[1],/finally\{\$\('create'\)\.disabled=false\}/);
+});
