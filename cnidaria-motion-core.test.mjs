@@ -296,3 +296,15 @@ test('replay refuses fractional or unsafe timestamp precision even when a catch-
   assert.equal(replayObserved(corrupt).reason,'invalid sensor sample');
  }
 });
+
+
+test('observed replay cannot relax the 100ms sensor-gap safety ceiling through caller settings',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const samples=[{ms:0,m:30},{ms:20,m:.5},{ms:40,m:.5}];
+ for(const maxGapMs of [100.001,101,250,Infinity,Number.MAX_VALUE]){
+  const result=replayObserved(samples,{maxGapMs});
+  assert.equal(result.ok,false);
+  assert.equal(result.reason,'invalid observation settings');
+ }
+ assert.notEqual(replayObserved(samples,{maxGapMs:100}).reason,'invalid observation settings');
+});
