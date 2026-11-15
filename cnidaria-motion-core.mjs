@@ -126,11 +126,14 @@ export function replayObserved(samples,options={}){
  return {...candidate,observationMs,classification:'catch-like only'};
 }
 
-export function createMotionTrace({maxSamples=1500}={}){
+export function createMotionTrace(options={}){
+  // Sensor initialization must reject malformed caller options predictably.
+  if(!options||typeof options!=='object'||Array.isArray(options))throw Error('Invalid motion trace settings');
+  const {maxSamples=1500}=options;
   if(!Number.isInteger(maxSamples)||maxSamples<1||maxSamples>100000)throw Error('Invalid motion trace capacity');
   const samples=[];let first=null;
   return {samples,add(sample){
-    if(!sample||typeof sample!=='object')return false;
+    if(!sample||typeof sample!=='object'||Array.isArray(sample))return false;
     const {timestamp,magnitude,spin=0}=sample;
     if(!Number.isFinite(timestamp)||timestamp<0||!Number.isFinite(magnitude)||magnitude<0||!Number.isFinite(spin))return false;
     if(samples.length>=maxSamples)return false;
