@@ -154,3 +154,17 @@ test('post-impact nonfinite clock cannot manufacture settling or elapsed coverag
  assert.equal(ctx.impactStableSamples,3);
  assert.equal(ctx.lastMotionAt,1060);
 });
+
+test('post-impact rebound evidence cannot bridge a 60ms sensor gap',()=>{
+ const ctx=replay([[1020,1],[1080,1],[1100,25],[1120,9.8]]);
+ assert.equal(ctx.impactReboundDetected,false);
+ assert.equal(ctx.completed,undefined);
+ assert.equal(ctx.impactReboundLowSamples,0);
+});
+
+test('adjacent low-gravity readings followed by impact still reject rebound',()=>{
+ const ctx=replay([[1020,1],[1040,1],[1060,25]]);
+ assert.equal(ctx.impactReboundDetected,true);
+ assert.equal(ctx.completed?.credited,false);
+ assert.match(ctx.flightFailureReason,/Rebound after impact/);
+});
