@@ -17,7 +17,7 @@ test('pending OAuth invitation recovery rejects future timestamps and expires wi
   assert.ok(h.includes('Date.now()-saved.at<15*60*1000'));
 });
 
-test('toss submit is single-flight and ambiguous failures require refresh',()=>{assert.match(h,/if\(submitBusy\)return/);assert.match(h,/submitBusy=true/);assert.match(h,/submitBusy=false/);assert.match(h,/Submission status unknown\. Refresh challenges/);assert.doesNotMatch(h,/if\(!confirmed&&\$\('submit-toss'\)\.dataset\.challenge===id\)\$\('submit-toss'\)\.disabled=false/)});
+test('toss submit is single-flight and ambiguous failures require refresh',()=>{assert.match(h,/if\(submitBusy\)return/);assert.match(h,/submitBusy=true/);assert.match(h,/submitBusy=false/);assert.match(h,/Submission status unknown\. Reload this page/);assert.doesNotMatch(h,/if\(!confirmed&&\$\('submit-toss'\)\.dataset\.challenge===id\)\$\('submit-toss'\)\.disabled=false/)});
 
 test('motion sample count includes only accepted trace samples',()=>{assert.match(h,/if\(!motionTrace\.add\(\{timestamp:e\.timeStamp,magnitude\}\)\)return;motionSamples\+\+/);assert.doesNotMatch(h,/motionSamples\+\+;motionPeak=.*?motionTrace\.add/s)});
 
@@ -85,4 +85,13 @@ test('copy-link action handles missing or rejected mobile clipboard without losi
  assert.match(copy[1],/navigator\.clipboard\?\.writeText/);
  assert.match(copy[1],/catch\{status\('Copy unavailable\. Select the visible challenge URL/);
  assert.match(copy[1],/\$\('share'\)\.textContent\.trim\(\)/);
+});
+
+
+test('ambiguous toss submission remains locked during background refresh',()=>{
+ assert.match(h,/uncertainTossChallenge=null/);
+ assert.match(h,/uncertainTossChallenge=id/);
+ assert.match(h,/\$\('submit-toss'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(h,/\$\('airtime'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(h,/Reload this page and check challenge history before trying again/);
 });
