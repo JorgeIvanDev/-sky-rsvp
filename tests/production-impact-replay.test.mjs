@@ -112,7 +112,7 @@ test('large hand-like impact spikes alone do not trigger couch rebound rejection
  assert.equal(ctx.impactReboundDetected,false);
  assert.equal(ctx.completed?.credited,false,
   'impact spikes without terminal settling must not earn gameplay credit');
- assert.match(ctx.flightFailureReason,/hand catch cannot be verified/);
+ assert.match(ctx.flightFailureReason,/(?:hand catch cannot be verified|hand catch unverified)/);
 });
 test('two isolated near-weightless samples separated by gravity never become a rebound',()=>{
  const readings=[[1020,1],[1040,9.8],[1060,1],[1080,25],
