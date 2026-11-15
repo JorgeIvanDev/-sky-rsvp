@@ -268,3 +268,19 @@ test('trace collector rejects negative timestamps without poisoning its time ori
  assert.equal(trace.add({timestamp:200,magnitude:9.8}),true);
  assert.equal(trace.samples[0].ms,0);
 });
+
+test('collector rejects relative timestamp overflow and unsafe precision without poisoning its origin',()=>{
+ const trace=createMotionTrace();
+ assert.equal(trace.add({timestamp:-Number.MAX_VALUE,magnitude:9.8}),false);
+ assert.equal(trace.add({timestamp:1,magnitude:9.8}),true);
+ assert.equal(trace.add({timestamp:Number.MAX_VALUE,magnitude:9.8}),false);
+ assert.equal(trace.add({timestamp:Number.MAX_SAFE_INTEGER+100,magnitude:9.8}),false);
+ assert.deepEqual(trace.samples.map(s=>s.ms),[0]);
+ assert.equal(trace.add({timestamp:17,magnitude:9.8}),true);
+ assert.deepEqual(trace.samples.map(s=>s.ms),[0,16]);
+ trace.reset();
+ assert.equal(trace.add({timestamp:Number.MAX_VALUE,magnitude:9.8}),true);
+ assert.equal(trace.add({timestamp:0,magnitude:9.8}),false);
+ assert.equal(trace.add({timestamp:Number.MAX_VALUE,magnitude:9.8}),false);
+ assert.deepEqual(trace.samples.map(s=>s.ms),[0]);
+});
