@@ -238,3 +238,19 @@ test('post-deadline closing frame cannot supply the eighth required observation'
  const eight=[...base,...seven,{ms:1210,m:9.8},{ms:1220,m:15}];
  assert.equal(replayObserved(eight).classification,'catch-like only');
 });
+
+
+test('rolling couch impacts cannot evade bounce detection by arriving less than 80ms apart',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ // Every spike is only 64ms from the previous spike. Previously this
+ // rolling cluster could be mistaken for one impact followed by settling.
+ const rolling=[{ms:898,m:9.8},{ms:946,m:23},{ms:962,m:9.8},
+  {ms:1010,m:25},{ms:1026,m:9.8},{ms:1074,m:22},...seq(1090,1250,16,9.8)];
+ const result=replayObserved([...base,...rolling]);
+ assert.equal(result.ok,false);
+ assert.equal(result.reason,'prolonged post-impact impacts');
+ // A short initial impact cluster can still settle normally.
+ const short=[...base,{ms:914,m:19},...seq(930,1250,16,9.8)];
+ assert.equal(replayObserved(short).classification,'catch-like only');
+});
