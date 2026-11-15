@@ -96,6 +96,9 @@ function motion(e){
    // A sensor pause must not count as continuous low gravity during launch arming.
    // Requiring fresh adjacent readings avoids a false launch after a backgrounded tab.
    if(lastMotionAt&&now-lastMotionAt>150){lowStart=0;lastLaunchImpulse=0;}
+   // A low-g launch needs adjacent sensor evidence; preserve the impulse across
+   // brief gaps, but never count the gap itself as continuous freefall.
+   else if(lastMotionAt&&now-lastMotionAt>50){lowStart=0;}
    lastMotionAt=now;
    if(m>13&&m<65)lastLaunchImpulse=now;
    if(m<2.5&&lastLaunchImpulse>0&&now-lastLaunchImpulse<450){
