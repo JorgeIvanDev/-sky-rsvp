@@ -45,7 +45,7 @@ test('native share failure falls back to clipboard but cancellation does not',()
 
 
 test('ambiguous score submission locks every score input through refresh',()=>{
- assert.match(script,/\$\('submit-toss'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
- assert.match(script,/\$\('airtime'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
- assert.match(script,/\$\('caught'\)\.disabled=!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(script,/\$\('submit-toss'\)\.disabled=submitBusy\|\|!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(script,/\$\('airtime'\)\.disabled=submitBusy\|\|!!mine\|\|uncertainTossChallenge===active\.id/);
+ assert.match(script,/\$\('caught'\)\.disabled=submitBusy\|\|!!mine\|\|uncertainTossChallenge===active\.id/);
 });
