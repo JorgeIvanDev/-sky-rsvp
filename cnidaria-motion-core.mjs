@@ -87,6 +87,9 @@ export function replayObserved(samples,{observationMs=350,maxGapMs=100,minPostSa
   previousLow=s.m<2.5;
   if(lowRun>=48)quiet=true;
   if(s.m>16&&s.ms-lastHighMs>80)return {ok:false,reason:'separated post-impact spike'};
+  // Repeated high-g contacts cannot remain one impact cluster indefinitely merely
+  // because each pair is less than 80ms apart (couch bounce / tumbling).
+  if(s.m>16&&s.ms-impactAt>120)return {ok:false,reason:'prolonged post-impact impacts'};
   if(quiet&&s.m>16)return {ok:false,reason:'re-impact after freefall'};
   if(s.m>16)lastHighMs=s.ms;
   lastMs=s.ms;
