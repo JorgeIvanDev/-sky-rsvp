@@ -488,7 +488,7 @@ test('production impact-review replays 350 ms of readings without claiming hand 
   // their complete raw stream. Never present this as a recorded hand trace.
   for (let i = 1; i <= 21; i++) {
     context.clock = 1000 + Math.round(350 * i / 21);
-    runInNewContext(source + '\nmotion({accelerationIncludingGravity:{x:13.63,y:0,z:0},rotationRate:null})', context);
+    runInNewContext(source + '\nmotion({accelerationIncludingGravity:{x:9.8,y:0,z:0},rotationRate:null})', context);
   }
   assert.equal(context.impactReviewSamples, 21);
   assert.equal(context.lastMotionAt, 1350);
