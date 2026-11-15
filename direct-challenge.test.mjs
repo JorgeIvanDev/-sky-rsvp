@@ -77,3 +77,12 @@ test('ambiguous challenge creation stays locked until reload to prevent duplicat
  assert.match(create[1],/Challenge creation status unknown\. Do not press Create again/);
  assert.doesNotMatch(create[1],/finally\{\$\('create'\)\.disabled=false\}/);
 });
+
+
+test('copy-link action handles missing or rejected mobile clipboard without losing the invitation URL',()=>{
+ const copy=h.match(/\$\('copy'\)\.onclick=\(\)=>run\(async\(\)=>\{([\s\S]*?)\}\);\n\$\('deadline'\)/);
+ assert.ok(copy,'production copy-link handler exists');
+ assert.match(copy[1],/navigator\.clipboard\?\.writeText/);
+ assert.match(copy[1],/catch\{status\('Copy unavailable\. Select the visible challenge URL/);
+ assert.match(copy[1],/\$\('share'\)\.textContent\.trim\(\)/);
+});
