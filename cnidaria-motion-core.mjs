@@ -128,10 +128,12 @@ export function createMotionTrace({maxSamples=1500}={}){
   return {samples,add(sample){
     if(!sample||typeof sample!=='object')return false;
     const {timestamp,magnitude,spin=0}=sample;
-    if(!Number.isFinite(timestamp)||!Number.isFinite(magnitude)||magnitude<0||!Number.isFinite(spin))return false;
+    if(!Number.isFinite(timestamp)||timestamp<0||!Number.isFinite(magnitude)||magnitude<0||!Number.isFinite(spin))return false;
+    if(samples.length>=maxSamples)return false;
+    const origin=first===null?timestamp:first;
+    const ms=Math.round(timestamp-origin);
+    if(ms<0||(samples.length&&ms<=samples[samples.length-1].ms))return false;
     if(first===null)first=timestamp;
-    const ms=Math.round(timestamp-first);
-    if(samples.length>=maxSamples||ms<0||(samples.length&&ms<=samples[samples.length-1].ms))return false;
     samples.push({ms,m:magnitude,spin});return true;
   },evaluate(){return replayObserved(samples)},reset(){samples.length=0;first=null}};
 }
