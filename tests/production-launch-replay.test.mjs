@@ -47,3 +47,16 @@ test('armed launch cannot accumulate 100ms of low gravity across a 90ms sensor g
  assert.equal(fresh.state,'flying');
  assert.equal(fresh.flightStart,1110);
 });
+
+test('out-of-order sensor timestamps cannot rewind launch arming or enter trace',()=>{
+ const ctx=run([[1000,20],[1020,1],[1010,1],[1060,1],[1100,1],[1140,1]]);
+ assert.equal(ctx.state,'flying');
+ assert.equal(ctx.flightStart,1020);
+ assert.equal(ctx.motionTrace.length,5);
+});
+test('nonfinite and negative clocks do not poison launch or traces',()=>{
+ const ctx=run([[1000,20],[Number.NaN,1],[-20,1],[Number.POSITIVE_INFINITY,1],[1020,1],[1060,1],[1100,1],[1140,1]]);
+ assert.equal(ctx.state,'flying');
+ assert.equal(ctx.motionTrace.length,5);
+ assert.equal(ctx.flightStart,1020);
+});
