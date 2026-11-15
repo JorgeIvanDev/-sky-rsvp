@@ -12,7 +12,7 @@ function replay(readings){
  const elements=new Map();
  const ctx={
   state:'impact-review',lastMotionAt:1000,impactReviewAt:1000,impactReviewFeet:3.03,
-  impactReviewSamples:0,impactReboundLowSamples:0,impactReboundDetected:false,
+  impactReviewSamples:0,impactStableSamples:0,impactStableAt:0,impactReboundLowSamples:0,impactReboundDetected:false,
   motionTrace:[],flightFailureReason:'',Math,Number,
   performance:{now:()=>ctx.clock},
   $:id=>{if(!elements.has(id))elements.set(id,{textContent:''});return elements.get(id)},
@@ -110,8 +110,8 @@ test('large hand-like impact spikes alone do not trigger couch rebound rejection
  const ctx=replay(readings);
  assert.equal(ctx.impactReviewSamples,21);
  assert.equal(ctx.impactReboundDetected,false);
- assert.equal(ctx.completed?.credited,true,
-  'sufficient impact-review coverage earns only unverified gameplay credit');
+ assert.equal(ctx.completed?.credited,false,
+  'impact spikes without terminal settling must not earn gameplay credit');
  assert.match(ctx.flightFailureReason,/hand catch cannot be verified/);
 });
 test('two isolated near-weightless samples separated by gravity never become a rebound',()=>{
@@ -120,4 +120,14 @@ test('two isolated near-weightless samples separated by gravity never become a r
  const ctx=replay(readings);
  assert.equal(ctx.impactReboundDetected,false);
  assert.equal(ctx.completed,undefined);
+});
+
+test('long impact turbulence must settle for three terminal readings before credit',()=>{
+ const turbulence=Array.from({length:18},(_,i)=>[1017+i*17,25]);
+ const settled=replay([...turbulence,[1320,9.8],[1337,9.8],[1354,9.8]]);
+ assert.equal(settled.completed?.credited,true);
+ assert.equal(settled.impactStableSamples,3);
+ const unstable=replay([...turbulence,[1320,9.8],[1337,25],[1354,9.8]]);
+ assert.equal(unstable.completed?.credited,false);
+ assert.match(unstable.flightFailureReason,/did not settle/);
 });
