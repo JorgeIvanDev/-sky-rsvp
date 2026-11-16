@@ -113,3 +113,6 @@ test('recipient displays URL-linked photo with strict path validation',()=>{asse
 
 test('photo is uploaded when sharing, even if selected after challenge creation',()=>{assert.match(h,/async function prepareChallengeShare\(\)/);assert.match(h,/const path=await uploadTaunt\(tauntPhoto\)/);assert.match(h,/url\.hash='taunt='/);assert.match(h,/url=await prepareChallengeShare\(\)/);assert.match(h,/const url=\$\('share'\)\.textContent\.trim\(\)\?await prepareChallengeShare\(\):''/)});
 test('photo editor falls back when createImageBitmap fails on iPhone',()=>{assert.match(h,/typeof createImageBitmap==='function'/);assert.match(h,/const img=new Image\(\)/);assert.match(h,/URL\.revokeObjectURL\(imageUrl\)/)});
+
+test('create flow has visible direct invitation link and scrolls to result',()=>{assert.match(h,/id="open-share" hidden/);assert.match(h,/\$\('open-share'\)\.href=url\.toString\(\)/);assert.match(h,/\$\('share'\)\.scrollIntoView/)});
+test('create validates server seven-day expiry and clears stale share link',()=>{assert.match(h,/Choose an expiration within 7 days/);assert.match(h,/date\.getTime\(\)>Date\.now\(\)\+7\*86400000-60000/);assert.match(h,/\$\('share'\)\.textContent=''/)});

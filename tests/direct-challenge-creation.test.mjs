@@ -17,7 +17,7 @@ test('challenge create unlocks only after confirmed success and locks ambiguous 
  assert.match(code,/Challenge creation status unknown/);
 });
 test('challenge creation rejects expired deadlines before RPC',()=>{
- assert.match(handler('create'),/date\.getTime\(\)<=Date\.now\(\)/);
+ assert.match(handler('create'),/date\.getTime\(\)<=Date\.now\(\)\+120000/);
 });
 test('successful challenge creation survives a failed list refresh',()=>{
  const code=handler('create');
@@ -32,7 +32,7 @@ test('challenge creation refuses missing, malformed and oversized invite tokens'
  assert.match(code,/Server did not return a valid invitation token/);
 });
 
-test('challenge creation caps expiry to 7 days',()=>{assert.match(handler('create'),/30\*86400000/);assert.match(handler('create'),/expiration within 7 days/)});
+test('challenge creation caps expiry to 7 days',()=>{assert.match(handler('create'),/7\*86400000/);assert.match(handler('create'),/expiration within 7 days/)});
 
 test('native share failure falls back to clipboard but cancellation does not',()=>{
  const code=handler('native-share');
