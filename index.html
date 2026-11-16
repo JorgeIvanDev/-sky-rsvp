@@ -119,7 +119,7 @@ function motion(e){
  }
  if(now-lastMotionAt>250){flightFailureReason='Motion sensor paused for '+Math.round(now-lastMotionAt)+' ms';complete(0,false);return} // sensor gap: cannot trust elapsed flight time
  // Missing frames cannot establish consecutive near-weightless rebound readings.
- if(now-lastMotionAt>100){flightReboundLowSamples=0;flightReboundAt=0}
+ if(now-lastMotionAt>50){flightReboundLowSamples=0;flightReboundAt=0}
  if(flightReboundAnchor&&now>flightReboundAnchor){
    // Track rebound immediately after the first impact, including within 100ms.
    // A distinct low-gravity interval after an impact, followed by another collision,
