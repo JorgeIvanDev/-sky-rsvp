@@ -32,7 +32,7 @@ test('challenge creation refuses missing, malformed and oversized invite tokens'
  assert.match(code,/Server did not return a valid invitation token/);
 });
 
-test('challenge creation caps expiry to 30 days',()=>{assert.match(handler('create'),/30\*86400000/);assert.match(handler('create'),/expiration within 30 days/)});
+test('challenge creation caps expiry to 7 days',()=>{assert.match(handler('create'),/30\*86400000/);assert.match(handler('create'),/expiration within 7 days/)});
 
 test('native share failure falls back to clipboard but cancellation does not',()=>{
  const code=handler('native-share');
