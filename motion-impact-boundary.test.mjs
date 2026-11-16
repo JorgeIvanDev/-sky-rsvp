@@ -50,3 +50,20 @@ test('collector reset clears timestamps and prevents a prior attempt contaminati
  assert.equal(trace.add({timestamp:50000,magnitude:9.8}),true);
  assert.deepEqual(trace.samples.map(s=>s.ms),[0]);
 });
+
+test('late couch re-impact at 330ms cannot be mistaken for terminal settling',()=>{
+ const samples=[...launch,...range(900,1180,20,9.8),
+  {ms:1200,m:27},{ms:1220,m:9.8},{ms:1240,m:9.8}];
+ const result=replayObserved(samples);
+ assert.equal(result.ok,false);
+ assert.match(result.reason,/impact|spike|settling|unstable/i);
+});
+
+test('renewed post-impact freefall followed by re-impact rejects despite final gravity readings',()=>{
+ const samples=[...launch,...range(900,980,20,9.8),
+  ...range(1000,1080,20,0.7),{ms:1100,m:28},
+  ...range(1120,1240,20,9.8)];
+ const result=replayObserved(samples);
+ assert.equal(result.ok,false);
+ assert.match(result.reason,/impact|spike|freefall|low-g/i);
+});
