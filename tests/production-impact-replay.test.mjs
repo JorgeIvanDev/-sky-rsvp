@@ -192,3 +192,18 @@ test('backward sensor clock is ignored without corrupting subsequent impact revi
  assert.equal(ctx.impactReboundDetected,false);
  assert.equal(ctx.motionTrace.length,3);
 });
+
+test('post-impact clock duplicates cannot manufacture terminal settling',()=>{
+ const readings=Array.from({length:7},(_,i)=>[1000+(i+1)*50,9.8]);
+ const ctx=replay(readings.flatMap(([ms,g])=>[[ms,g],[ms+0.1,g]]));
+ assert.equal(ctx.impactReviewSamples,7);
+ assert.equal(ctx.completed?.credited,false);
+ assert.match(ctx.flightFailureReason,/sample coverage insufficient/);
+});
+
+test('late isolated high-g contact resets settling rather than proving a hand catch',()=>{
+ const readings=Array.from({length:17},(_,i)=>[1018+i*18,9.8]);
+ const ctx=replay([...readings,[1324,25],[1342,9.8],[1360,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.match(ctx.flightFailureReason,/did not settle/);
+});
