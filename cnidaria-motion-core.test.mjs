@@ -387,3 +387,19 @@ test('caller cannot extend the 350ms post-impact window to turn late settling in
  const settled=[...base,...seq(898,1250,16,9.8)];
  assert.equal(replayObserved(settled,{observationMs:350}).classification,'catch-like only');
 });
+
+test('negative spin magnitudes fail closed in replay and live collection',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const good=[...flight,{ms:866,m:18},{ms:882,m:160},...seq(898,1250,16,9.8)];
+ assert.equal(replayObserved(good).classification,'catch-like only');
+ for(const spin of [-0.01,-1,-100]){
+  const corrupted=good.map((s,i)=>i===5?{...s,spin}:s);
+  assert.equal(replay(corrupted).reason,'invalid sensor sample');
+  assert.equal(replayObserved(corrupted).reason,'invalid sensor sample');
+  const trace=createMotionTrace();
+  assert.equal(trace.add({timestamp:100,magnitude:9.8,spin}),false);
+  assert.equal(trace.samples.length,0);
+  assert.equal(trace.add({timestamp:116,magnitude:9.8,spin:0}),true);
+  assert.equal(trace.samples[0].ms,0);
+ }
+});
