@@ -8,13 +8,13 @@ export function replay(samples){
  for(const sample of samples){
   if(!sample||typeof sample!=='object'||Array.isArray(sample))return {ok:false,reason:'invalid sensor sample'};
   const {ms,m,spin=0}=sample;
-  if(!Number.isSafeInteger(ms)||!Number.isFinite(m)||m<0||!Number.isFinite(spin)||ms<0||ms<=checkedMs)return {ok:false,reason:'invalid sensor sample'};
+  if(!Number.isSafeInteger(ms)||!Number.isFinite(m)||m<0||(!Number.isFinite(spin)||spin<0)||ms<0||ms<=checkedMs)return {ok:false,reason:'invalid sensor sample'};
   checkedMs=ms;
  }
  let previousMs=-Infinity,previousLowMs=-Infinity;let state='armed',launch=-Infinity,low=null,flightStart=0,freefall=0,last=0,impactStart=0,impactCount=0,firstFeet=0,strongFirstFeet=0,strongAt=0,stable=0,peakSpin=0;
  for(const {ms,m,spin=0} of samples){
   // A discontinuous or malformed sensor stream cannot establish a catch-like event.
-  if(!Number.isSafeInteger(ms)||!Number.isFinite(m)||m<0||!Number.isFinite(spin)||ms<0||ms<=previousMs)return {ok:false,reason:'invalid sensor sample'};
+  if(!Number.isSafeInteger(ms)||!Number.isFinite(m)||m<0||(!Number.isFinite(spin)||spin<0)||ms<0||ms<=previousMs)return {ok:false,reason:'invalid sensor sample'};
   // Never stitch an armed low-g launch window across a sensor interruption.
   // Flight has its own gap rejection below; this protects the pre-flight transition.
   if(state==='armed'&&previousMs!==-Infinity&&ms-previousMs>250){launch=-Infinity;low=null;}
@@ -135,7 +135,7 @@ export function createMotionTrace(options={}){
   return {samples,add(sample){
     if(!sample||typeof sample!=='object'||Array.isArray(sample))return false;
     const {timestamp,magnitude,spin=0}=sample;
-    if(!Number.isFinite(timestamp)||timestamp<0||!Number.isFinite(magnitude)||magnitude<0||!Number.isFinite(spin))return false;
+    if(!Number.isFinite(timestamp)||timestamp<0||!Number.isFinite(magnitude)||magnitude<0||(!Number.isFinite(spin)||spin<0))return false;
     if(samples.length>=maxSamples)return false;
     const origin=first===null?timestamp:first;
     const ms=Math.round(timestamp-origin);
