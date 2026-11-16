@@ -110,3 +110,6 @@ test('taunt card is rendered from chosen photo and shared with invite URL',()=>{
 
 test('taunt photo upload uses authenticated storage and non-upsert UUID path',()=>{assert.match(h,/TAUNT_BUCKET='cnidaria-taunts'/);assert.match(h,/crypto\.randomUUID\(\)\+'\.jpg'/);assert.match(h,/Authorization:'Bearer '\+session\.access_token/);assert.match(h,/'x-upsert':'false'/)});
 test('recipient displays URL-linked photo with strict path validation',()=>{assert.match(h,/id="incoming-taunt"/);assert.match(h,/renderIncomingTaunt\(\)/);assert.match(h,/url\.hash='taunt='/);assert.match(h,/validTauntPath\(path\)/)});
+
+test('photo is uploaded when sharing, even if selected after challenge creation',()=>{assert.match(h,/async function prepareChallengeShare\(\)/);assert.match(h,/const path=await uploadTaunt\(tauntPhoto\)/);assert.match(h,/url\.hash='taunt='/);assert.match(h,/url=await prepareChallengeShare\(\)/);assert.match(h,/const url=await prepareChallengeShare\(\)/)});
+test('photo editor falls back when createImageBitmap fails on iPhone',()=>{assert.match(h,/typeof createImageBitmap==='function'/);assert.match(h,/const img=new Image\(\)/);assert.match(h,/URL\.revokeObjectURL\(imageUrl\)/)});
