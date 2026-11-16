@@ -529,3 +529,39 @@ test('user-confirmed hand catch summary is not a fabricated 21-frame replay', as
     'an excerpt cannot establish a complete launch and post-impact state-machine result');
   assert.equal(hand.userConfirmed, 'Caught in hand, not couch');
 });
+
+test('production 350ms boundary requires eight distinct post-impact readings', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const start = html.indexOf('function motion(e){');
+  const end = html.indexOf('\nasync function submitScore', start);
+  assert.ok(start > 0 && end > start);
+  const source = html.slice(start, end);
+  function replay(times) {
+    const ctx = {
+      state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
+      impactReviewFeet: 2, impactReviewSamples: 0, impactStableSamples: 0,
+      impactStableAt: 0, impactReboundLowSamples: 0, impactReboundDetected: false,
+      motionTrace: [], flightFailureReason: '', Math, Number,
+      performance: {now: () => ctx.clock},
+      $: () => ({textContent: ''}),
+      complete: (feet, credited) => {ctx.completed = {feet, credited}; ctx.state = 'done';}
+    };
+    for (const time of times) {
+      ctx.clock = time;
+      runInNewContext(source + '\nmotion({accelerationIncludingGravity:{x:9.8,y:0,z:0},rotationRate:null})', ctx);
+    }
+    return ctx;
+  }
+  const seven = replay([1050,1100,1150,1200,1250,1300,1350]);
+  assert.equal(seven.impactReviewSamples, 7);
+  assert.equal(seven.completed?.credited, false, 'seven distinct readings cannot earn gameplay credit');
+  const eight = replay([1040,1080,1120,1160,1200,1250,1300,1350]);
+  assert.equal(eight.impactReviewSamples, 8);
+  assert.equal(eight.completed?.credited, true, 'eight distinct readings spanning 350ms may earn unverified gameplay credit');
+  const duplicates = replay([1040,1080,1120,1160,1200,1250,1300,1300,1350]);
+  assert.equal(duplicates.impactReviewSamples, 8, 'duplicate timestamps must not inflate post-impact sample count');
+  assert.equal(duplicates.completed?.credited, true);
+  const sparseDuplicate = replay([1050,1100,1150,1200,1250,1300,1300,1350]);
+  assert.equal(sparseDuplicate.impactReviewSamples, 7);
+  assert.equal(sparseDuplicate.completed?.credited, false, 'duplicate cannot turn seven readings into eight');
+});
