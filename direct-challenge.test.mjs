@@ -106,7 +106,7 @@ test('polling cannot unlock score controls while submission request is in flight
 });
 
 test('challenge photo taunt can be selected and previewed locally',()=>{assert.match(h,/id="taunt-photo" type="file" accept="image\/\*"/);assert.match(h,/URL\.createObjectURL\(file\)/);assert.match(h,/URL\.revokeObjectURL\(tauntObjectUrl\)/);assert.match(h,/12\*1024\*1024/)});
-test('taunt card is rendered from chosen photo and shared with invite URL',()=>{assert.match(h,/async function makeTauntCard\(file\)/);assert.match(h,/ctx\.drawImage\(bitmap/);assert.match(h,/new File\(\[blob\],'cnidaria-challenge\.jpg'/);assert.match(h,/files:\[image\]/);assert.match(h,/text:message/);assert.match(h,/navigator\.canShare/)});
+test('taunt card is rendered from chosen photo and shared with invite URL',()=>{assert.match(h,/async function makeTauntCard\(file\)/);assert.match(h,/ctx\.drawImage\(bitmap/);assert.match(h,/new File\(\[blob\],'cnidaria-challenge\.jpg'/);assert.match(h,/async function makeTauntCard\(file\)/);assert.match(h,/text:message/);assert.match(h,/navigator\.canShare/)});
 
 test('taunt photo upload uses authenticated storage and non-upsert UUID path',()=>{assert.match(h,/TAUNT_BUCKET='cnidaria-taunts'/);assert.match(h,/crypto\.randomUUID\(\)\+'\.jpg'/);assert.match(h,/Authorization:'Bearer '\+session\.access_token/);assert.match(h,/'x-upsert':'false'/)});
 test('recipient displays URL-linked photo with strict path validation',()=>{assert.match(h,/id="incoming-taunt"/);assert.match(h,/renderIncomingTaunt\(\)/);assert.match(h,/url\.hash='taunt='/);assert.match(h,/validTauntPath\(path\)/)});
