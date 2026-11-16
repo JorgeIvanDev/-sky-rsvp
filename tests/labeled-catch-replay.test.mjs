@@ -502,3 +502,30 @@ test('production post-impact review fails closed on gaps over 100ms',()=>{
  assert.match(html,/if\(state==='impact-review'\)\{\s*if\(now-lastMotionAt>100\)\{flightFailureReason='Post-impact sensor gap: catch unverified';complete\(impactReviewFeet,false\);return\}/);
  assert.match(html,/if\(now-impactReviewAt>=350\)\{if\(impactReviewSamples<8\)/);
 });
+
+ 
+// Feed only the recorded diagnostic readings into the actual shared production
+// classifier. The missing intermediate samples are intentionally NOT invented.
+test('shared production classifier cannot credit the actual couch-drop diagnostic excerpt', async () => {
+  const {replay, replayObserved} = await import('../cnidaria-motion-core.mjs');
+  const couch = fixture.examples.find(x => x.recordedAt === '2026-11-11T19:11:20.179Z');
+  const recorded = couch.diagnosticSamples.map(({ms,m,spin}) => ({ms,m,spin}));
+  assert.equal(recorded.length, couch.diagnosticSamples.length);
+  assert.equal(recorded.some(x => x.ms === 8250 && x.m > 16), true, 'retain the late couch re-impact');
+  assert.equal(replay(recorded).ok, false);
+  assert.equal(replayObserved(recorded).ok, false);
+  assert.equal(couch.postImpactSamples, 0, 'the supplied trace has no 350ms post-impact review');
+});
+
+test('user-confirmed hand catch summary is not a fabricated 21-frame replay', async () => {
+  const {replayObserved} = await import('../cnidaria-motion-core.mjs');
+  const hand = fixture.examples.find(x => x.recordedAt === '2026-11-11T19:06:44.289Z');
+  assert.equal(hand.postImpactSamples, 21);
+  assert.equal(hand.postImpactMs, 350);
+  const excerpts = [...hand.impactSamples, ...hand.postImpactSamplesExcerpt];
+  assert.ok(excerpts.length < hand.postImpactSamples,
+    'the supplied excerpt is not the full 21-frame sensor recording');
+  assert.equal(replayObserved(excerpts).ok, false,
+    'an excerpt cannot establish a complete launch and post-impact state-machine result');
+  assert.equal(hand.userConfirmed, 'Caught in hand, not couch');
+});
