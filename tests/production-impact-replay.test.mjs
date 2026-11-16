@@ -13,7 +13,7 @@ function replay(readings){
  const ctx={
   state:'impact-review',lastMotionAt:1000,impactReviewAt:1000,impactReviewFeet:3.03,
   impactReviewSamples:0,impactStableSamples:0,impactStableAt:0,impactReboundLowSamples:0,impactReboundDetected:false,
-  motionTrace:[],flightFailureReason:'',Math,Number,
+  motionTrace:[],flightFailureReason:'',G:9.81,Math,Number,
   performance:{now:()=>ctx.clock},
   $:id=>{if(!elements.has(id))elements.set(id,{textContent:''});return elements.get(id)},
   complete:(feet,credited)=>{ctx.completed={feet,credited};ctx.state='done'}
