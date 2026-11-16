@@ -371,3 +371,19 @@ test('array-shaped replay samples cannot be scored even with valid-looking field
  assert.equal(replay(trailing).reason,'invalid sensor sample');
  assert.equal(replayObserved(trailing).reason,'invalid sensor sample');
 });
+
+
+test('caller cannot extend the 350ms post-impact window to turn late settling into a catch-like result',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
+ // A tumbling first 350ms followed by settling must never be scored by extending the review.
+ const firstWindow=seq(898,1250,16,15);
+ const later=seq(1266,1602,16,9.8);
+ const samples=[...base,...firstWindow,...later];
+ assert.equal(replayObserved(samples).ok,false);
+ for(const observationMs of [350.001,351,500,700,10000]){
+  assert.deepEqual(replayObserved(samples,{observationMs}),{ok:false,reason:'invalid observation settings'});
+ }
+ const settled=[...base,...seq(898,1250,16,9.8)];
+ assert.equal(replayObserved(settled,{observationMs:350}).classification,'catch-like only');
+});
