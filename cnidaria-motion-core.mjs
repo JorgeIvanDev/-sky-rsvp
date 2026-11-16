@@ -6,7 +6,7 @@ export function replay(samples){
  if(!Array.isArray(samples))return {ok:false,reason:'invalid sensor sample'};
  let checkedMs=-Infinity;
  for(const sample of samples){
-  if(!sample||typeof sample!=='object')return {ok:false,reason:'invalid sensor sample'};
+  if(!sample||typeof sample!=='object'||Array.isArray(sample))return {ok:false,reason:'invalid sensor sample'};
   const {ms,m,spin=0}=sample;
   if(!Number.isSafeInteger(ms)||!Number.isFinite(m)||m<0||!Number.isFinite(spin)||ms<0||ms<=checkedMs)return {ok:false,reason:'invalid sensor sample'};
   checkedMs=ms;
