@@ -80,7 +80,7 @@ function motion(e){
  if(!a||![a.x,a.y,a.z].every(Number.isFinite))return;
  const now=performance.now(),m=Math.hypot(a.x,a.y,a.z),r=e.rotationRate;
  // Discard invalid or backward sensor clocks before mutating flight state or traces.
- if(!Number.isFinite(now)||now<0||(lastMotionAt&&now<lastMotionAt))return;
+ if(!Number.isFinite(now)||now<0||(lastMotionAt&&now<=lastMotionAt))return; // Duplicate timestamps cannot inflate flight or post-impact sample counts.
  const accelerationMagnitudeValid=Number.isFinite(m);if(!accelerationMagnitudeValid)return;
  const rawSpin=r&&[r.alpha,r.beta,r.gamma].every(v=>v==null||Number.isFinite(v))?Math.hypot(r.alpha||0,r.beta||0,r.gamma||0):0;
  const spin=Number.isFinite(rawSpin)?rawSpin:0;motionTrace.push({ms:Math.round(now),state,g:Number(m.toFixed(2)),spin:Number(spin.toFixed(1))});if(motionTrace.length>1200)motionTrace.shift();
