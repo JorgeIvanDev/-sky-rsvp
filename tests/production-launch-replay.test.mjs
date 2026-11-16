@@ -60,3 +60,17 @@ test('nonfinite and negative clocks do not poison launch or traces',()=>{
  assert.equal(ctx.motionTrace.length,5);
  assert.equal(ctx.flightStart,1020);
 });
+
+test('early couch rebound within 100ms of impact is rejected before another catch',()=>{
+ const launch=[[1000,20],[1020,1],[1060,1],[1100,1],[1140,1]];
+ const flight=Array.from({length:7},(_,i)=>[1180+i*40,1]);
+ const ctx=run([...launch,...flight,[1460,24],[1480,1],[1500,1],[1540,25]]);
+ assert.equal(ctx.state,'done');
+ assert.match(ctx.flightFailureReason,/Repeated airborne impact after rebound/);
+});
+test('single low-g frame after impact does not establish a couch rebound',()=>{
+ const launch=[[1000,20],[1020,1],[1060,1],[1100,1],[1140,1]];
+ const flight=Array.from({length:7},(_,i)=>[1180+i*40,1]);
+ const ctx=run([...launch,...flight,[1460,24],[1480,1],[1500,9.8],[1540,25]]);
+ assert.notMatch(ctx.flightFailureReason||'',/Repeated airborne impact after rebound/);
+});
