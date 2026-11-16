@@ -5,8 +5,9 @@ const $=id=>document.getElementById(id);
 const PENDING='cnidaria-pending-direct-challenge-v1';let chosenChallenge=null,chosenExpiresAt=null,refreshBusy=false,submitBusy=false,uncertainTossChallenge=null,showArchived=false,showRemoved=false,showAll=false,historyRows=[],historyUser=null,historyAttempts=new Map();
 const params=new URLSearchParams(location.search);
 let invite=params.get('challenge');
-if(!invite){try{const saved=JSON.parse(sessionStorage.getItem(PENDING)||'null');if(saved&&Number.isFinite(saved.at)&&saved.at<=Date.now()&&Date.now()-saved.at<15*60*1000&&typeof saved.token==='string')invite=saved.token}catch{}}
-if(invite&&!/^[A-Za-z0-9_-]{16,256}$/.test(invite)){invite=null}
+// A malformed query parameter must not erase a legitimate pending OAuth invite.
+if(invite&&!/^[A-Za-z0-9_-]{16,256}$/.test(invite))invite=null;
+if(!invite){try{const saved=JSON.parse(sessionStorage.getItem(PENDING)||'null');if(saved&&Number.isFinite(saved.at)&&saved.at<=Date.now()&&Date.now()-saved.at<15*60*1000&&typeof saved.token==='string'&&/^[A-Za-z0-9_-]{16,256}$/.test(saved.token))invite=saved.token}catch{}}
 $('google-login').addEventListener('click',()=>{if(invite)try{sessionStorage.setItem(PENDING,JSON.stringify({token:invite,at:Date.now()}));const path=new URLSearchParams(location.hash.slice(1)).get('taunt');if(validTauntPath(path))sessionStorage.setItem('cnidaria-taunt-'+invite,path)}catch{}});
 
 let session=null;try{session=JSON.parse(localStorage.getItem(STORE)||'null')}catch{}
