@@ -168,3 +168,27 @@ test('adjacent low-gravity readings followed by impact still reject rebound',()=
  assert.equal(ctx.completed?.credited,false);
  assert.match(ctx.flightFailureReason,/Rebound after impact/);
 });
+
+test('rounded-millisecond duplicate callbacks cannot inflate the eight-frame coverage gate',()=>{
+ const readings=[[1044,9.8],[1088,9.8],[1131,9.8],[1175,9.8],[1219,9.8],[1263,9.8],[1306,9.8],[1350,9.8]];
+ const duplicate=readings.flatMap(([ms,g])=>[[ms,g],[ms+0.1,g]]);
+ const ctx=replay(duplicate);
+ assert.equal(ctx.impactReviewSamples,8,'only eight distinct exported millisecond frames count');
+ assert.equal(ctx.completed?.credited,true);
+ assert.equal(ctx.motionTrace.length,8,'duplicates must not enter the trace');
+});
+test('repeated rounded timestamps cannot manufacture coverage from seven distinct frames',()=>{
+ const readings=[[1050,9.8],[1100,9.8],[1150,9.8],[1200,9.8],[1250,9.8],[1300,9.8],[1350,9.8]];
+ const ctx=replay(readings.flatMap(([ms,g])=>[[ms,g],[ms+0.1,g]]));
+ assert.equal(ctx.impactReviewSamples,7);
+ assert.equal(ctx.completed?.credited,false);
+ assert.match(ctx.flightFailureReason,/sample coverage insufficient/);
+});
+test('backward sensor clock is ignored without corrupting subsequent impact review',()=>{
+ const ctx=replay([[1020,9.8],[1040,9.8],[1010,25],[1060,9.8]]);
+ assert.equal(ctx.completed,undefined);
+ assert.equal(ctx.impactReviewSamples,3);
+ assert.equal(ctx.lastMotionAt,1060);
+ assert.equal(ctx.impactReboundDetected,false);
+ assert.equal(ctx.motionTrace.length,3);
+});
