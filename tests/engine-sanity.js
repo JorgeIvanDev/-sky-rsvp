@@ -14,7 +14,7 @@ for(const [name,pattern] of [
  ['sustained freefall',/freefallMs<250/],
  ['consecutive strong impacts',/impactCount=0/],
  ['gentle stable readings',/gentleSettleSamples>=3/],
- ['spin excludes catch impact',/if\(r&&m<2\.5\)/],
+ ['spin excludes catch impact',/if\(r&&m<2\.5&&\[r\.alpha,r\.beta,r\.gamma\]\.every/],
  ['first impact height preserved for review',/beginImpactReview\(firstImpactFeet,now\)/],
  ['strong impact height preserved for review',/beginImpactReview\(strongFirstFeet,now\)/],
  ['post-impact 350ms review',/now-impactReviewAt>=350/],
