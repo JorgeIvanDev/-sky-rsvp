@@ -355,3 +355,19 @@ test('array-shaped sensor events never enter a live trace',()=>{
  assert.equal(trace.add({timestamp:100,magnitude:9.8}),true);
  assert.deepEqual(trace.samples,[{ms:0,m:9.8,spin:0}]);
 });
+
+
+test('array-shaped replay samples cannot be scored even with valid-looking fields',async()=>{
+ const {replayObserved}=await import('./cnidaria-motion-core.mjs');
+ const good=[...flight,{ms:866,m:18},{ms:882,m:160},...seq(898,1250,16,9.8)];
+ assert.equal(replayObserved(good).classification,'catch-like only');
+ const forged=[900,9.8];forged.ms=900;forged.m=9.8;forged.spin=0;
+ const inserted=[...good.filter(s=>s.ms<900),forged,...good.filter(s=>s.ms>900)];
+ for(const run of [replay,replayObserved]){
+  assert.equal(run(inserted).ok,false);
+  assert.equal(run(inserted).reason,'invalid sensor sample');
+ }
+ const trailing=[...good];const tail=[];tail.ms=1300;tail.m=9.8;tail.spin=0;trailing.push(tail);
+ assert.equal(replay(trailing).reason,'invalid sensor sample');
+ assert.equal(replayObserved(trailing).reason,'invalid sensor sample');
+});
