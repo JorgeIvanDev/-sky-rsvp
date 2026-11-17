@@ -155,6 +155,36 @@ function cancelBackgroundMotion(){
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cancelBackgroundMotion()});
 window.addEventListener('pagehide',cancelBackgroundMotion);
+// Keep original sensor game embedded in Gauntlet. Do not start sensors until the player taps inside it.
+$('play-inline-engine').onclick=()=>{
+ const id=chosenChallenge;
+ if(!id){$('play-result').textContent='Choose an accepted active challenge first.';return}
+ const frame=$('inline-toss-frame');
+ const url='./index.html?play=1&gauntlet='+encodeURIComponent(id);
+ if(!frame.getAttribute('src')||!frame.getAttribute('src').includes('gauntlet='+encodeURIComponent(id)))frame.src=url;
+ $('inline-engine-shell').hidden=false;
+ $('play-inline-engine').textContent='GAME OPEN · PLAY BELOW';
+ frame.scrollIntoView({behavior:'smooth',block:'start'});
+};
+$('close-inline-engine').onclick=()=>{
+ $('inline-engine-shell').hidden=true;
+ $('inline-toss-frame').removeAttribute('src');
+ $('play-inline-engine').textContent='PLAY TOSS HERE · ORIGINAL ENGINE';
+};
+// Same-origin iframe shares sessionStorage in this tab. Only a message from the actual game frame triggers review.
+window.addEventListener('message',event=>{
+ if(event.origin!==location.origin||event.source!==$('inline-toss-frame').contentWindow||event.data?.type!=='cnidaria:gauntlet-result-ready'||event.data.challenge!==chosenChallenge)return;
+ try{
+  const raw=sessionStorage.getItem('cnidaria-gauntlet-estimate-v1');
+  const e=raw&&JSON.parse(raw);
+  if(!e||e.challenge!==chosenChallenge||e.catchLike!==true||e.handCatchVerified!==false||e.postImpactCoverage!=='observed_350ms'||!Number.isInteger(e.estimatedMs)||e.estimatedMs<100||e.estimatedMs>15000||!Number.isFinite(e.at)||e.at>Date.now()||Date.now()-e.at>15*60*1000)return;
+  $('motion-estimate-note').textContent='Original engine estimated '+e.estimatedMs+' ms. Catch is NOT verified. Review before submitting.';
+  const btn=$('use-motion-estimate');btn.dataset.estimatedMs=String(e.estimatedMs);btn.hidden=false;btn.textContent='Review original engine estimate';
+  sessionStorage.removeItem('cnidaria-gauntlet-estimate-v1');
+  $('close-inline-engine').click();
+  $('motion-estimate-note').scrollIntoView({behavior:'smooth',block:'center'});
+ }catch{}
+});
 // Review only an estimate from the original solo engine; never auto-submit or assert a verified catch.
 try{const raw=sessionStorage.getItem('cnidaria-gauntlet-estimate-v1');const e=raw&&JSON.parse(raw);const match=new URLSearchParams(location.search).get('match');if(e&&match&&e.challenge===match&&e.catchLike===true&&e.handCatchVerified===false&&e.postImpactCoverage==='observed_350ms'&&Number.isFinite(e.at)&&e.at<=Date.now()&&Date.now()-e.at<15*60*1000&&Number.isInteger(e.estimatedMs)&&e.estimatedMs>=100&&e.estimatedMs<=15000){const note=$('motion-estimate-note');note.textContent='Original engine returned an estimated '+e.estimatedMs+' ms. This is NOT a verified hand catch. Review before submitting any beta result.';const btn=$('use-motion-estimate');btn.dataset.estimatedMs=String(e.estimatedMs);btn.hidden=false;btn.textContent='Review original engine estimate';sessionStorage.removeItem('cnidaria-gauntlet-estimate-v1')}}catch{}
 if(session){run(refresh);if(invite)run(preview)}else $('identity').textContent='Sign in with Google to create or accept a challenge';
