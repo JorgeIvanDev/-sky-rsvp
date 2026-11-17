@@ -1,0 +1,38 @@
+name: CNIDARIA integration
+description: Connect existing implementations instead of creating parallel features
+title: "integrate: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: inventory
+    attributes:
+      label: Existing components
+      description: Identify pages, modules, backend RPCs, tests and docs already present.
+    validations:
+      required: true
+  - type: textarea
+    id: gap
+    attributes:
+      label: Missing connection
+      description: Explain precisely what cannot yet happen in the real user journey.
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Data, security and safety boundaries
+      description: Authentication, authorization, motion uncertainty, privacy and compatibility considerations.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable end-to-end behavior and tests, including failure cases.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification evidence
+      description: Automated tests, CI, deployment and real-device checks; mark unrun items explicitly.
