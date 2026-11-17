@@ -11,7 +11,7 @@ const source=html.slice(start,end);
 function run(readings){
  const nodes=new Map();
  const ctx={state:'armed',lastMotionAt:0,lastLaunchImpulse:0,lowStart:0,
-  motionTrace:[],G:9.80665,FT:3.28084,spinPeak:0,flightPeak:0,flightSamples:0,flightStart:0,freefallMs:0,freefallLastAt:0,airborneLostAt:0,impactCount:0,impactStartedAt:0,firstImpactFeet:0,gentleSettleSamples:0,strongImpactAt:0,strongFirstFeet:0,flightFailureReason:'No confirmed catch',flightWatchdog:0,flightReboundAnchor:0,flightReboundAt:0,flightReboundLowSamples:0,Math,Number,clearTimeout:()=>{},setTimeout:()=>1,
+  motionTrace:[],G:9.80665,FT:3.28084,spinPeak:0,flightPeak:0,flightSamples:0,flightStart:0,freefallMs:0,freefallLastAt:0,airborneLostAt:0,flightPreviousLow:false,impactCount:0,impactStartedAt:0,firstImpactFeet:0,gentleSettleSamples:0,strongImpactAt:0,strongFirstFeet:0,flightFailureReason:'No confirmed catch',flightWatchdog:0,flightReboundAnchor:0,flightReboundAt:0,flightReboundLowSamples:0,Math,Number,clearTimeout:()=>{},setTimeout:()=>1,
   performance:{now:()=>ctx.clock},
   $:id=>{if(!nodes.has(id))nodes.set(id,{textContent:''});return nodes.get(id)},
   complete:()=>{ctx.state='done'}};
@@ -102,4 +102,18 @@ test('continuous airborne readings still accumulate real freefall duration',()=>
  const ctx=run([...launch,[1180,1],[1220,1],[1260,1]]);
  assert.equal(ctx.state,'flying');
  assert.equal(ctx.freefallMs,120);
+});
+
+
+test('high-gravity interruptions never contribute their preceding interval to low-g airtime',()=>{
+ const launch=[[1000,20],[1020,1],[1060,1],[1100,1],[1140,1]];
+ const ctx=run([...launch,[1180,1],[1220,9.8],[1260,1],[1300,9.8],[1340,1],[1380,1]]);
+ assert.equal(ctx.state,'flying');
+ assert.equal(ctx.freefallMs,80,'only 1140→1180 and 1340→1380 are adjacent low-g frames');
+});
+test('a sensor gap and an intervening gravity frame cannot manufacture 250ms freefall',()=>{
+ const launch=[[1000,20],[1020,1],[1060,1],[1100,1],[1140,1]];
+ const ctx=run([...launch,[1180,1],[1220,9.8],[1280,1],[1320,1],[1380,1],[1420,9.8],[1460,1]]);
+ assert.equal(ctx.state,'flying');
+ assert.equal(ctx.freefallMs,80);
 });
