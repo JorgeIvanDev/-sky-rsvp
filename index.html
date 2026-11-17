@@ -272,13 +272,17 @@ if(!hasDeepLink){
  toggle.addEventListener('click',()=>{options.hidden=!options.hidden;toggle.setAttribute('aria-expanded',String(!options.hidden))});
  reduce.checked=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const canvas=title.querySelector('#titleRain');let stopped=false,renderer,frame;
- window.addEventListener('cnidaria-intro-closed',()=>{stopped=true;if(frame)cancelAnimationFrame(frame);if(fallbackFrame)cancelAnimationFrame(fallbackFrame);renderer?.dispose?.();canvas.remove()},{once:true});
+ window.addEventListener('cnidaria-intro-closed',()=>{stopped=true;if(frame)cancelAnimationFrame(frame);if(fallbackFrame)cancelAnimationFrame(fallbackFrame);renderer?.dispose?.();fallbackCanvas.remove();canvas.remove()},{once:true});
  // Always show a lightweight 2D code-rain fallback, even when WebGL or the CDN fails.
- const ctx=canvas.getContext('2d');
+ const fallbackCanvas=document.createElement('canvas');
+ fallbackCanvas.setAttribute('aria-hidden','true');
+ fallbackCanvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
+ canvas.parentNode.insertBefore(fallbackCanvas,canvas);
+ const ctx=fallbackCanvas.getContext('2d');
  let fallbackFrame=0,columns=[],lastPaint=0;
  const resizeFallback=()=>{
   const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight),d=Math.min(devicePixelRatio||1,1.5);
-  canvas.width=Math.floor(w*d);canvas.height=Math.floor(h*d);
+  fallbackCanvas.width=Math.floor(w*d);fallbackCanvas.height=Math.floor(h*d);
   ctx.setTransform(d,0,0,d,0,0);
   columns=Array.from({length:Math.ceil(w/17)},()=>Math.random()*h/17);
  };
@@ -302,7 +306,7 @@ if(!hasDeepLink){
   try{
    const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
    if(stopped||reduce.checked)return;
-   cancelAnimationFrame(fallbackFrame);
+   cancelAnimationFrame(fallbackFrame);fallbackCanvas.style.display='none';
    renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false,powerPreference:'low-power'});
    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
    const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(55,1,.1,100);camera.position.z=14;
@@ -313,7 +317,7 @@ if(!hasDeepLink){
    const resize=()=>{const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};resize();window.addEventListener('resize',resize,{passive:true});
    const tick=()=>{if(stopped||reduce.checked){renderer.dispose();return}for(let i=0;i<count;i++){positions[i*3+1]-=speed[i];if(positions[i*3+1]<-12)positions[i*3+1]=12}geometry.attributes.position.needsUpdate=true;renderer.render(scene,camera);frame=requestAnimationFrame(tick)};tick();
    reduce.addEventListener('change',()=>{if(reduce.checked){cancelAnimationFrame(frame);renderer.dispose();renderer=null;canvas.style.display='none'}else{canvas.style.display='block';init()}});
-  }catch{if(!stopped&&!reduce.checked){renderer?.dispose?.();renderer=null;fallbackFrame=requestAnimationFrame(rain2D)}}
+  }catch{if(!stopped&&!reduce.checked){renderer?.dispose?.();renderer=null;fallbackCanvas.style.display='block';fallbackFrame=requestAnimationFrame(rain2D)}}
  };
  init();
 }
