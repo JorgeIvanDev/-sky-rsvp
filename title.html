@@ -217,9 +217,9 @@ body.invitation-intro.entering main{transition:opacity 1.8s ease!important}
 #glyph-streams{display:flex;justify-content:space-around;align-items:flex-start;width:100%;height:100%;overflow:hidden;color:#52ff96;text-shadow:0 0 9px #32ff85;font:16px/1.15 ui-monospace,monospace;opacity:.9}
 #glyph-streams span{display:block;writing-mode:vertical-rl;letter-spacing:5px;white-space:nowrap;opacity:.7}
 #glyph-streams span:nth-child(3n){color:#b8ffd0;opacity:1}
-body.invitation-intro.entering #glyph-curtain{display:block;animation:lettersSweep 4.8s cubic-bezier(.45,0,.55,1) both}
+body.invitation-intro.entering #glyph-curtain{display:none!important;animation:none!important}
 @keyframes lettersSweep{0%{transform:translateY(-101%)}40%,56%{transform:translateY(0)}100%{transform:translateY(101%)}}
-body.invitation-intro.entering #rain{display:none!important;animation:none!important}
+body.invitation-intro.entering #rain{display:block!important;animation:matrixCurtain 4.1s ease-in-out both!important}
 body.invitation-intro.entering #transition{display:none!important}
 body.invitation-intro.entering main{opacity:1!important;transition:none!important}
 body.invitation-intro.entering #game-preview{z-index:4;opacity:1!important;transition:none!important}
