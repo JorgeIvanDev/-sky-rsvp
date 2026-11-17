@@ -11,7 +11,7 @@ export function replay(samples){
   if(!Number.isSafeInteger(ms)||!Number.isFinite(m)||m<0||(!Number.isFinite(spin)||spin<0)||ms<0||ms<=checkedMs)return {ok:false,reason:'invalid sensor sample'};
   checkedMs=ms;
  }
- let previousMs=-Infinity,previousLowMs=-Infinity;let state='armed',launch=-Infinity,low=null,flightStart=0,freefall=0,last=0,impactStart=0,impactCount=0,firstFeet=0,strongFirstFeet=0,strongAt=0,stable=0,peakSpin=0;
+ let previousMs=-Infinity,previousLowMs=-Infinity;let state='armed',launch=-Infinity,low=null,flightStart=0,freefall=0,last=0,impactStart=0,impactCount=0,firstFeet=0,strongFirstFeet=0,strongAt=0,stable=0,peakSpin=0,previousFlightLow=false;
  for(const {ms,m,spin=0} of samples){
   // A discontinuous or malformed sensor stream cannot establish a catch-like event.
   if(!Number.isSafeInteger(ms)||!Number.isFinite(m)||m<0||(!Number.isFinite(spin)||spin<0)||ms<0||ms<=previousMs)return {ok:false,reason:'invalid sensor sample'};
@@ -30,7 +30,9 @@ export function replay(samples){
    continue;
   }
   if(ms-last>250)return {ok:false,reason:'sensor gap'};
-  if(m<2.5){freefall+=Math.min(ms-last,50);peakSpin=Math.max(peakSpin,spin)}
+  if(m<2.5){if(previousFlightLow&&ms-last<=50)freefall+=ms-last;peakSpin=Math.max(peakSpin,spin)}
+  // Never credit a low-g interval that begins after a high-g frame or missing samples.
+  previousFlightLow=m<2.5;
   last=ms;
   const seconds=(ms-flightStart)/1000,feet=9.80665*seconds*seconds/8*3.28084;
   if(impactStart&&m>=7&&m<=13&&ms-impactStart<=220){
