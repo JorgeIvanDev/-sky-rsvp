@@ -49,3 +49,20 @@ test('sensor trace cannot treat a 251ms armed interruption as continuous launch'
  const trace=[{ms:0,m:30},{ms:300,m:0.5},{ms:320,m:0.5},{ms:340,m:0.5},{ms:360,m:0.5},{ms:380,m:0.5},{ms:400,m:0.5},{ms:420,m:0.5},...Array.from({length:25},(_,i)=>({ms:440+i*20,m:0.5})),{ms:960,m:25},{ms:980,m:28}];
  assert.equal(replay(trace).ok,false);
 });
+
+test('observation anchor follows armed launch rather than unrelated earlier low gravity',()=>{
+ const unrelated=[...Array.from({length:8},(_,i)=>({ms:i*20,m:0.5})),{ms:160,m:9.8}];
+ const launch=[{ms:200,m:30},...Array.from({length:42},(_,i)=>({ms:220+i*20,m:0.5}))];
+ const impact=[{ms:1060,m:20},{ms:1080,m:28}];
+ const settle=Array.from({length:19},(_,i)=>({ms:1100+i*20,m:9.8}));
+ const trace=[...unrelated,...launch,...impact,...settle];
+ assert.equal(replay(trace).ok,true);
+ const result=replayObserved(trace);
+ assert.equal(result.ok,true);
+ assert.equal(result.classification,'catch-like only');
+});
+
+test('an armed sensor interruption cannot be used to anchor post-impact observation',()=>{
+ const trace=[{ms:0,m:30},{ms:300,m:0.5},...Array.from({length:20},(_,i)=>({ms:320+i*20,m:0.5})),{ms:740,m:20},{ms:760,m:28},...Array.from({length:20},(_,i)=>({ms:780+i*20,m:9.8}))];
+ assert.equal(replayObserved(trace).ok,false);
+});
