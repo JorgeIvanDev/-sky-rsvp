@@ -11,9 +11,10 @@ export async function issueWalletChallenge({session,address,origin,store,now=Dat
   if(!session?.playerId || typeof session.playerId!=="string") return {ok:false,error:"unauthorized"};
   if(typeof address!=="string" || !ADDRESS.test(address) || typeof origin!=="string" || !DOMAIN.test(origin)) return {ok:false,error:"invalid_request"};
   if(!store || typeof store.create!=="function") return {ok:false,error:"unavailable"};
-  if(!Number.isFinite(now) || !Number.isSafeInteger(ttlMs) || ttlMs<30000 || ttlMs>300000) return {ok:false,error:"invalid_request"};
+  if(!Number.isSafeInteger(now) || now<0 || !Number.isSafeInteger(ttlMs) || ttlMs<30000 || ttlMs>300000) return {ok:false,error:"invalid_request"};
   const nonce=randomBytes(32).toString("hex");
   const expiresAt=now+ttlMs;
+  if(!Number.isSafeInteger(expiresAt)) return {ok:false,error:"invalid_request"};
   const challenge=["CNIDARIA optional wallet link","Domain: "+origin,"Player: "+session.playerId,"Wallet: "+address,"Nonce: "+nonce,"Expires: "+expiresAt].join("\n");
   const nonceHash=digest(nonce);
   try {
@@ -25,12 +26,13 @@ export async function confirmWalletChallenge({session,nonce,challenge,signature,
   if(!enabled) return {ok:false,error:"feature_disabled"};
   if(!session?.playerId || typeof session.playerId!=="string") return {ok:false,error:"unauthorized"};
   if(typeof nonce!=="string" || !/^[0-9a-f]{64}$/.test(nonce) || typeof challenge!=="string" || challenge.length>1000 || typeof signature!=="string" || !signature || signature.length>2048 || typeof origin!=="string") return {ok:false,error:"invalid_request"};
+  if(!Number.isSafeInteger(now) || now<0) return {ok:false,error:"invalid_request"};
   if(typeof store?.consume!=="function" || typeof verifySignature!=="function" || typeof linkWallet!=="function") return {ok:false,error:"unavailable"};
   try {
     // consume MUST be a single atomic delete/UPDATE ... RETURNING, not read-then-delete.
     const record=await store.consume(digest(nonce));
     if(!record) return {ok:false,error:"invalid_or_replayed"};
-    if(record.playerId!==session.playerId || record.origin!==origin || record.expiresAt<=now) return {ok:false,error:"invalid_or_replayed"};
+    if(record.playerId!==session.playerId || record.origin!==origin || !Number.isSafeInteger(record.expiresAt) || record.expiresAt<=now) return {ok:false,error:"invalid_or_replayed"};
     const a=Buffer.from(record.challengeHash,"hex"),b=Buffer.from(digest(challenge),"hex");
     if(a.length!==32 || !timingSafeEqual(a,b)) return {ok:false,error:"invalid_or_replayed"};
     const valid=await verifySignature({address:record.address,signature,message:challenge});
