@@ -254,13 +254,14 @@ byId('missReply').onclick=async()=>{if(!current)return;const text='I miss you to
 try{const values=new URLSearchParams(location.hash.slice(1)).getAll('miss');if(values.length>1)throw Error('Ambiguous challenge');if(values.length===1){current=dec(values[0]);byId('missIncoming').classList.remove('hidden');byId('missIncomingFrom').textContent=current.from+' misses '+(current.to||'you')+'!';byId('missIncomingMessage').textContent=current.message;byId('missIncoming').scrollIntoView({block:'start'});}}catch(e){byId('missStatus').textContent='Could not open challenge: '+e.message}
 })();
 </script>
-<script type="module">
+<script>
 // Keep direct invitations, RSVP links, and personal challenges immediately accessible.
 const title=document.getElementById('titleScreen');
 const params=new URLSearchParams(location.search);
-const hasDeepLink=[...params.keys()].length>0||Boolean(location.hash&&location.hash!=='#');
-const dismissed=(()=>{try{return sessionStorage.getItem('cnidaria-intro-seen')==='1'}catch{return false}})();
-if(!hasDeepLink&&!dismissed){
+const forceIntro=params.get('intro')==='1';
+const hasDeepLink=!forceIntro&&([...params.keys()].some(key=>key!=='intro')||Boolean(location.hash&&location.hash!=='#'));
+// Show on each fresh homepage visit, even when Safari shares sessionStorage across tabs.
+if(!hasDeepLink){
  title.hidden=false;document.body.style.overflow='hidden';
  const mascot=document.querySelector('.logo-emblem svg');
  if(mascot)title.querySelector('#titleMascot').appendChild(mascot.cloneNode(true));
