@@ -48,3 +48,27 @@ test('denied permission does not attach a listener and permits retry',async()=>{
   assert.equal(listeners,1);
   assert.equal(requests,2);
 });
+
+test('background interruption discards an active trace and requires a fresh start',()=>{
+ const begin=html.indexOf('function cancelBackgroundMotion(){');
+ const end=html.indexOf("\nif(session){run(refresh)",begin);
+ assert.ok(begin>=0&&end>begin,'production background cancellation must be present');
+ const source=html.slice(begin,end);
+ const nodes=new Map();
+ const $=id=>{if(!nodes.has(id))nodes.set(id,{disabled:false,textContent:''});return nodes.get(id)};
+ let resets=0;const handlers={};
+ const context={
+   $,motionTrace:{reset:()=>{resets++}},
+   document:{visibilityState:'visible',addEventListener:(name,fn)=>{handlers[name]=fn}},
+   window:{addEventListener:(name,fn)=>{handlers[name]=fn}}
+ };
+ runInNewContext('let motionActive=true,motionEnabled=true,motionSamples=17,motionPeak=19;'+source+';globalThis.snapshot=()=>({motionActive,motionSamples,motionPeak})',context);
+ context.document.visibilityState='hidden';handlers.visibilitychange();
+ assert.equal(resets,1);
+ assert.equal(context.snapshot().motionActive,false);
+ assert.equal(context.snapshot().motionSamples,0);
+ assert.equal(nodes.get('stop-motion').disabled,true);
+ assert.equal(nodes.get('start-motion').disabled,false);
+ assert.match(nodes.get('motion-status').textContent,/no score was submitted/);
+ handlers.pagehide();assert.equal(resets,1,'second background event must be idempotent');
+});
