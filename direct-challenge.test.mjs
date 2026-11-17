@@ -3,6 +3,14 @@ const h=fs.readFileSync(new URL('./direct-challenge.html',import.meta.url),'utf8
 test('direct challenge has toss submission RPC and stateful UI',()=>{for(const x of ['cnt_submit_direct_toss','p_airtime_ms','p_caught','play-result','submit-toss','cnt_respond_direct_challenge'])assert.ok(h.includes(x),x)});
 test('rendering uses textContent, not untrusted HTML',()=>{assert.ok(!h.includes('innerHTML'));assert.ok(h.includes('textContent'))});
 
+test('demo invitation placeholder uses text-only DOM construction',()=>{
+ assert.match(h,/const photo=document\.createElement\('div'\);photo\.className='demo-photo'/);
+ assert.match(h,/heading\.textContent='THE GAUNTLET'/);
+ assert.match(h,/hint\.textContent=/);
+ assert.match(h,/photo\.append\(frame\)/);
+ assert.doesNotMatch(h,/\.innerHTML\s*=/);
+});
+
 test('incoming token preview is not hidden by unrelated accepted or completed challenges',()=>{
   const preview=h.match(/async function preview\(\)\{([\s\S]*?)\nasync function respond/);
   assert.ok(preview,'preview handler exists');
