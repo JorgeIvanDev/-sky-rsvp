@@ -100,3 +100,30 @@ for(const [name,payload] of [['null RPC payload',null],['empty RPC payload',[]]]
   assert.match(x.elements.get('details').textContent,/expired or was already used/);
  });
 }
+
+test('mobile bfcache restore restarts challenge polling exactly once',async()=>{
+ const start=html.indexOf('let syncTimer=null;');
+ const end=html.indexOf('const hash=new URLSearchParams',start);
+ assert.ok(start>=0&&end>start,'production polling lifecycle must be extractable');
+ const handlers={};const timers=new Set();let next=0,refreshes=0;
+ const ctx={
+  syncChallenges:async()=>{refreshes++},
+  setInterval:()=>{const id=++next;timers.add(id);return id},
+  clearInterval:id=>timers.delete(id),
+  document:{addEventListener:(name,cb)=>{handlers['document:'+name]=cb},visibilityState:'visible'},
+  window:{addEventListener:(name,cb)=>{handlers['window:'+name]=cb}}
+ };
+ runInNewContext(html.slice(start,end),ctx);
+ assert.equal(timers.size,1);
+ handlers['window:pagehide']();
+ assert.equal(timers.size,0);
+ handlers['window:pageshow']({persisted:true});
+ assert.equal(timers.size,1);
+ assert.equal(refreshes,1);
+ handlers['window:pageshow']({persisted:true});
+ assert.equal(timers.size,1,'repeat restore must not leak duplicate timers');
+ assert.equal(refreshes,2);
+ handlers['window:pagehide']();
+ handlers['window:pageshow']({persisted:false});
+ assert.equal(timers.size,0,'ordinary navigation must not resurrect polling');
+});
