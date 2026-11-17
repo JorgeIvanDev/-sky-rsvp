@@ -63,3 +63,40 @@ test('confirmed decline stays successful if list refresh fails',async()=>{
  assert.equal(x.elements.get('decline').disabled,true);
  assert.equal(x.elements.get('incoming').hidden,true);
 });
+
+const previewStart=html.indexOf('async function preview(){');
+const previewEnd=html.indexOf('\nasync function respond(accept){',previewStart);
+assert.ok(previewStart>=0&&previewEnd>previewStart,'production preview handler must be extractable');
+const previewCode=html.slice(previewStart,previewEnd);
+async function exercisePreview(payload,initialEnabled=true){
+ const elements=new Map();
+ const $=id=>{if(!elements.has(id))elements.set(id,{disabled:!initialEnabled,hidden:false,textContent:''});return elements.get(id)};
+ const statuses=[];
+ const ctx={$,invite:'test-token',rpc:async()=>payload,status:t=>statuses.push(t),Date};
+ runInNewContext(previewCode+';globalThis.invokePreview=preview',ctx);
+ await ctx.invokePreview();
+ return {elements,statuses};
+}
+test('preview locks stale response buttons while request is pending',async()=>{
+ let resolve;
+ const pending=new Promise(r=>{resolve=r});
+ const elements=new Map();
+ const $=id=>{if(!elements.has(id))elements.set(id,{disabled:false,hidden:false,textContent:''});return elements.get(id)};
+ const ctx={$,invite:'test-token',rpc:()=>pending,status:()=>{},Date};
+ runInNewContext(previewCode+';globalThis.invokePreview=preview',ctx);
+ const running=ctx.invokePreview();
+ assert.equal($('accept').disabled,true);
+ assert.equal($('decline').disabled,true);
+ resolve([{challenge_title:'Test',challenge_expires_at:'2026-11-20T00:00:00Z'}]);
+ await running;
+ assert.equal($('accept').disabled,false);
+ assert.equal($('decline').disabled,false);
+});
+for(const [name,payload] of [['null RPC payload',null],['empty RPC payload',[]]]){
+ test('preview treats '+name+' as unavailable without enabling response',async()=>{
+  const x=await exercisePreview(payload);
+  assert.equal(x.elements.get('accept').disabled,true);
+  assert.equal(x.elements.get('decline').disabled,true);
+  assert.match(x.elements.get('details').textContent,/expired or was already used/);
+ });
+}
