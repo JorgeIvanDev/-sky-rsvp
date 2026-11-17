@@ -272,12 +272,37 @@ if(!hasDeepLink){
  toggle.addEventListener('click',()=>{options.hidden=!options.hidden;toggle.setAttribute('aria-expanded',String(!options.hidden))});
  reduce.checked=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const canvas=title.querySelector('#titleRain');let stopped=false,renderer,frame;
- window.addEventListener('cnidaria-intro-closed',()=>{stopped=true;if(frame)cancelAnimationFrame(frame);renderer?.dispose?.();canvas.remove()},{once:true});
+ window.addEventListener('cnidaria-intro-closed',()=>{stopped=true;if(frame)cancelAnimationFrame(frame);if(fallbackFrame)cancelAnimationFrame(fallbackFrame);renderer?.dispose?.();canvas.remove()},{once:true});
+ // Always show a lightweight 2D code-rain fallback, even when WebGL or the CDN fails.
+ const ctx=canvas.getContext('2d');
+ let fallbackFrame=0,columns=[],lastPaint=0;
+ const resizeFallback=()=>{
+  const w=Math.max(1,innerWidth),h=Math.max(1,innerHeight),d=Math.min(devicePixelRatio||1,1.5);
+  canvas.width=Math.floor(w*d);canvas.height=Math.floor(h*d);
+  ctx.setTransform(d,0,0,d,0,0);
+  columns=Array.from({length:Math.ceil(w/17)},()=>Math.random()*h/17);
+ };
+ const rain2D=(now)=>{
+  if(stopped||reduce.checked)return;
+  fallbackFrame=requestAnimationFrame(rain2D);
+  if(now-lastPaint<55)return;lastPaint=now;
+  const w=innerWidth,h=innerHeight;
+  ctx.fillStyle='rgba(1,6,3,.13)';ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='#32e979';ctx.font='15px monospace';
+  for(let i=0;i<columns.length;i++){
+   const x=i*17,y=columns[i]*17;
+   ctx.fillText('01CNIDARIA'[Math.floor(Math.random()*10)],x,y);
+   columns[i]=y>h&&Math.random()>.97?0:columns[i]+.5+Math.random()*.5;
+  }
+ };
+ resizeFallback();window.addEventListener('resize',resizeFallback,{passive:true});
+ if(!reduce.checked)fallbackFrame=requestAnimationFrame(rain2D);
  const init=async()=>{
   if(reduce.checked)return;
   try{
    const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
    if(stopped||reduce.checked)return;
+   cancelAnimationFrame(fallbackFrame);
    renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:false,powerPreference:'low-power'});
    renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
    const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(55,1,.1,100);camera.position.z=14;
@@ -288,7 +313,7 @@ if(!hasDeepLink){
    const resize=()=>{const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()};resize();window.addEventListener('resize',resize,{passive:true});
    const tick=()=>{if(stopped||reduce.checked){renderer.dispose();return}for(let i=0;i<count;i++){positions[i*3+1]-=speed[i];if(positions[i*3+1]<-12)positions[i*3+1]=12}geometry.attributes.position.needsUpdate=true;renderer.render(scene,camera);frame=requestAnimationFrame(tick)};tick();
    reduce.addEventListener('change',()=>{if(reduce.checked){cancelAnimationFrame(frame);renderer.dispose();renderer=null;canvas.style.display='none'}else{canvas.style.display='block';init()}});
-  }catch{canvas.style.display='none'}
+  }catch{if(!stopped&&!reduce.checked){renderer?.dispose?.();renderer=null;fallbackFrame=requestAnimationFrame(rain2D)}}
  };
  init();
 }
