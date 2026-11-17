@@ -222,7 +222,8 @@ body.invitation-intro.entering #glyph-curtain{display:none!important;animation:n
 body.invitation-intro.entering #rain{display:block!important;animation:matrixCurtain 4.1s ease-in-out both!important}
 body.invitation-intro.entering #transition{display:none!important}
 body.invitation-intro.entering main{opacity:1!important;transition:none!important}
-body.invitation-intro.entering #game-preview{z-index:4;opacity:1!important;transition:none!important}
+body.invitation-intro.entering #game-preview{z-index:4;opacity:0!important;transition:none!important}
+body.invitation-intro.entering.preview-revealed #game-preview{opacity:1!important}
 body.invitation-intro.entering #shade,body.invitation-intro.entering #scan{opacity:0}
 body.invitation-intro.entering #skip{display:none}
 @media(prefers-reduced-motion:reduce){#glyph-curtain{display:none!important}}
@@ -242,7 +243,8 @@ skip.setAttribute('aria-label','Skip cinematic introduction and open the game im
 let previewLoaded=false;
 preview.addEventListener('load',()=>{previewLoaded=true});
 const enter=()=>{if(document.body.classList.contains('entering'))return;sessionStorage.setItem('cnidaria-intro-seen','1');if(reduce.checked){location.replace(destination);return}
-if(next==='invitation-preview'){document.querySelector('.invitation-kicker').classList.add('is-clearing');document.getElementById('start').classList.add('is-clearing');const streams=document.getElementById('glyph-streams');if(!streams.childElementCount){for(let i=0;i<Math.ceil(innerWidth/20);i++){const el=document.createElement('span');el.textContent=Array.from({length:90},()=>('01CNIDARIA'[Math.floor(Math.random()*10)])).join('');streams.append(el)}}}document.body.classList.add('ready','entering');if(next==='invitation-preview')setTimeout(()=>{document.querySelector('main').style.visibility='hidden';},1900);cols=Array.from({length:Math.ceil(width/18)},(_,i)=>-Math.random()*22-i%7);ctx.clearRect(0,0,width,height);
+if(next==='invitation-preview'){document.querySelector('.invitation-kicker').classList.add('is-clearing');document.getElementById('start').classList.add('is-clearing');const streams=document.getElementById('glyph-streams');if(!streams.childElementCount){for(let i=0;i<Math.ceil(innerWidth/20);i++){const el=document.createElement('span');el.textContent=Array.from({length:90},()=>('01CNIDARIA'[Math.floor(Math.random()*10)])).join('');streams.append(el)}}}document.body.classList.add('ready','entering');if(next==='invitation-preview')setTimeout(()=>{document.body.classList.add('preview-revealed');
+   document.querySelector('main').style.visibility='hidden';},1900);cols=Array.from({length:Math.ceil(width/18)},(_,i)=>-Math.random()*22-i%7);ctx.clearRect(0,0,width,height);
 const start=document.getElementById('start');start.setAttribute('aria-disabled','true');start.style.pointerEvents='none';
 if(!preview.src||preview.src==='about:blank')preview.src=destination;
 setTimeout(()=>{if(!previewLoaded){location.replace(destination);return}preview.style.pointerEvents='auto';document.getElementById('rain').style.display='none';document.getElementById('transition').style.display='none';document.querySelector('main').style.display='none';document.getElementById('shade').style.display='none';document.getElementById('scan').style.display='none';preview.removeAttribute('aria-hidden');preview.removeAttribute('tabindex');preview.focus()},next==='invitation-preview'?4900:2700)};
