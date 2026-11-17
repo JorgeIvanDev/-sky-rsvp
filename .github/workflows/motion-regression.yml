@@ -43,11 +43,13 @@ jobs:
         with:
           node-version: '22'
       - name: Run shared motion replay regression
+        if: ${{ !cancelled() }}
         run: node --test cnidaria-motion-core.test.mjs
       - name: Check contiguous low-g airtime accounting
         if: ${{ !cancelled() }}
         run: node --test cnidaria-freefall-continuity.test.mjs
       - name: Replay couch rebounds and 350ms retry boundaries
+        if: ${{ !cancelled() }}
         run: node --test motion-impact-boundary.test.mjs
       - name: Run motion regression checks
         if: ${{ !cancelled() }}
