@@ -45,14 +45,19 @@ jobs:
       - name: Replay couch rebounds and 350ms retry boundaries
         run: node --test motion-impact-boundary.test.mjs
       - name: Run motion regression checks
+        if: ${{ !cancelled() }}
         run: node tests/motion-regression.js
       - name: Check browser engine syntax and test alignment
+        if: ${{ !cancelled() }}
         run: node tests/engine-sanity.js
       - name: Execute mobile retry and permission recovery regression
+        if: ${{ !cancelled() }}
         run: node --test tests/mobile-retry.test.mjs
       - name: Exercise production mobile trace export recovery
+        if: ${{ !cancelled() }}
         run: node --test tests/mobile-trace-export.test.mjs
       - name: Replay production launch and sensor-pause sequences
+        if: ${{ !cancelled() }}
         run: node --test tests/production-launch-replay.test.mjs
       - name: Replay production post-impact sensor sequences
         if: ${{ !cancelled() }}
