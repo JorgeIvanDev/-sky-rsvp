@@ -101,7 +101,7 @@ function cancelBackgroundMotion(){
  $('game-phase').textContent='INTERRUPTED · Start a fresh motion test';
  $('motion-status').textContent='Recording stopped when the app went into the background. Start again for a complete trace; no score was submitted.';
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){clearMotionTimeout();cancelBackgroundMotion()}});
-window.addEventListener('pagehide',()=>{clearMotionTimeout();cancelBackgroundMotion()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cancelBackgroundMotion()});
+window.addEventListener('pagehide',cancelBackgroundMotion);
 if(session){run(refresh);if(invite)run(preview)}else $('identity').textContent='Sign in with Google to create or accept a challenge';
 </script></body></html>
