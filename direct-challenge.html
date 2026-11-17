@@ -6,6 +6,12 @@ const PENDING='cnidaria-pending-direct-challenge-v1';let chosenChallenge=null,ch
 const params=new URLSearchParams(location.search);
 let invite=params.get('challenge');
 const demoPreview=params.get('preview')==='1'&&!invite;
+// A malformed query parameter must not erase a legitimate pending OAuth invite.
+if(invite&&!/^[A-Za-z0-9_-]{16,256}$/.test(invite))invite=null;
+if(!invite){try{const saved=JSON.parse(sessionStorage.getItem(PENDING)||'null');if(saved&&Number.isFinite(saved.at)&&saved.at<=Date.now()&&Date.now()-saved.at<15*60*1000&&typeof saved.token==='string'&&/^[A-Za-z0-9_-]{16,256}$/.test(saved.token))invite=saved.token}catch{}}
+$('google-login').addEventListener('click',()=>{if(invite)try{sessionStorage.setItem(PENDING,JSON.stringify({token:invite,at:Date.now()}));const path=new URLSearchParams(location.hash.slice(1)).get('taunt');if(validTauntPath(path))sessionStorage.setItem('cnidaria-taunt-'+invite,path)}catch{}});
+
+let session=null;try{session=JSON.parse(localStorage.getItem(STORE)||'null')}catch{}
 const abyss=$('abyss-intro');
 function closeAbyss(){abyss.hidden=true;document.body.style.overflow='';try{sessionStorage.setItem('cnidaria-intro-seen-'+invite,'1')}catch{}}
 $('abyss-skip').addEventListener('click',closeAbyss);
@@ -14,12 +20,16 @@ if(demoPreview||(invite&&/^[A-Za-z0-9_-]{16,256}$/.test(invite))){
  let seen=false;try{seen=sessionStorage.getItem('cnidaria-intro-seen-'+invite)==='1'}catch{}
  if((demoPreview||!seen)&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){abyss.hidden=false;document.body.style.overflow='hidden'}
 }
-// A malformed query parameter must not erase a legitimate pending OAuth invite.
-if(invite&&!/^[A-Za-z0-9_-]{16,256}$/.test(invite))invite=null;
-if(!invite){try{const saved=JSON.parse(sessionStorage.getItem(PENDING)||'null');if(saved&&Number.isFinite(saved.at)&&saved.at<=Date.now()&&Date.now()-saved.at<15*60*1000&&typeof saved.token==='string'&&/^[A-Za-z0-9_-]{16,256}$/.test(saved.token))invite=saved.token}catch{}}
-$('google-login').addEventListener('click',()=>{if(invite)try{sessionStorage.setItem(PENDING,JSON.stringify({token:invite,at:Date.now()}));const path=new URLSearchParams(location.hash.slice(1)).get('taunt');if(validTauntPath(path))sessionStorage.setItem('cnidaria-taunt-'+invite,path)}catch{}});
 
-let session=null;try{session=JSON.parse(localStorage.getItem(STORE)||'null')}catch{}
+if(demoPreview){
+ $('incoming').hidden=false;
+ $('incoming').querySelector('h2').textContent='YOU\'VE BEEN CHALLENGED! · PREVIEW';
+ $('details').textContent='Someone has summoned you from the depths. Toss the Gauntlet · Demo challenge · No account required.';
+ $('invite-status').textContent='Preview only — nothing will be sent, accepted, or recorded.';
+ $('accept').disabled=true;$('decline').disabled=true;
+ const replay=document.createElement('button');replay.type='button';replay.textContent='↻ Replay underwater introduction';replay.onclick=()=>{abyss.hidden=false;document.body.style.overflow='hidden'};$('incoming').appendChild(replay);
+}
+
 function status(t){$('status').textContent=t;if(invite&&!$('incoming').hidden)$('invite-status').textContent=t}
 async function api(path,body){if(!session?.access_token)throw Error('Sign in with Google first');if(!Number.isSafeInteger(session.expires_at)||session.expires_at<=0){session=null;try{localStorage.removeItem(STORE)}catch{}throw Error('Invalid Google session expiry. Sign in again.')}if(Date.now()>session.expires_at-60000){if(typeof session.refresh_token!=='string'||!session.refresh_token){session=null;try{localStorage.removeItem(STORE)}catch{}throw Error('Missing Google refresh token. Sign in again.')}const r=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:session.refresh_token})});const d=await r.json().catch(()=>null);const ttl=Number(d?.expires_in);if(!r.ok||!d?.access_token||!d?.refresh_token||!Number.isFinite(ttl)||ttl<=0||ttl>86400){session=null;try{localStorage.removeItem(STORE)}catch{}throw Error('Session expired or refresh response invalid. Sign in again.')}session={access_token:d.access_token,refresh_token:d.refresh_token,expires_at:Date.now()+ttl*1000};try{localStorage.setItem(STORE,JSON.stringify(session))}catch{session=null;throw Error('Unable to save refreshed session. Enable browser storage and sign in again.')}}
 const r=await fetch(BASE+path,{method:body===undefined?'GET':'POST',headers:{apikey:KEY,Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});const data=await r.json().catch(()=>null);if(!r.ok)throw Error(data?.message||data?.error||'Request failed '+r.status);return data}
@@ -112,13 +122,5 @@ function cancelBackgroundMotion(){
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cancelBackgroundMotion()});
 window.addEventListener('pagehide',cancelBackgroundMotion);
-if(demoPreview){
- $('incoming').hidden=false;
- $('incoming').querySelector('h2').textContent='YOU\'VE BEEN CHALLENGED! · PREVIEW';
- $('details').textContent='Someone has summoned you from the depths. Toss the Gauntlet · Demo challenge · No account required.';
- $('invite-status').textContent='Preview only — nothing will be sent, accepted, or recorded.';
- $('accept').disabled=true;$('decline').disabled=true;
- const replay=document.createElement('button');replay.type='button';replay.textContent='↻ Replay underwater introduction';replay.onclick=()=>{abyss.hidden=false;document.body.style.overflow='hidden'};$('incoming').appendChild(replay);
-}
 if(session){run(refresh);if(invite)run(preview)}else $('identity').textContent='Sign in with Google to create or accept a challenge';
 </script></body></html>
