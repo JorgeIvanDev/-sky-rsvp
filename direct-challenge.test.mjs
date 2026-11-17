@@ -65,7 +65,8 @@ test('ambiguous invitation responses fail closed rather than enabling a duplicat
  const response=h.match(/async function respond\(accept\)\{([\s\S]*?)\n\$\('submit-toss'\)/);
  assert.ok(response,'production response handler exists');
  assert.match(response[1],/catch\(e\)\{\$\('accept'\)\.disabled=\$\('decline'\)\.disabled=true/);
- assert.match(response[1],/Response status unknown\. Reload this invitation before retrying/);
+ assert.match(response[1],/Response status unknown \(/);
+ assert.match(response[1],/Reload this invitation and check Your challenges before retrying/);
  assert.doesNotMatch(response[1],/catch\(e\)\{\$\('accept'\)\.disabled=\$\('decline'\)\.disabled=false/);
 });
 
