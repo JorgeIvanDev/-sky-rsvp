@@ -34,7 +34,7 @@ if(demoPreview){
  $('incoming').classList.add('demo-card');
  $('incoming').querySelector('h2').textContent="YOU'VE BEEN CHALLENGED!";
  const tag=document.createElement('span');tag.className='demo-tag';tag.textContent='DEMO INVITATION · SAFE PREVIEW';$('incoming').prepend(tag);
- const photo=document.createElement('div');photo.className='demo-photo';photo.innerHTML='<div><strong>THE GAUNTLET</strong><small>Your friend\'s challenge photo will appear here</small></div>';$('details').after(photo);
+ const photo=document.createElement('div');photo.className='demo-photo';const frame=document.createElement('div');const heading=document.createElement('strong');heading.textContent='THE GAUNTLET';const hint=document.createElement('small');hint.textContent="Your friend's challenge photo will appear here";frame.append(heading,hint);photo.append(frame);$('details').after(photo);
  $('details').textContent='Someone has summoned you from the depths. Toss the Gauntlet · Demo challenge · No account required.';
  $('invite-status').textContent='Preview only — nothing will be sent, accepted, or recorded.';
  $('accept').disabled=true;$('decline').disabled=true;
