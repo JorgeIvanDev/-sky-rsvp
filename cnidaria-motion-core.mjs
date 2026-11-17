@@ -142,7 +142,7 @@ export function createMotionTrace(options={}){
   return {samples,add(sample){
     if(!sample||typeof sample!=='object'||Array.isArray(sample))return false;
     const {timestamp,magnitude,spin=0}=sample;
-    if(!Number.isSafeInteger(timestamp)||timestamp<0||!Number.isFinite(magnitude)||magnitude<0||(!Number.isFinite(spin)||spin<0))return false;
+    if(!Number.isFinite(timestamp)||timestamp<0||timestamp>Number.MAX_SAFE_INTEGER||!Number.isFinite(magnitude)||magnitude<0||(!Number.isFinite(spin)||spin<0))return false;
     if(samples.length>=maxSamples)return false;
     const origin=first===null?timestamp:first;
     const ms=Math.round(timestamp-origin);
