@@ -213,8 +213,9 @@ body.invitation-intro.entering main{transition:opacity 1.8s ease!important}
 @media(prefers-reduced-motion:reduce){body.invitation-intro .jelly-eye{transform:rotateX(180deg)}}
 body.invitation-intro.entering #rain{display:block!important;animation:matrixCurtain 2.2s ease-in-out both!important}
 body.invitation-intro.entering #transition{display:none!important}
-body.invitation-intro.entering main{opacity:1!important;transition:none!important}
-body.invitation-intro.entering #game-preview{z-index:4;opacity:0!important;transition:none!important}
+body.invitation-intro.entering main{opacity:1!important;transition:opacity .85s ease!important}
+body.invitation-intro.entering.preview-revealed main{opacity:0!important;pointer-events:none}
+body.invitation-intro.entering #game-preview{z-index:4;opacity:0!important;transition:opacity .85s ease!important}
 body.invitation-intro.entering.preview-revealed #game-preview{opacity:1!important}
 body.invitation-intro.entering #shade,body.invitation-intro.entering #scan{opacity:0}
 body.invitation-intro.entering #skip{display:none}
@@ -235,11 +236,10 @@ skip.setAttribute('aria-label','Skip cinematic introduction and open the game im
 let previewLoaded=false;
 preview.addEventListener('load',()=>{previewLoaded=true});
 const enter=()=>{if(document.body.classList.contains('entering'))return;sessionStorage.setItem('cnidaria-intro-seen','1');if(reduce.checked){location.replace(destination);return}
-if(next==='invitation-preview'){document.querySelector('.invitation-kicker').classList.add('is-clearing');document.getElementById('start').classList.add('is-clearing');setTimeout(()=>window.location.replace(destination),2250)}document.body.classList.add('ready','entering');if(next==='invitation-preview')setTimeout(()=>{document.body.classList.add('preview-revealed');
-   document.querySelector('main').style.visibility='hidden';},900);cols=Array.from({length:Math.ceil(width/18)},(_,i)=>-Math.random()*22-i%7);ctx.clearRect(0,0,width,height);
+if(next==='invitation-preview'){document.querySelector('.invitation-kicker').classList.add('is-clearing');document.getElementById('start').classList.add('is-clearing')}document.body.classList.add('ready','entering');if(next==='invitation-preview')setTimeout(()=>document.body.classList.add('preview-revealed'),900);cols=Array.from({length:Math.ceil(width/18)},(_,i)=>-Math.random()*22-i%7);ctx.clearRect(0,0,width,height);
 const start=document.getElementById('start');start.setAttribute('aria-disabled','true');start.style.pointerEvents='none';
 if(!preview.src||preview.src==='about:blank')preview.src=destination;
-setTimeout(()=>{if(next==='invitation-preview')return;if(!previewLoaded){location.replace(destination);return}preview.style.pointerEvents='auto';document.getElementById('rain').style.display='none';document.getElementById('transition').style.display='none';document.querySelector('main').style.display='none';document.getElementById('shade').style.display='none';document.getElementById('scan').style.display='none';preview.removeAttribute('aria-hidden');preview.removeAttribute('tabindex');preview.focus()},next==='invitation-preview'?2250:2700)};
+setTimeout(()=>{if(!previewLoaded){location.replace(destination);return}preview.style.pointerEvents='auto';document.getElementById('rain').style.display='none';document.getElementById('transition').style.display='none';document.querySelector('main').style.display='none';document.getElementById('shade').style.display='none';document.getElementById('scan').style.display='none';preview.removeAttribute('aria-hidden');preview.removeAttribute('tabindex');preview.focus()},next==='invitation-preview'?2250:2700)};
 const warmPreview=()=>{if(!preview.getAttribute('src'))preview.src=destination};
 setTimeout(warmPreview,next==='invitation-preview'?7500:(short?2500:5400));
 skip.addEventListener('click',()=>{sessionStorage.setItem('cnidaria-intro-seen','1');location.replace(destination)});
