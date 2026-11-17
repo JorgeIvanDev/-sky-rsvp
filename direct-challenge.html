@@ -96,12 +96,12 @@ $('stop-motion').onclick=()=>{motionActive=false;clearMotionTimeout();$('stop-mo
 // A backgrounded phone cannot provide a continuous, trustworthy motion trace.
 function cancelBackgroundMotion(){
  if(!motionActive)return;
- motionActive=false;clearMotionTimeout();motionTrace.reset();motionSamples=0;motionPeak=0;
+ motionActive=false;motionTrace.reset();motionSamples=0;motionPeak=0;
  $('stop-motion').disabled=true;$('start-motion').disabled=!motionEnabled;
  $('game-phase').textContent='INTERRUPTED · Start a fresh motion test';
  $('motion-status').textContent='Recording stopped when the app went into the background. Start again for a complete trace; no score was submitted.';
 }
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')cancelBackgroundMotion()});
-window.addEventListener('pagehide',cancelBackgroundMotion);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){clearMotionTimeout();cancelBackgroundMotion()}});
+window.addEventListener('pagehide',()=>{clearMotionTimeout();cancelBackgroundMotion()});
 if(session){run(refresh);if(invite)run(preview)}else $('identity').textContent='Sign in with Google to create or accept a challenge';
 </script></body></html>
