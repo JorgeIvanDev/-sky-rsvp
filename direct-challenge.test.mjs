@@ -54,7 +54,9 @@ test('refresh response requires both tokens and a bounded expiry, and clears sta
 
 test('challenge sync uses one polling timer and one visibility listener',()=>{
  assert.equal((h.match(/setInterval\(syncChallenges,12000\)/g)||[]).length,1);
- assert.equal((h.match(/document\.addEventListener\('visibilitychange'/g)||[]).length,1);
+ assert.equal((h.match(/document\.addEventListener\('visibilitychange'/g)||[]).length,2,'one challenge-sync listener and one motion-interruption listener');
+ assert.match(h,/document\.addEventListener\('visibilitychange',\(\)=>\{if\(document\.visibilityState==='visible'\)void syncChallenges\(\)\}\)/);
+ assert.match(h,/document\.addEventListener\('visibilitychange',\(\)=>\{if\(document\.visibilityState==='hidden'\)cancelBackgroundMotion\(\)\}\)/);
  assert.doesNotMatch(h,/setInterval\(\(\)=>\{if\(!document\.hidden&&!motionActive\)run\(refresh\)\},20000\)/);
  assert.match(h,/window\.addEventListener\('pagehide',\(\)=>clearInterval\(syncTimer\)\)/);
 });
