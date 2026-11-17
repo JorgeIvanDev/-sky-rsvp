@@ -11,7 +11,7 @@ const source=html.slice(start,end);
 function run(readings){
  const nodes=new Map();
  const ctx={state:'armed',lastMotionAt:0,lastLaunchImpulse:0,lowStart:0,
-  motionTrace:[],G:9.81,flightWatchdog:0,flightReboundAnchor:0,flightReboundAt:0,flightReboundLowSamples:0,Math,Number,clearTimeout:()=>{},setTimeout:()=>1,
+  motionTrace:[],G:9.80665,FT:3.28084,flightWatchdog:0,flightReboundAnchor:0,flightReboundAt:0,flightReboundLowSamples:0,Math,Number,clearTimeout:()=>{},setTimeout:()=>1,
   performance:{now:()=>ctx.clock},
   $:id=>{if(!nodes.has(id))nodes.set(id,{textContent:''});return nodes.get(id)},
   complete:()=>{ctx.state='done'}};
