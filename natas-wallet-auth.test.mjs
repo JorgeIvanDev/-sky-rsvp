@@ -33,4 +33,19 @@ assert.equal((await confirm(sixth,{signature:"bad",now:2000})).error,"invalid_si
 assert.equal((await confirm(sixth,{now:2000})).error,"invalid_or_replayed");
 assert.equal(linked,1);
 assert.equal(verified,2);
-console.log("Natas wallet nonce, binding, expiry, signature, replay tests passed");
+
+const invalidIssue=await issue({now:Number.NaN});
+assert.equal(invalidIssue.error,"invalid_request");
+assert.equal((await issue({now:Number.MAX_SAFE_INTEGER,ttlMs:30000})).error,"invalid_request");
+const clockGuard=await issue({now:1000});
+const verifiedBeforeClock=verified;
+const linkedBeforeClock=linked;
+assert.equal((await confirm(clockGuard,{now:Number.NaN})).error,"invalid_request");
+assert.equal((await confirm(clockGuard,{now:Number.POSITIVE_INFINITY})).error,"invalid_request");
+assert.equal((await confirm(clockGuard,{now:-1})).error,"invalid_request");
+assert.equal(verified,verifiedBeforeClock);
+assert.equal(linked,linkedBeforeClock);
+// Invalid caller clocks must not consume the valid nonce.
+assert.equal((await confirm(clockGuard,{now:2000})).ok,true);
+assert.equal(linked,linkedBeforeClock+1);
+console.log("Natas wallet nonce, clock safety, binding, expiry, signature, replay tests passed");
