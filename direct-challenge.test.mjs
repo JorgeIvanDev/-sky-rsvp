@@ -115,6 +115,6 @@ test('photo is uploaded when sharing, even if selected after challenge creation'
 test('photo editor falls back when createImageBitmap fails on iPhone',()=>{assert.match(h,/typeof createImageBitmap==='function'/);assert.match(h,/const img=new Image\(\)/);assert.match(h,/URL\.revokeObjectURL\(imageUrl\)/)});
 
 test('create flow has visible direct invitation link and scrolls to result',()=>{assert.match(h,/id="open-share" hidden/);assert.match(h,/\$\('open-share'\)\.href=url\.toString\(\)/);assert.match(h,/\$\('share'\)\.scrollIntoView/)});
-test('create validates server seven-day expiry and clears stale share link',()=>{assert.match(h,/Choose an expiration within 7 days/);assert.match(h,/date\.getTime\(\)>Date\.now\(\)\+7\*86400000-60000/);assert.match(h,/\$\('share'\)\.textContent=''/)});
+test('create validates server seven-day expiry without clearing an existing share link',()=>{assert.match(h,/Choose an expiration within 7 days/);assert.match(h,/date\.getTime\(\)>Date\.now\(\)\+7\*86400000-60000/);const start=h.indexOf("$('create').onclick=");const section=h.slice(start,start+2100);assert.doesNotMatch(section,/\$\('share'\)\.textContent=''/)});
 
 test('invalid create attempt preserves existing invitation link',()=>{const start=h.indexOf("$('create').onclick=");const section=h.slice(start,start+2100);assert.match(section,/Checking challenge/);assert.doesNotMatch(section,/\$\('share'\)\.textContent=''/);assert.match(section,/Creating challenge/)});
