@@ -116,3 +116,5 @@ test('photo editor falls back when createImageBitmap fails on iPhone',()=>{asser
 
 test('create flow has visible direct invitation link and scrolls to result',()=>{assert.match(h,/id="open-share" hidden/);assert.match(h,/\$\('open-share'\)\.href=url\.toString\(\)/);assert.match(h,/\$\('share'\)\.scrollIntoView/)});
 test('create validates server seven-day expiry and clears stale share link',()=>{assert.match(h,/Choose an expiration within 7 days/);assert.match(h,/date\.getTime\(\)>Date\.now\(\)\+7\*86400000-60000/);assert.match(h,/\$\('share'\)\.textContent=''/)});
+
+test('invalid create attempt preserves existing invitation link',()=>{const start=h.indexOf("$('create').onclick=");const section=h.slice(start,start+2100);assert.match(section,/Checking challenge/);assert.doesNotMatch(section,/\$\('share'\)\.textContent=''/);assert.match(section,/Creating challenge/)});
