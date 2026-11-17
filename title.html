@@ -228,6 +228,20 @@ body.invitation-intro.entering #rain{z-index:7!important;opacity:1!important;ani
 body.invitation-intro.entering.preview-revealed main,
 body.invitation-intro.entering.preview-revealed #rain{animation:matrixTopDownReveal 1.3s cubic-bezier(.38,0,.65,1) forwards!important}
 @keyframes matrixTopDownReveal{0%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(100% 0 0 0)}}
+/* Progressive enhancement: a feathered alpha edge replaces the hard clip line.
+   The destination remains fully rendered underneath throughout the reveal. */
+@property --matrix-wipe{syntax:"<percentage>";inherits:false;initial-value:0%}
+@supports ((-webkit-mask-image:linear-gradient(black,transparent)) or (mask-image:linear-gradient(black,transparent))){
+ body.invitation-intro.entering.preview-revealed main,
+ body.invitation-intro.entering.preview-revealed #rain{
+  clip-path:none!important;
+  -webkit-mask-image:linear-gradient(to bottom,transparent calc(var(--matrix-wipe) - 9%),rgba(0,0,0,.18) calc(var(--matrix-wipe) - 4%),rgba(0,0,0,.75) calc(var(--matrix-wipe) + 3%),black calc(var(--matrix-wipe) + 9%));
+  mask-image:linear-gradient(to bottom,transparent calc(var(--matrix-wipe) - 9%),rgba(0,0,0,.18) calc(var(--matrix-wipe) - 4%),rgba(0,0,0,.75) calc(var(--matrix-wipe) + 3%),black calc(var(--matrix-wipe) + 9%));
+  animation:matrixFeatherReveal 1.3s cubic-bezier(.38,0,.65,1) forwards!important;
+ }
+ @keyframes matrixFeatherReveal{from{--matrix-wipe:-10%}to{--matrix-wipe:110%}}
+}
+
 @media(prefers-reduced-motion:reduce){body.invitation-intro.entering.preview-revealed main,body.invitation-intro.entering.preview-revealed #rain{animation:none!important}}
 </style></head><body><iframe allow="accelerometer; gyroscope; magnetometer; fullscreen" id="game-preview" title="CNIDARIA game preview" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><canvas id="rain" aria-hidden="true"></canvas><div id="shade"></div><div id="scan"></div><button id="skip" type="button">SKIP INTRO ›</button><div id="transition"></div><main><section><div class="status">● SYSTEM ONLINE · V 1.0</div><div class="orb" aria-hidden="true"><div class="natas-flip"><img class="natas-coffee" src="./assets/cnidaria-original-logo.svg" alt="Original CNIDARIA logo"><div class="natas-back" aria-hidden="true"><img class="natas-green-logo" src="./assets/cnidaria-jellyfish-green.svg" alt=""></div></div></div><h1>CNIDARIA</h1><p class="invitation-kicker" hidden>YOU'VE BEEN INVITED</p><p>THE GAUNTLET AWAITS.<br>THROW. CATCH. CHALLENGE.</p><a id="start" href="./index.html?play=1">▶ START GAME</a><button id="options" type="button" aria-expanded="false">⚙ OPTIONS</button><div id="opts"><label><input id="motion" type="checkbox"> Reduce animation</label><p>Direct challenge and invitation links still open immediately.</p></div><p class="foot">PRESS START TO ENTER THE GAME</p></section></main>
 <script>
