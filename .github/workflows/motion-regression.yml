@@ -55,6 +55,8 @@ jobs:
       - name: Replay production launch and sensor-pause sequences
         run: node --test tests/production-launch-replay.test.mjs
       - name: Replay production post-impact sensor sequences
+        if: ${{ !cancelled() }}
         run: node --test tests/production-impact-replay.test.mjs
       - name: Preserve user-labeled couch and hand evidence without synthetic sensor samples
+        if: ${{ !cancelled() }}
         run: node --test tests/labeled-catch-replay.test.mjs
