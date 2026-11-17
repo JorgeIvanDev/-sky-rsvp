@@ -70,9 +70,9 @@ assert.ok(previewStart>=0&&previewEnd>previewStart,'production preview handler m
 const previewCode=html.slice(previewStart,previewEnd);
 async function exercisePreview(payload,initialEnabled=true){
  const elements=new Map();
- const $=id=>{if(!elements.has(id))elements.set(id,{disabled:!initialEnabled,hidden:false,textContent:''});return elements.get(id)};
+ const $=id=>{if(!elements.has(id))elements.set(id,{disabled:!initialEnabled,hidden:false,textContent:'',classList:{add:()=>{}},querySelector:()=>({textContent:''}),prepend:()=>{}});return elements.get(id)};
  const statuses=[];
- const ctx={$,invite:'test-token',rpc:async()=>payload,status:t=>statuses.push(t),Date};
+ const ctx={$,invite:'test-token',rpc:async()=>payload,status:t=>statuses.push(t),Date,document:{createElement:()=>({className:'',textContent:''})}};
  runInNewContext(previewCode+';globalThis.invokePreview=preview',ctx);
  await ctx.invokePreview();
  return {elements,statuses};
@@ -81,8 +81,8 @@ test('preview locks stale response buttons while request is pending',async()=>{
  let resolve;
  const pending=new Promise(r=>{resolve=r});
  const elements=new Map();
- const $=id=>{if(!elements.has(id))elements.set(id,{disabled:false,hidden:false,textContent:''});return elements.get(id)};
- const ctx={$,invite:'test-token',rpc:()=>pending,status:()=>{},Date};
+ const $=id=>{if(!elements.has(id))elements.set(id,{disabled:false,hidden:false,textContent:'',classList:{add:()=>{}},querySelector:()=>({textContent:''}),prepend:()=>{}});return elements.get(id)};
+ const ctx={$,invite:'test-token',rpc:()=>pending,status:()=>{},Date,document:{createElement:()=>({className:'',textContent:''})}};
  runInNewContext(previewCode+';globalThis.invokePreview=preview',ctx);
  const running=ctx.invokePreview();
  assert.equal($('accept').disabled,true);
