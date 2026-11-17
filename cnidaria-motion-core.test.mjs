@@ -418,3 +418,18 @@ test('unsafe or fractional absolute timestamps cannot establish a new trace orig
  assert.equal(trace.add({timestamp:1700000000016,magnitude:9.8}),true);
  assert.deepEqual(trace.samples.map(s=>s.ms),[0,16]);
 });
+
+test('real mobile DOMHighResTimeStamp fractions are recorded and evaluated',()=>{
+ const c=createMotionTrace();
+ assert.equal(c.add({timestamp:1000.25,magnitude:30}),true);
+ assert.equal(c.add({timestamp:1016.75,magnitude:0.5}),true);
+ assert.deepEqual(c.samples.map(s=>s.ms),[0,17]);
+ assert.equal(c.add({timestamp:1016.9,magnitude:0.5}),false,'rounded duplicate must not corrupt trace');
+ assert.equal(c.add({timestamp:1032.8,magnitude:0.5}),true);
+ assert.deepEqual(c.samples.map(s=>s.ms),[0,17,33]);
+ assert.equal(c.add({timestamp:Infinity,magnitude:9.8}),false);
+ assert.equal(c.add({timestamp:Number.MAX_SAFE_INTEGER+1,magnitude:9.8}),false);
+ c.reset();
+ assert.equal(c.add({timestamp:2000.125,magnitude:9.8}),true);
+ assert.deepEqual(c.samples,[{ms:0,m:9.8,spin:0}]);
+});
