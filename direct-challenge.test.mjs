@@ -66,7 +66,8 @@ test('challenge sync uses one polling timer and one visibility listener',()=>{
  assert.match(h,/document\.addEventListener\('visibilitychange',\(\)=>\{if\(document\.visibilityState==='visible'\)void syncChallenges\(\)\}\)/);
  assert.match(h,/document\.addEventListener\('visibilitychange',\(\)=>\{if\(document\.visibilityState==='hidden'\)cancelBackgroundMotion\(\)\}\)/);
  assert.doesNotMatch(h,/setInterval\(\(\)=>\{if\(!document\.hidden&&!motionActive\)run\(refresh\)\},20000\)/);
- assert.match(h,/window\.addEventListener\('pagehide',\(\)=>clearInterval\(syncTimer\)\)/);
+ assert.match(h,/window\.addEventListener\('pagehide',stopChallengePolling\)/);
+ assert.match(h,/window\.addEventListener\('pageshow',event=>\{if\(event\.persisted\)\{startChallengePolling\(\);void syncChallenges\(\)\}\}\)/);
 });
 
 test('ambiguous invitation responses fail closed rather than enabling a duplicate accept or decline',()=>{
