@@ -1,0 +1,36 @@
+name: CNIDARIA bug report
+description: Report a reproducible defect without accidentally rebuilding an existing feature
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: existing
+    attributes:
+      label: Existing feature and URL
+      description: Which current page or flow is affected?
+      placeholder: "direct-challenge.html — real invite accept"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      placeholder: "1. Open link on iPhone Safari…"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected versus actual
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Screenshots, console output, device/browser and account conditions. Do not include tokens or private data.
+  - type: textarea
+    id: regression
+    attributes:
+      label: Regression test and verification plan
+      description: Name existing tests to extend; include live-device verification when needed.
