@@ -128,7 +128,7 @@ function motion(e){
    else if(m>16){if(flightReboundLowSamples>=2&&flightReboundAt&&now-flightReboundAt>=25){flightFailureReason='Repeated airborne impact after rebound: possible couch drop';complete(0,false);return}flightReboundLowSamples=0;flightReboundAt=0}
    else{flightReboundLowSamples=0;flightReboundAt=0}
  }else if(!flightReboundAnchor){flightReboundLowSamples=0;flightReboundAt=0}
- if(m<2.5){freefallMs+=Math.min(now-lastMotionAt,50);airborneLostAt=0}
+ if(m<2.5){if(now-lastMotionAt<=50)freefallMs+=now-lastMotionAt;airborneLostAt=0}
  else if(m<16){if(!airborneLostAt)airborneLostAt=now;else if(now-airborneLostAt>180){flightFailureReason='Free fall ended without a confirmed catch';complete(0,false);return}}
  lastMotionAt=now;
  if(r&&m<2.5&&[r.alpha,r.beta,r.gamma].every(v=>v==null||Number.isFinite(v))){const spin=Math.hypot(r.alpha||0,r.beta||0,r.gamma||0);if(Number.isFinite(spin))spinPeak=Math.max(spinPeak,spin)}
