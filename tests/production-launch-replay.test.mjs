@@ -72,14 +72,14 @@ test('single low-g frame after impact does not establish a couch rebound',()=>{
  const launch=[[1000,20],[1020,1],[1060,1],[1100,1],[1140,1]];
  const flight=Array.from({length:7},(_,i)=>[1180+i*40,1]);
  const ctx=run([...launch,...flight,[1460,24],[1480,1],[1500,9.8],[1540,25]]);
- assert.notMatch(ctx.flightFailureReason||'',/Repeated airborne impact after rebound/);
+ assert.doesNotMatch(ctx.flightFailureReason||'',/Repeated airborne impact after rebound/);
 });
 
 test('flight rebound evidence cannot bridge a 60ms sensor interruption',()=>{
  const launch=[[1000,20],[1020,1],[1060,1],[1100,1],[1140,1]];
  const flight=Array.from({length:7},(_,i)=>[1180+i*40,1]);
  const ctx=run([...launch,...flight,[1460,24],[1480,1],[1540,1],[1580,25]]);
- assert.notMatch(ctx.flightFailureReason||'',/Repeated airborne impact after rebound/);
+ assert.doesNotMatch(ctx.flightFailureReason||'',/Repeated airborne impact after rebound/);
  assert.equal(ctx.flightReboundLowSamples,0);
 });
 test('adjacent airborne low-g frames still reject a genuine re-impact pattern',()=>{
