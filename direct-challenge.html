@@ -30,7 +30,18 @@ if(demoPreview){
  const photo=document.createElement('div');photo.className='demo-photo';const frame=document.createElement('div');const heading=document.createElement('strong');heading.textContent='THE GAUNTLET';const hint=document.createElement('small');hint.textContent="Your friend's challenge photo will appear here";frame.append(heading,hint);photo.append(frame);$('details').after(photo);
  $('details').textContent='Someone has thrown down the Gauntlet. Will you accept the challenge?';
  $('invite-status').textContent='Invitation preview — no account needed to explore.';
- $('accept').disabled=true;$('decline').disabled=true;
+ $('accept').disabled=false;$('decline').disabled=false;
+ const demoActions=document.createElement('div');demoActions.className='demo-next';demoActions.setAttribute('aria-live','polite');$('invite-status').after(demoActions);
+ const respondDemo=(accepted)=>{
+   $('accept').disabled=true;$('decline').disabled=true;
+   $('invite-status').textContent=accepted?'CHALLENGE ACCEPTED · Preview complete':'INVITATION DECLINED · Preview complete';
+   demoActions.replaceChildren();
+   const message=document.createElement('p');message.textContent=accepted?'In a real invitation, your response is sent to the challenger. Ready to throw down your own gauntlet?':'In a real invitation, the challenger receives your response. You can still create a challenge of your own.';
+   const create=document.createElement('a');create.className='cta';create.href='./direct-challenge.html';create.textContent='Create a real challenge →';
+   demoActions.append(message,create);
+ };
+ $('accept').addEventListener('click',()=>respondDemo(true));
+ $('decline').addEventListener('click',()=>respondDemo(false));
  const replay=document.createElement('a');replay.className='cta';replay.href='./title.html?intro=long&next=invitation-preview';replay.textContent='↻ Replay original introduction';$('incoming').appendChild(replay);
 }
 
