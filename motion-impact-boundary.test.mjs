@@ -32,11 +32,13 @@ test('an incomplete 350ms observation cannot be rescued by high spin',()=>{
  assert.equal(result.reason,'incomplete post-impact observation');
 });
 
-test('collector rejects duplicate rounded milliseconds but accepts a later distinct sample',()=>{
+test('collector rejects fractional timestamps but accepts later distinct integer milliseconds',()=>{
  const trace=createMotionTrace();
- assert.equal(trace.add({timestamp:1000.1,magnitude:9.8}),true);
+ assert.equal(trace.add({timestamp:1000.1,magnitude:9.8}),false);
+ assert.equal(trace.add({timestamp:1000,magnitude:9.8}),true);
  assert.equal(trace.add({timestamp:1000.4,magnitude:9.8}),false);
- assert.equal(trace.add({timestamp:1001.2,magnitude:9.8}),true);
+ assert.equal(trace.add({timestamp:1000,magnitude:9.8}),false);
+ assert.equal(trace.add({timestamp:1001,magnitude:9.8}),true);
  assert.deepEqual(trace.samples.map(s=>s.ms),[0,1]);
 });
 
