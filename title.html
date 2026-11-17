@@ -219,7 +219,7 @@ body.invitation-intro.entering main{transition:opacity 1.8s ease!important}
 #glyph-streams span:nth-child(3n){color:#b8ffd0;opacity:1}
 body.invitation-intro.entering #glyph-curtain{display:none!important;animation:none!important}
 @keyframes lettersSweep{0%{transform:translateY(-101%)}40%,56%{transform:translateY(0)}100%{transform:translateY(101%)}}
-body.invitation-intro.entering #rain{display:block!important;animation:matrixCurtain 1.8s ease-in-out both!important}
+body.invitation-intro.entering #rain{display:block!important;animation:matrixCurtain 1.1s ease-in-out both!important}
 body.invitation-intro.entering #transition{display:none!important}
 body.invitation-intro.entering main{opacity:1!important;transition:none!important}
 body.invitation-intro.entering #game-preview{z-index:4;opacity:0!important;transition:none!important}
@@ -247,7 +247,7 @@ if(next==='invitation-preview'){document.querySelector('.invitation-kicker').cla
    document.querySelector('main').style.visibility='hidden';},900);cols=Array.from({length:Math.ceil(width/18)},(_,i)=>-Math.random()*22-i%7);ctx.clearRect(0,0,width,height);
 const start=document.getElementById('start');start.setAttribute('aria-disabled','true');start.style.pointerEvents='none';
 if(!preview.src||preview.src==='about:blank')preview.src=destination;
-setTimeout(()=>{if(!previewLoaded){location.replace(destination);return}preview.style.pointerEvents='auto';document.getElementById('rain').style.display='none';document.getElementById('transition').style.display='none';document.querySelector('main').style.display='none';document.getElementById('shade').style.display='none';document.getElementById('scan').style.display='none';preview.removeAttribute('aria-hidden');preview.removeAttribute('tabindex');preview.focus()},next==='invitation-preview'?1850:2700)};
+setTimeout(()=>{if(next==='invitation-preview'){window.location.replace(destination);return}if(!previewLoaded){location.replace(destination);return}preview.style.pointerEvents='auto';document.getElementById('rain').style.display='none';document.getElementById('transition').style.display='none';document.querySelector('main').style.display='none';document.getElementById('shade').style.display='none';document.getElementById('scan').style.display='none';preview.removeAttribute('aria-hidden');preview.removeAttribute('tabindex');preview.focus()},next==='invitation-preview'?1150:2700)};
 const warmPreview=()=>{if(!preview.getAttribute('src'))preview.src=destination};
 setTimeout(warmPreview,next==='invitation-preview'?7500:(short?2500:5400));
 skip.addEventListener('click',()=>{sessionStorage.setItem('cnidaria-intro-seen','1');location.replace(destination)});
