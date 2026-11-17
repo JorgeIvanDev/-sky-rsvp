@@ -37,6 +37,16 @@ for(const [label,payload] of [['empty response',[]],['null response',null],['wro
  });
 }
 
+test('transport failure preserves diagnostic reason without unlocking either response button',async()=>{
+ const x=await exercise(Promise.reject(new Error('network timeout')));
+ assert.match(String(x.error?.message),/Response status unknown \(network timeout\)/);
+ assert.match(String(x.error?.message),/check Your challenges before retrying/);
+ assert.equal(x.refreshed,0);
+ assert.equal(x.cleared,0);
+ assert.equal(x.elements.get('accept').disabled,true);
+ assert.equal(x.elements.get('decline').disabled,true);
+});
+
 test('confirmed accept stays successful if list refresh fails',async()=>{
  const x=await exercise([{challenge_status:'accepted'}],true,'offline');
  assert.equal(x.error,undefined);
