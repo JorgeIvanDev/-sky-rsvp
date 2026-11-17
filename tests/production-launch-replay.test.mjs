@@ -89,3 +89,17 @@ test('adjacent airborne low-g frames still reject a genuine re-impact pattern',(
  assert.equal(ctx.state,'done');
  assert.match(ctx.flightFailureReason,/Repeated airborne impact after rebound/);
 });
+
+test('missing airborne sensor intervals cannot count toward sustained freefall',()=>{
+ const launch=[[1000,20],[1020,1],[1060,1],[1100,1],[1140,1]];
+ const ctx=run([...launch,[1180,1],[1240,1],[1280,1]]);
+ assert.equal(ctx.state,'flying');
+ assert.equal(ctx.freefallMs,80,'40ms + 40ms observed; 60ms missing interval earns no credit');
+ assert.equal(ctx.flightReboundLowSamples,0);
+});
+test('continuous airborne readings still accumulate real freefall duration',()=>{
+ const launch=[[1000,20],[1020,1],[1060,1],[1100,1],[1140,1]];
+ const ctx=run([...launch,[1180,1],[1220,1],[1260,1]]);
+ assert.equal(ctx.state,'flying');
+ assert.equal(ctx.freefallMs,120);
+});
