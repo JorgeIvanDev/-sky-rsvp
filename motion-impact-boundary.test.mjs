@@ -92,3 +92,23 @@ test('post-impact closing frame at 350ms is not enough without actual terminal s
  assert.equal(result.ok,false);
  assert.match(result.reason,/settling|unstable/i);
 });
+
+
+test('two separated short low-g bursts after impact reject couch rebound',()=>{
+ const samples=[...launch,
+  ...range(900,940,20,9.8),
+  ...range(960,1000,20,.5),
+  ...range(1020,1060,20,9.8),
+  ...range(1080,1120,20,.5),
+  ...range(1140,1240,20,9.8)];
+ const result=replayObserved(samples);
+ assert.equal(result.ok,false,JSON.stringify(result));
+ assert.equal(result.reason,'repeated post-impact low-g bursts');
+});
+
+test('one short post-impact low-g burst does not by itself prove a bounce',()=>{
+ const samples=[...launch,...range(900,940,20,9.8),...range(960,1000,20,.5),...range(1020,1240,20,9.8)];
+ const result=replayObserved(samples);
+ assert.equal(result.ok,true,JSON.stringify(result));
+ assert.equal(result.classification,'catch-like only');
+});
