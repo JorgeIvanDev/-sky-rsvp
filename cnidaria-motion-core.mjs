@@ -147,7 +147,7 @@ export function createMotionTrace(options={}){
   if(!options||typeof options!=='object'||Array.isArray(options))throw Error('Invalid motion trace settings');
   const {maxSamples=1500}=options;
   if(!Number.isInteger(maxSamples)||maxSamples<1||maxSamples>100000)throw Error('Invalid motion trace capacity');
-  const samples=[];let first=null,overflowed=false,corrupted=false;
+  const samples=[];let first=null,overflowed=false,corrupted=false,acceptedCount=0;
   return {samples,add(sample){
     if(!sample||typeof sample!=='object'||Array.isArray(sample)){corrupted=true;return false;}
     const {timestamp,magnitude,spin=0}=sample;
@@ -159,6 +159,6 @@ export function createMotionTrace(options={}){
     // an infinite relative time or a rounded timestamp beyond safe integer precision.
     if(!Number.isSafeInteger(ms)||ms<0||(samples.length&&ms<=samples[samples.length-1].ms)){corrupted=true;return false;}
     if(first===null)first=timestamp;
-    samples.push({ms,m:magnitude,spin});return true;
-  },evaluate(){return overflowed?{ok:false,reason:'motion trace capacity exceeded'}:corrupted?{ok:false,reason:'invalid motion trace sample'}:replayObserved(samples)},reset(){samples.length=0;first=null;overflowed=false;corrupted=false}};
+    samples.push({ms,m:magnitude,spin});acceptedCount++;return true;
+  },evaluate(){return overflowed||samples.length>maxSamples?{ok:false,reason:'motion trace capacity exceeded'}:corrupted||samples.length!==acceptedCount?{ok:false,reason:'invalid motion trace sample'}:replayObserved(samples)},reset(){samples.length=0;first=null;overflowed=false;corrupted=false;acceptedCount=0}};
 }
