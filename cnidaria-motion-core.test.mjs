@@ -283,9 +283,9 @@ test('collector rejects relative timestamp overflow and unsafe precision without
  assert.equal(trace.add({timestamp:Number.MAX_SAFE_INTEGER+1,magnitude:9.8}),false);
  assert.equal(trace.add({timestamp:100,magnitude:9.8}),true);
  assert.equal(trace.add({timestamp:0,magnitude:9.8}),false);
- assert.equal(trace.add({timestamp:100.5,magnitude:9.8}),false,'fractional frame rounds to duplicate millisecond');
+ assert.equal(trace.add({timestamp:100.5,magnitude:9.8}),true,'fractional frame rounds to a distinct millisecond');
  assert.equal(trace.add({timestamp:116,magnitude:9.8}),true);
- assert.deepEqual(trace.samples.map(s=>s.ms),[0,16]);
+ assert.deepEqual(trace.samples.map(s=>s.ms),[0,1,16]);
 });
 
 
