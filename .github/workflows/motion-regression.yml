@@ -14,6 +14,7 @@ on:
       - 'cnidaria-motion-core.test.mjs'
       - 'cnidaria-freefall-continuity.test.mjs'
       - 'motion-impact-boundary.test.mjs'
+      - 'cnidaria-observation-timeout.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   pull_request:
@@ -30,6 +31,7 @@ on:
       - 'cnidaria-motion-core.test.mjs'
       - 'cnidaria-freefall-continuity.test.mjs'
       - 'motion-impact-boundary.test.mjs'
+      - 'cnidaria-observation-timeout.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   workflow_dispatch:
@@ -51,6 +53,9 @@ jobs:
       - name: Replay couch rebounds and 350ms retry boundaries
         if: ${{ !cancelled() }}
         run: node --test motion-impact-boundary.test.mjs
+      - name: Check post-impact observation timeouts and sensor gaps
+        if: ${{ !cancelled() }}
+        run: node --test cnidaria-observation-timeout.test.mjs
       - name: Run motion regression checks
         if: ${{ !cancelled() }}
         run: node tests/motion-regression.js
