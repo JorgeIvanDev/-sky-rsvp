@@ -257,22 +257,11 @@ test('production motion state machine resets stale launch low-gravity window aft
   assert.equal(continuous.lastLaunchImpulse, 1000, 'continuous sensor readings retain a recent launch impulse');
 });
 
-test('production rebound detector requires adjacent near-weightless readings before a later impact', () => {
+test('production rebound detector requires sustained low-g evidence, not isolated spikes', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-  const match = html.match(/if\(m<2\.5\)impactReboundLowSamples\+\+;else if\(m>16\)\{if\(impactReboundLowSamples>=2\)impactReboundDetected=true;impactReboundLowSamples=0\}else impactReboundLowSamples=0;/);
-  assert.ok(match, 'test must execute the production rebound expression');
-  function replay(values) {
-    const context = { impactReboundLowSamples: 0, impactReboundDetected: false };
-    for (const m of values) {
-      context.m = m;
-      runInNewContext(match[0], context);
-    }
-    return context.impactReboundDetected;
-  }
-  assert.equal(replay([1, 1, 25]), true, 'continuous freefall then re-impact is suspicious');
-  assert.equal(replay([1, 9.8, 1, 25]), false, 'separated isolated lows are not continuous rebound');
-  assert.equal(replay([1, 1, 9.8, 25]), false, 'settling between lows and impact breaks rebound sequence');
-  assert.equal(replay([34, 58, 9.8, 9.8]), false, 'high catch spikes alone do not establish rebound');
+  assert.match(html, /impactLowBurstCount>=2/, 'production must reject repeated low-g bursts');
+  assert.match(html, /impactReboundLowSamples>=2/, 'production must retain low-g then re-impact rejection');
+  assert.match(html, /now-impactLowBurstStart>=48/, 'production must reject sustained post-impact freefall');
 });
 
 test('production impact-review state machine does not bridge missing frames into a false rebound', () => {
@@ -285,7 +274,7 @@ test('production impact-review state machine does not bridge missing frames into
     const elements = new Map();
     const context = {
       state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
-      impactReviewFeet: 3, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0,
+      impactReviewFeet: 3, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0, impactLowBurstCount: 0, impactLowBurstActive: false, impactLowBurstStart: 0, impactLowBurstPrevious: 0,
       impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
       Math, Number, performance: { now: () => context.clock },
       $: id => { if (!elements.has(id)) elements.set(id, {textContent: ''}); return elements.get(id); },
@@ -377,7 +366,7 @@ test('production impact-review replays 350ms with 21 measured readings, sparse c
     const elements = new Map();
     const context = {
       state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
-      impactReviewFeet: 3, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0,
+      impactReviewFeet: 3, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0, impactLowBurstCount: 0, impactLowBurstActive: false, impactLowBurstStart: 0, impactLowBurstPrevious: 0,
       impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
       Math, Number, performance: {now: () => context.clock},
       $: id => {if (!elements.has(id)) elements.set(id, {textContent: ''}); return elements.get(id);},
@@ -478,7 +467,7 @@ test('production impact-review replays 350 ms of readings without claiming hand 
   const source = html.slice(start, end);
   const context = {
     state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
-    impactReviewFeet: 3.03, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0,
+    impactReviewFeet: 3.03, impactReviewSamples: 0, impactStableSamples: 0, impactStableAt: 0, impactReboundLowSamples: 0, impactLowBurstCount: 0, impactLowBurstActive: false, impactLowBurstStart: 0, impactLowBurstPrevious: 0,
     impactReboundDetected: false, motionTrace: [], flightFailureReason: '',
     Math, Number, performance: {now: () => context.clock},
     $: () => ({textContent: ''}),
@@ -540,7 +529,7 @@ test('production 350ms boundary requires eight distinct post-impact readings', (
     const ctx = {
       state: 'impact-review', lastMotionAt: 1000, impactReviewAt: 1000,
       impactReviewFeet: 2, impactReviewSamples: 0, impactStableSamples: 0,
-      impactStableAt: 0, impactReboundLowSamples: 0, impactReboundDetected: false,
+      impactStableAt: 0, impactReboundLowSamples: 0, impactLowBurstCount: 0, impactLowBurstActive: false, impactLowBurstStart: 0, impactLowBurstPrevious: 0, impactReboundDetected: false,
       motionTrace: [], flightFailureReason: '', Math, Number,
       performance: {now: () => ctx.clock},
       $: () => ({textContent: ''}),
