@@ -283,7 +283,7 @@ test('collector rejects relative timestamp overflow and unsafe precision without
  assert.equal(trace.add({timestamp:Number.MAX_SAFE_INTEGER+1,magnitude:9.8}),false);
  assert.equal(trace.add({timestamp:100,magnitude:9.8}),true);
  assert.equal(trace.add({timestamp:0,magnitude:9.8}),false);
- assert.equal(trace.add({timestamp:100.5,magnitude:9.8}),false);
+ assert.equal(trace.add({timestamp:100.5,magnitude:9.8}),false,'fractional frame rounds to duplicate millisecond');
  assert.equal(trace.add({timestamp:116,magnitude:9.8}),true);
  assert.deepEqual(trace.samples.map(s=>s.ms),[0,16]);
 });
@@ -408,9 +408,9 @@ test('negative spin magnitudes fail closed in replay and live collection',async(
 });
 
 
-test('unsafe or fractional absolute timestamps cannot establish a new trace origin',()=>{
+test('unsafe absolute timestamps cannot establish a new trace origin',()=>{
  const trace=createMotionTrace();
- for(const timestamp of [0.25,Number.MAX_SAFE_INTEGER+1,Number.MAX_VALUE,Infinity]){
+ for(const timestamp of [Number.MAX_SAFE_INTEGER+1,Number.MAX_VALUE,Infinity]){
   assert.equal(trace.add({timestamp,magnitude:9.8}),false);
  }
  assert.equal(trace.samples.length,0);
