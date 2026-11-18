@@ -1,3 +1,10 @@
+## Audit — 2026-11-18 04:59 CST (independent release manager)
+
+- **Fresh engineering HEAD:** `0b7e86c4` (10:38:19 UTC), following `172bc641` synthetic rebound/350ms closing-window/reset tests. Commit diff confirms motion workflow now executes `tests/motion-impact-coverage.test.mjs` on relevant pushes/PRs. Existing builder owns implementation; no duplicate engine changes made.
+- **Exact-SHA CI/Pages:** combined status returned `statuses: []`; commit workflow-run lookup returned `workflow_runs: []` (this connector filters to PR-triggered runs). Neither response establishes pass/fail or Pages deployment. Direct GitHub Actions and deployed Gauntlet HTTP retrieval failed; **served revision and latest CI remain unverified**. Treat stale deployment as a release blocker until independently checked.
+- **Gauntlet first-time path (source-only):** `direct-challenge.html` has prominent `▶ PLAY NOW` before Google sign-in linking `./index.html?play=1`, and the separate in-page original-engine entry/fallback remains documented. No accepted challenge prerequisite evident in static markup. This does **not** establish rendered signed-out discoverability or iframe motion permissions.
+- **Release P0:** obtain exact-SHA Actions and Pages evidence; build a browser-rendered signed-out Gauntlet -> PLAY NOW -> original engine smoke test, including authenticated-refresh fallback. Physically test iPhone Safari permission grant/deny/retry and in-page iframe; never claim verified physical hand catch from sensor data. Keep one shared engine and conservative 350ms diagnostics. No Supabase or active challenge changes.
+
 ## Audit — 2026-11-18 03:55 CST (independent release manager)
 
 - **Engineering HEAD inspected:** `4d063202` (09:43:33 UTC), preceded by `58006a47` (same-length in-place motion-trace tamper rejection), `087c190f`/`98ea6415` (targeted tamper fixtures), and `4d063202` (motion CI wiring). These are engineering changes by the existing build automation; no duplicate implementation attempted.
