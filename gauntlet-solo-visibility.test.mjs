@@ -14,3 +14,9 @@ test('friend challenge remains an optional secondary action',()=>{
  assert.match(html,/href="#challenge-setup"[^>]*>CHALLENGE A FRIEND<\/a>/);
  assert.match(html,/<section id="challenge-setup">/);
 });
+
+test('PLAY NOW bypasses title redirect and reaches the original engine',()=>{
+ const game=readFileSync(new URL('./index.html',import.meta.url),'utf8');
+ assert.match(html, /href="\.\/index\.html\?play=1"[^>]*>▶ PLAY NOW/);
+ assert.match(game,/q\.get\('play'\)!=='1'/);
+});
