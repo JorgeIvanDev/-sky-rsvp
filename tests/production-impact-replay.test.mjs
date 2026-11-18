@@ -13,6 +13,7 @@ function replay(readings){
  const ctx={
   state:'impact-review',lastMotionAt:1000,impactReviewAt:1000,impactReviewFeet:3.03,
   impactReviewSamples:0,impactStableSamples:0,impactStableAt:0,impactReboundLowSamples:0,impactReboundDetected:false,
+  impactLowBurstCount:0,impactLowBurstActive:false,impactLowBurstStart:0,impactLowBurstPrevious:0,
   motionTrace:[],flightFailureReason:'',G:9.81,Math,Number,
   performance:{now:()=>ctx.clock},
   $:id=>{if(!elements.has(id))elements.set(id,{textContent:''});return elements.get(id)},
@@ -206,4 +207,27 @@ test('late isolated high-g contact resets settling rather than proving a hand ca
  const ctx=replay([...readings,[1324,25],[1342,9.8],[1360,9.8]]);
  assert.equal(ctx.completed?.credited,false);
  assert.match(ctx.flightFailureReason,/did not settle/);
+});
+
+
+test('production live toss rejects 48ms renewed low-g after impact without requiring another collision',()=>{
+ const ctx=replay([[1020,1],[1036,1],[1052,1],[1068,1],[1084,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.equal(ctx.impactReboundDetected,true);
+ assert.match(ctx.flightFailureReason,/Rebound after impact/);
+});
+
+test('two separate 32ms low-g bursts reject a couch tumble even without a later high-g impact',()=>{
+ const ctx=replay([[1020,1],[1036,1],[1052,1],[1068,9.8],[1084,1],[1100,1],[1116,1],[1132,9.8]]);
+ assert.equal(ctx.completed?.credited,false);
+ assert.equal(ctx.impactReboundDetected,true);
+ assert.equal(ctx.impactLowBurstCount,2);
+});
+
+test('isolated short post-impact low-g burst does not automatically reject a later stable observation',()=>{
+ const readings=[[1020,1],[1036,1],[1052,9.8],...Array.from({length:19},(_,i)=>[1068+i*16,9.8])];
+ const ctx=replay(readings);
+ assert.equal(ctx.impactLowBurstCount,0);
+ assert.equal(ctx.impactReboundDetected,false);
+ assert.equal(ctx.completed?.credited,true);
 });
