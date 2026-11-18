@@ -4,6 +4,10 @@
 
 CNIDARIA is an evolving browser-based experiment: play the original toss game, challenge a friend through the Gauntlet, and explore event invitations, Hunt Mode, and Natas. The project favors fast mobile interactions, explicit consent, and clear distinctions between prototypes and verified behavior.
 
+## Start here if taking over this project
+
+**[Read the next-chat rescue handoff](docs/NEXT-CHAT-HANDOFF.md)** before modifying the app. It documents the original CNIDARIA spirit and artwork, the beloved cinematic green opening, unresolved iPhone/Safari login/invitation/leaderboard issues, confirmed backend evidence, and a strict verification-first recovery plan. **A successful deploy is not proof the user flow works.**
+
 ## Try it
 
 | Experience | Link | Status |
