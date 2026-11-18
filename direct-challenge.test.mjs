@@ -130,3 +130,9 @@ test('create flow has visible direct invitation link and scrolls to result',()=>
 test('create validates server seven-day expiry without clearing an existing share link',()=>{assert.match(h,/Choose an expiration within 7 days/);assert.match(h,/date\.getTime\(\)>Date\.now\(\)\+7\*86400000-60000/);const start=h.indexOf("$('create').onclick=");const section=h.slice(start,start+2100);assert.doesNotMatch(section,/\$\('share'\)\.textContent=''/)});
 
 test('invalid create attempt preserves existing invitation link',()=>{const start=h.indexOf("$('create').onclick=");const section=h.slice(start,start+2100);assert.match(section,/Checking challenge/);assert.doesNotMatch(section,/\$\('share'\)\.textContent=''/);assert.match(section,/Creating challenge/)});
+
+
+test('refresh never rewrites original engine fallback to title redirect',()=>{
+ assert.match(h,/\$\('original-engine-link'\)\.href=selected\?'\.\/index\.html\?play=1&gauntlet='\+encodeURIComponent\(selected\):'\.\/index\.html\?play=1'/);
+ assert.doesNotMatch(h,/\$\('original-engine-link'\)\.href=selected\?'\.\/index\.html\?gauntlet='/);
+});
