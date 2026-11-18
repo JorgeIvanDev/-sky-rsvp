@@ -1,3 +1,12 @@
+## Audit — 2026-11-18 00:56 CST (independent release manager)
+
+- **Baseline at start of audit:** HEAD `a005d8fb` (06:38 UTC), motion regression **success** and Pages build/deployment **success** on that SHA. Recent `c7f06a2e` Pages was cancelled/superseded; earlier motion failures on `3247c60b` and `bf50630b` were followed by passing `f6876e4e` and `a005d8fb`. Do not report all suites green at HEAD: the latest direct-challenge workflow observed was `bf50630b` (success), not `a005d8fb`.
+- **New concrete P0 fallback bug found:** Gauntlet's `#original-engine-link` (shown when iframe motion access is blocked) pointed at `./index.html`. The original game's inline redirect sends that URL to `title.html` unless `?play=1` is present. This created an extra title-screen detour precisely during Safari iframe recovery. Fixed to `./index.html?play=1` in `083690c0`; regression added in `508f16a8`. These commits are NOT verified by CI/Pages until matching runs complete.
+- **Logged-out source journey:** primary `▶ PLAY NOW` appears before `#google-login`, points to `./index.html?play=1`; `#play` exists without a hidden attribute; `PLAY TOSS HERE` embeds the original `index.html?play=1` with accelerometer/gyroscope permission allowance. No accepted challenge is required for solo. These are static source findings, NOT a rendered-browser verification.
+- **Catch honesty:** iframe handoff checks `handCatchVerified===false`, catch-like signal, `observed_350ms` coverage and result freshness; review is not automatic submission. Keep physical hand catch **unverified**.
+- **Live check:** direct web retrieval of Gauntlet and `index.html?play=1` failed; cannot establish served revision, browser click-through or iPhone motion behavior. GitHub Pages success alone is insufficient.
+- **Next P0:** verify Direct challenge regression + Pages on a SHA containing `508f16a8`; add browser-driven signed-out click-through of primary Play and iframe fallback; physically test Safari motion grant/deny/retry. Do not duplicate the live toss engine or touch Supabase user data.
+
 ## Release-manager audit — November 17, 2026, 23:56 CST (2026-11-18 05:56 UTC)
 
 - **HEAD `f6876e4e`:** GitHub Actions shows **success** for Motion regression tests and Pages build/deployment, both started 05:46:57 UTC. The preceding `bf50630b` and `3247c60b` motion runs failed; the latest test-alignment commit recovered CI. Other workflow suites were not all run on HEAD, so do not describe the entire matrix as green at this SHA.
