@@ -20,3 +20,9 @@ test('account destination exposes real Google sign-in and archives',()=>{
  assert.match(challenges,/id="show-archived"/);
  assert.match(challenges,/id="show-removed"/);
 });
+
+test('leaderboard has independent failed-initialization fallback',()=>{
+ assert.match(game,/Independent watchdog: even a game-script syntax error/);
+ assert.match(game,/Scores failed to initialize/);
+ assert.match(game,/document\.addEventListener\('visibilitychange'/);
+});
