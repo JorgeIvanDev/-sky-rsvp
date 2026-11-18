@@ -8,7 +8,7 @@ test('first-time visitor sees direct PLAY NOW before any sign-in',()=>{
  const play=html.indexOf('▶ PLAY NOW');
  const login=html.indexOf('id="google-login"');
  assert.ok(play>0&&login>0&&play<login,'Play must appear before Google login');
- assert.match(html,/<a class="cta" href="\.\/index\.html"[^>]*>▶ PLAY NOW<\/a>/);
+ assert.match(html,/<a class="cta" href="\.\/index\.html\?play=1"[^>]*>▶ PLAY NOW<\/a>/);
 });
 test('friend challenge remains an optional secondary action',()=>{
  assert.match(html,/href="#challenge-setup"[^>]*>CHALLENGE A FRIEND<\/a>/);
