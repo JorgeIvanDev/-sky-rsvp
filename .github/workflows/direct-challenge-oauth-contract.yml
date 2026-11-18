@@ -1,0 +1,23 @@
+name: Direct challenge OAuth contract
+on:
+  push:
+    paths:
+      - 'direct-challenge.html'
+      - 'tests/direct-challenge-oauth-contract.test.cjs'
+      - '.github/workflows/direct-challenge-oauth-contract.yml'
+  pull_request:
+    paths:
+      - 'direct-challenge.html'
+      - 'tests/direct-challenge-oauth-contract.test.cjs'
+      - '.github/workflows/direct-challenge-oauth-contract.yml'
+  workflow_dispatch:
+jobs:
+  oauth-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/direct-challenge-oauth-contract.test.cjs
