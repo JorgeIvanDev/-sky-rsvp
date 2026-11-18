@@ -1,3 +1,13 @@
+
+## Release audit — November 17, 2026, 20:53 CST
+
+- **Latest fully checked baseline:** `62547b6c` — GitHub Pages deployment and Motion regression tests completed successfully. `d5fedad6` Direct challenge and Motion regression also passed; its Pages run was superseded/cancelled. Do not infer all checks on later commits are green.
+- **New P0 user-journey bug found:** Gauntlet `PLAY NOW` linked to `./index.html`, but the original game's entry script redirects that URL to `title.html` unless `?play=1` is present. Thus the claimed one-tap PLAY action sent users to another title screen instead of the toss engine. Static source-order tests missed this cross-file route behavior.
+- **Fix landed:** `8c316d74` changes PLAY NOW to `./index.html?play=1`. `64f414e7` adds cross-file regression coverage; `874cef38` updates the existing first-time Play assertion to match the corrected URL. **These commits are not release-verified until Direct challenge CI and Pages deployment pass on a containing SHA.**
+- **Source-level safeguards remain:** top-level PLAY precedes Google sign-in; accepted match is not required for Solo; catch-like detection explicitly reports physical hand catch unverified. Embedded Gauntlet motion-permission behavior on iPhone Safari remains unverified.
+- **Next P0:** Check Direct challenge CI and Pages on `874cef38` or a descendant; inspect any failed assertions. Then independently verify that logged-out PLAY NOW opens the game directly and that iPhone Safari motion permission and retry work. Add a rendered browser smoke test when possible; static HTML tests are insufficient.
+- **Next P1:** Reduce competing entry points and keep the original engine authoritative; do not add another game implementation.
+
 # CNIDARIA Release Manager — evidence and release gates
 
 Last audit: 2026-11-17, America/Chicago. This file is a handoff for the hourly build. Do not treat a successful Pages job as proof of a working mobile experience.
