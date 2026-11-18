@@ -49,6 +49,16 @@ body.viewing-invitation .logo{opacity:.28!important}
 <div id="result" class="hidden" role="alertdialog" aria-modal="true"><div class="inner"><div class="brand">CNIDARIA · FLIGHT RESULT</div><div class="number" id="finalHeight">0.0</div><div class="sub">FEET ESTIMATED</div><h2 id="verdict">SORRY LOSER.<br>YOU DIDN'T MAKE THE CUT.</h2><p id="reason">TRY AGAIN.</p><p id="next" class="sub"></p><button id="again">TRY AGAIN</button></div></div>
 <div id="engineBuild" style="text-align:center;font-size:11px;color:#8cae9c;letter-spacing:.07em;padding:8px 12px" aria-label="CNIDARIA engine build">ENGINE BUILD · loading</div>
 <script>
+// Independent watchdog: even a game-script syntax error should not leave scores loading forever.
+window.addEventListener('DOMContentLoaded',()=>{
+ const board=document.getElementById('boardStatus');
+ if(!board)return;
+ setTimeout(()=>{
+  if(board.textContent.trim()==='Loading scores…')board.textContent='Scores failed to initialize. Reload, then tap Refresh Leaderboard. The game script may have been blocked.';
+ },12000);
+});
+</script>
+<script>
 const API='https://hwkxuczipnaqzhbnaurw.supabase.co/rest/v1/cnidaria_scores',KEY='sb_publishable_4qpeic_k8BJKdgQLoBlNsw_wrpP72Q_';const $=id=>document.getElementById(id),G=9.80665,FT=3.28084;let sensor=false,state='off',failures=0,lowStart=0,flightStart=0,impactCount=0,armedAt=0,finalFeet=0,settleTimer=null,spinPeak=0,flightPeak=0,flightSamples=0,lastLaunchImpulse=0,lastMotionAt=0,impactStartedAt=0,firstImpactFeet=0,flightFailureReason='No confirmed catch',flightWatchdog=null,impactReviewTimer=null,impactReviewAt=0,impactReviewFeet=0,impactReviewSamples=0,impactStableSamples=0,impactStableAt=0,impactReboundLowSamples=0,impactReboundDetected=false,flightReboundLowSamples=0,flightReboundAt=0,flightReboundAnchor=0,motionTrace=[],lastFlightTrace=[],freefallMs=0,freefallLastAt=0,airborneLostAt=0,flightPreviousLow=false;const target=()=>Math.max(3,5-failures);
 function labels(){$('target').textContent=target()+' FT.';$('tries').textContent='Failed attempts: '+failures;$('rules').textContent=target()===3?'MAXIMUM MERCY: 3 FT + CATCH-LIKE SIGNAL':'EVERY FAILURE LOWERS THE TARGET BY 1 FT · CURRENT '+target()+' FT'}
 // Unlocks last only for this page session; reloading requires another attempt.
