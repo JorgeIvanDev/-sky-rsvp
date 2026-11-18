@@ -10,7 +10,9 @@ const demoPreview=params.get('preview')==='1'&&!invite;
 // A malformed query parameter must not erase a legitimate pending OAuth invite.
 if(invite&&!/^[A-Za-z0-9_-]{16,256}$/.test(invite))invite=null;
 if(!invite){try{const saved=JSON.parse(sessionStorage.getItem(PENDING)||'null');if(saved&&Number.isFinite(saved.at)&&saved.at<=Date.now()&&Date.now()-saved.at<15*60*1000&&typeof saved.token==='string'&&/^[A-Za-z0-9_-]{16,256}$/.test(saved.token))invite=saved.token}catch{}}
-$('google-login').addEventListener('click',()=>{if(invite)try{sessionStorage.setItem(PENDING,JSON.stringify({token:invite,at:Date.now()}));const path=new URLSearchParams(location.hash.slice(1)).get('taunt');if(validTauntPath(path))sessionStorage.setItem('cnidaria-taunt-'+invite,path)}catch{}});
+$('google-login').addEventListener('click',()=>{if(!invite)return;try{sessionStorage.setItem(PENDING,JSON.stringify({token:invite,at:Date.now()}));const path=new URLSearchParams(location.hash.slice(1)).get('taunt');if(validTauntPath(path))sessionStorage.setItem('cnidaria-taunt-'+invite,path)}catch{}// Preserve the invitation in the OAuth return URL even when Safari blocks sessionStorage.
+ const callback=new URL('./direct-challenge.html',location.href);callback.searchParams.set('challenge',invite);const authorize=new URL($('google-login').href);authorize.searchParams.set('redirect_to',callback.href);$('google-login').href=authorize.href;
+});
 
 let session=null;try{session=JSON.parse(localStorage.getItem(STORE)||'null')}catch{}
 const abyss=$('abyss-intro');
