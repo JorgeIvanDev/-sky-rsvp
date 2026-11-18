@@ -15,3 +15,16 @@ test('short Safari screens can scroll to account and invitation links',()=>{
  assert.match(title,/@media\(max-height:740px\),\(max-width:390px\)/);
  assert.match(title,/main section\{flex-shrink:0;margin:auto\}/);
 });
+
+test('abyss menu remains hidden until cinematic completes',()=>{
+ assert.match(title,/not\(\.intro-complete\) #start/);
+ assert.match(title,/not\(\.intro-complete\) #account-entry/);
+ assert.match(title,/not\(\.intro-complete\) #options/);
+ assert.match(title,/setTimeout\(revealMenu,short\?5800:10800\)/);
+});
+test('mascot, green heartbeat and wordmark cannot regress to offset or overlap',()=>{
+ assert.match(title,/<div class="orb"[^>]*><div class="natas-heartbeat"><\/div><div class="natas-flip">/);
+ assert.match(title,/\.orb>\.natas-flip,\s*body:not\(\.invitation-intro\) main section>\.orb>\.natas-heartbeat\{\s*grid-area:1\/1!important/);
+ assert.match(title,/margin-bottom:58px!important/);
+ assert.match(title,/translate:-50% 0!important/);
+});
