@@ -94,11 +94,17 @@ export function replayObserved(samples,options={}){
  // Neither the triggering impact nor subsequent impact-cluster spikes count as settling observations.
  if(post.filter(s=>s.ms>impactAt&&s.ms<=impactAt+observationMs&&s.m<=16).length<minPostSamples)return {ok:false,reason:'insufficient post-impact samples'};
  // A second high-g cluster following a pause or low-g interval is a bounce, not a stable catch.
- let quiet=false,lowRun=0,lastMs=impactAt,lastHighMs=impactAt,previousLow=false;
+ let quiet=false,lowRun=0,lastMs=impactAt,lastHighMs=impactAt,previousLow=false,lowBurstCount=0,lowBurstActive=false;
  // The first frame after the deadline closes sampling but cannot retroactively invalidate the 350ms result.
  for(const s of post.slice(1).filter(s=>s.ms<=impactAt+observationMs)){
-  if(s.m<2.5)lowRun=previousLow&&s.ms-lastMs<=50?lowRun+(s.ms-lastMs):0;else lowRun=0;
+  if(s.m<2.5){
+   lowRun=previousLow&&s.ms-lastMs<=50?lowRun+(s.ms-lastMs):0;
+   // Two separate sustained low-g bursts after an impact indicate renewed
+   // airborne/tumbling motion even when neither individual burst reaches 48ms.
+   if(lowRun>=32&&!lowBurstActive){lowBurstCount++;lowBurstActive=true;}
+  }else{lowRun=0;lowBurstActive=false;}
   previousLow=s.m<2.5;
+  if(lowBurstCount>=2)return {ok:false,reason:'repeated post-impact low-g bursts'};
   if(lowRun>=48)quiet=true;
   if(s.m>16&&s.ms-lastHighMs>80)return {ok:false,reason:'separated post-impact spike'};
   // Repeated high-g contacts cannot remain one impact cluster indefinitely merely
