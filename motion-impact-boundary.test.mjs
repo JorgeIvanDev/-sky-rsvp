@@ -69,3 +69,26 @@ test('renewed post-impact freefall followed by re-impact rejects despite final g
  assert.equal(result.ok,false);
  assert.match(result.reason,/impact|spike|freefall|low-g/i);
 });
+
+
+test('user-labeled 2026-11-11 couch bounce timeline rejects as a synthetic production replay',()=>{
+ // Only the reported event times are known; magnitudes between them are synthetic.
+ // First impact 7683, repeated contacts 8016-8050, low-g 8100-8183, impact 8250.
+ const trace=[
+  {ms:6800,m:30},...range(6820,7660,20,.5),{ms:7683,m:27},
+  ...range(7703,7983,20,9.8),{ms:8016,m:24},{ms:8033,m:21},{ms:8050,m:25},
+  {ms:8070,m:9.8},{ms:8090,m:9.8},
+  {ms:8100,m:.8},{ms:8120,m:.7},{ms:8140,m:.6},{ms:8160,m:.8},{ms:8183,m:.7},
+  {ms:8203,m:9.8},{ms:8223,m:9.8},{ms:8243,m:9.8},{ms:8250,m:26},
+  ...range(8270,8550,20,9.8)
+ ];
+ const result=replayObserved(trace);
+ assert.equal(result.ok,false,JSON.stringify(result));
+});
+
+test('post-impact closing frame at 350ms is not enough without actual terminal settling',()=>{
+ const trace=[...launch,...range(900,1060,20,9.8),...range(1080,1220,20,14.5),{ms:1240,m:9.8}];
+ const result=replayObserved(trace);
+ assert.equal(result.ok,false);
+ assert.match(result.reason,/settling|unstable/i);
+});
