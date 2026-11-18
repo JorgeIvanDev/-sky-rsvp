@@ -147,18 +147,18 @@ export function createMotionTrace(options={}){
   if(!options||typeof options!=='object'||Array.isArray(options))throw Error('Invalid motion trace settings');
   const {maxSamples=1500}=options;
   if(!Number.isInteger(maxSamples)||maxSamples<1||maxSamples>100000)throw Error('Invalid motion trace capacity');
-  const samples=[];let first=null,overflowed=false;
+  const samples=[];let first=null,overflowed=false,corrupted=false;
   return {samples,add(sample){
-    if(!sample||typeof sample!=='object'||Array.isArray(sample))return false;
+    if(!sample||typeof sample!=='object'||Array.isArray(sample)){corrupted=true;return false;}
     const {timestamp,magnitude,spin=0}=sample;
-    if(!Number.isFinite(timestamp)||timestamp<0||timestamp>Number.MAX_SAFE_INTEGER||!Number.isFinite(magnitude)||magnitude<0||(!Number.isFinite(spin)||spin<0))return false;
+    if(!Number.isFinite(timestamp)||timestamp<0||timestamp>Number.MAX_SAFE_INTEGER||!Number.isFinite(magnitude)||magnitude<0||(!Number.isFinite(spin)||spin<0)){corrupted=true;return false;}
     if(samples.length>=maxSamples){overflowed=true;return false;}
     const origin=first===null?timestamp:first;
     const ms=Math.round(timestamp-origin);
     // Finite absolute timestamps can still overflow when subtracted. Never store
     // an infinite relative time or a rounded timestamp beyond safe integer precision.
-    if(!Number.isSafeInteger(ms)||ms<0||(samples.length&&ms<=samples[samples.length-1].ms))return false;
+    if(!Number.isSafeInteger(ms)||ms<0||(samples.length&&ms<=samples[samples.length-1].ms)){corrupted=true;return false;}
     if(first===null)first=timestamp;
     samples.push({ms,m:magnitude,spin});return true;
-  },evaluate(){return overflowed?{ok:false,reason:'motion trace capacity exceeded'}:replayObserved(samples)},reset(){samples.length=0;first=null;overflowed=false}};
+  },evaluate(){return overflowed?{ok:false,reason:'motion trace capacity exceeded'}:corrupted?{ok:false,reason:'invalid motion trace sample'}:replayObserved(samples)},reset(){samples.length=0;first=null;overflowed=false;corrupted=false}};
 }
