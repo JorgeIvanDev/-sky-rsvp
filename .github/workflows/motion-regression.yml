@@ -15,6 +15,7 @@ on:
       - 'cnidaria-motion-core.test.mjs'
       - 'cnidaria-freefall-continuity.test.mjs'
       - 'motion-impact-boundary.test.mjs'
+      - 'motion-early-impact-anchor.test.mjs'
       - 'cnidaria-observation-timeout.test.mjs'
       - 'motion-trace-overflow.test.mjs'
       - 'tests/motion-invalid-trace-regression.test.mjs'
@@ -39,6 +40,7 @@ on:
       - 'cnidaria-motion-core.test.mjs'
       - 'cnidaria-freefall-continuity.test.mjs'
       - 'motion-impact-boundary.test.mjs'
+      - 'motion-early-impact-anchor.test.mjs'
       - 'cnidaria-observation-timeout.test.mjs'
       - 'motion-trace-overflow.test.mjs'
       - 'tests/motion-invalid-trace-regression.test.mjs'
@@ -67,6 +69,9 @@ jobs:
       - name: Replay couch rebounds and 350ms retry boundaries
         if: ${{ !cancelled() }}
         run: node --test motion-impact-boundary.test.mjs
+      - name: Verify early flight jolts cannot anchor landing observation
+        if: ${{ !cancelled() }}
+        run: node --test motion-early-impact-anchor.test.mjs
       - name: Check post-impact observation timeouts and sensor gaps
         if: ${{ !cancelled() }}
         run: node --test cnidaria-observation-timeout.test.mjs
