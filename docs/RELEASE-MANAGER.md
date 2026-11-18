@@ -2,6 +2,14 @@
 
 Last audit: 2026-11-17, America/Chicago. This file is a handoff for the hourly build. Do not treat a successful Pages job as proof of a working mobile experience.
 
+## Follow-up audit — November 17, 2026, 18:56 CST
+
+- **Green CI on `dba5d023`:** Pages deployment, motion regression, motion replay, RSVP smoke, wallet/RSVP, and security workflows all completed successfully on this commit. Earlier failures on `a982bd1f` and `04d64830` remain historical, not current HEAD failures. New commits need separate verification.
+- **Visibility check (source):** Gauntlet's top-level PLAY NOW points to `./index.html` and appears before Google login. The `#play` section is no longer hidden when no match exists. Added tests on `fe927b00` for logged-out PLAY NOW priority and optional CHALLENGE A FRIEND; pending CI at audit time.
+- **Live verification limitation:** external browser could not fetch the deployed Gauntlet URL. Pages success does not independently verify rendered UI or iPhone motion permissions.
+- **P0:** verify logged-out mobile Play Now -> original game and actual sensor permission behavior on iPhone. Avoid claiming physical hand-catch verification.
+- **P1:** consolidate two user-visible play entry paths (direct navigation and embedded iframe), hide advanced diagnostics and manual beta scoring from first-time visitors. Keep original engine as sole scoring authority.
+
 ## Current verified findings
 
 1. **CI is red despite a green Pages deployment.** Commit `a982bd1f` has a successful Pages job (run 44201287575), but failed Direct challenge regression (44201287822) and Motion regression tests (44201286744). Motion failure steps: shared replay, couch/350ms boundary, and browser engine syntax/alignment. The prior `b29266b3` revision also failed both test suites. Release status: **NOT QA-CLEARED**. Investigate the new fractional timestamp normalization change and test fixture expectations before adding more sensor features. Inspect the failing assertions/logs; do not weaken thresholds merely to make tests green.
