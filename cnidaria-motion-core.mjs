@@ -76,7 +76,9 @@ export function replayObserved(samples,options={}){
   }else if(!flight)lowStart=null;
   previousFlightSampleMs=s.ms;
   previousSampleMs=s.ms;
-  // Mirror replay(): a high-g jolt during the first 350ms of flight is not an eligible landing.\n  // Anchoring observation to it could make a later legitimate impact appear already settled.\n  if(flight&&s.m>16&&(s.ms-flightAt)>350){impactAt=s.ms;break;}
+  // Mirror replay(): a high-g jolt during the first 350ms of flight is not an eligible landing.
+  // Anchoring observation to it could make a later legitimate impact appear already settled.
+  if(flight&&s.m>16&&(s.ms-flightAt)>350){impactAt=s.ms;break;}
  }
  if(impactAt===null)return {ok:false,reason:'no impact to observe'};
  // Do not score a flight reconstructed through missing pre-impact sensor data.
