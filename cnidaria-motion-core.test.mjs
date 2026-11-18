@@ -325,7 +325,7 @@ test('post-impact closing frame still enforces sensor continuity and cannot repl
  const {replayObserved}=await import('./cnidaria-motion-core.mjs');
  const base=[...flight,{ms:866,m:18},{ms:882,m:160}];
  const settled=seq(898,1202,16,9.8);
- assert.equal(replayObserved([...base,...settled,{ms:1320,m:9.8}]).reason,'post-impact sensor gap');
+ assert.equal(replayObserved([...base,...settled,{ms:1320,m:9.8}]).reason,'post-impact observation timeout');
  assert.equal(replayObserved([...base,...settled.slice(0,3),{ms:1230,m:9.8}]).reason,'post-impact sensor gap');
 });
 
