@@ -10,10 +10,10 @@ assert.ok(start>=0&&end>start,'OAuth invite restoration must be present');
 const snippet=html.slice(start,end);
 function restore(search,stored,now=1000000){
  const callbacks={};const values=new Map(stored?[['cnidaria-pending-direct-challenge-v1',JSON.stringify(stored)]]:[]);
- const login={addEventListener:(event,fn)=>{callbacks[event]=fn}};
- const context={URLSearchParams,Date:{now:()=>now},location:{search},document:{getElementById:()=>login},sessionStorage:{getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)}};
+ const login={href:'https://hwkxuczipnaqzhbnaurw.supabase.co/auth/v1/authorize?provider=google&redirect_to=https%3A%2F%2Fjorgeivandev.github.io%2F-sky-rsvp%2Fdirect-challenge.html',addEventListener:(event,fn)=>{callbacks[event]=fn}};
+ const context={URL,URLSearchParams,Date:{now:()=>now},location:{search,href:'https://jorgeivandev.github.io/-sky-rsvp/direct-challenge.html'+search,hash:''},document:{getElementById:()=>login},sessionStorage:{getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)}};
  runInNewContext(snippet+';globalThis.result=invite',context);
- return {invite:context.result,click:callbacks.click,values};
+ return {invite:context.result,click:callbacks.click,values,login};
 }
 const token='abcdefghijklmnopqrstuvwxyz123456';
 test('direct challenge query is preserved for OAuth return',()=>{
@@ -36,4 +36,18 @@ test('malformed saved OAuth token is not restored',()=>{
 });
 test('expired pending invite is not revived by malformed query token',()=>{
  assert.equal(restore('?challenge=invalid!',{token,at:1}).invite,null);
+});
+
+test('OAuth callback retains invite when sessionStorage is blocked',()=>{
+ const x=restore('?challenge='+token);
+ x.values.set('cnidaria-pending-direct-challenge-v1','');
+ x.click();
+ const callback=new URL(new URL(x.login.href).searchParams.get('redirect_to'));
+ assert.equal(callback.searchParams.get('challenge'),token);
+ assert.equal(callback.pathname,'/-sky-rsvp/direct-challenge.html');
+});
+test('OAuth callback does not invent challenge when none is supplied',()=>{
+ const x=restore('');x.click();
+ const callback=new URL(new URL(x.login.href).searchParams.get('redirect_to'));
+ assert.equal(callback.searchParams.has('challenge'),false);
 });
