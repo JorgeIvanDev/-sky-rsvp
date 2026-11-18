@@ -10,6 +10,7 @@ on:
       - 'tests/solo-background-interruption.test.mjs'
       - 'tests/mobile-trace-export.test.mjs'
       - 'tests/labeled-catch-replay.test.mjs'
+      - 'tests/historical-labeled-motion-evidence.test.mjs'
       - 'tests/labeled-catch-examples.json'
       - 'cnidaria-motion-core.mjs'
       - 'cnidaria-motion-core.test.mjs'
@@ -35,6 +36,7 @@ on:
       - 'tests/solo-background-interruption.test.mjs'
       - 'tests/mobile-trace-export.test.mjs'
       - 'tests/labeled-catch-replay.test.mjs'
+      - 'tests/historical-labeled-motion-evidence.test.mjs'
       - 'tests/labeled-catch-examples.json'
       - 'cnidaria-motion-core.mjs'
       - 'cnidaria-motion-core.test.mjs'
@@ -117,3 +119,6 @@ jobs:
       - name: Preserve user-labeled couch and hand evidence without synthetic sensor samples
         if: ${{ !cancelled() }}
         run: node --test tests/labeled-catch-replay.test.mjs
+      - name: Check historical user-labeled couch and hand excerpts
+        if: ${{ !cancelled() }}
+        run: node --test tests/historical-labeled-motion-evidence.test.mjs
