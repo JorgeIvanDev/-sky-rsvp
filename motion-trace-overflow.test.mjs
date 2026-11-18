@@ -23,8 +23,9 @@ test('reset clears overflow and permits a new full recording',()=>{
  assert.equal(trace.evaluate().ok,true);
 });
 
-test('invalid sample alone does not poison a valid trace',()=>{
+test('invalid sample invalidates current attempt; reset restores eligibility',()=>{
  const trace=createMotionTrace({maxSamples:good.length});
  assert.equal(trace.add({timestamp:-1,magnitude:9.8}),false);
- feed(trace,good);assert.equal(trace.evaluate().ok,true);
+ feed(trace,good);assert.equal(trace.evaluate().reason,'invalid motion trace sample');
+ trace.reset();feed(trace,good);assert.equal(trace.evaluate().ok,true);
 });
