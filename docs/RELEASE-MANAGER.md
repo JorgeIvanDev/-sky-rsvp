@@ -1,3 +1,10 @@
+## Audit — 2026-11-18 08:51 CST (independent release manager)
+
+- **Engineering HEAD inspected:** `ec24733e` fixes a concrete JavaScript comment/newline regression introduced by `68167777`: an escaped `\\n` had commented out the intended eligible-impact branch in `replayObserved()`. `d0f6043e` added early-jolt/landing-anchor synthetic tests; `39779104` wired them into motion CI. Fix diff now restores executable `if(flight&&s.m>16&&(s.ms-flightAt)>350)` logic. **Code inspection only; test execution not independently confirmed.** Do not loosen fail-closed motion safety.
+- **Gauntlet source:** `direct-challenge.html` has visible `▶ PLAY NOW` before sign-in, linking `./index.html?play=1`; inline original-engine iframe exists with accelerometer/gyroscope allowance and full-page fallback preserves `play=1` after refresh. No accepted challenge required in static entry markup. `index.html` labels `handCatchVerified:false`; Gauntlet result handoff requires unverified catch-like motion and 350ms observation. **Not a rendered signed-out or real iPhone test.**
+- **Verification:** GitHub combined statuses `[]` and PR-filtered workflow lookup `[]` for exact HEAD `ec24733e` do not establish CI outcome. Live Gauntlet, direct-play URL and GitHub Actions API could not be retrieved through available web tool; no served-revision or Pages proof. Previous green runs apply to older SHAs. **Release BLOCKED.**
+- **P0 next:** obtain exact-SHA motion CI + Pages evidence (especially the early-impact regression after the comment fix); then browser-rendered signed-out Gauntlet → PLAY NOW → original engine and inline/fallback refresh smoke. Follow with physical iPhone Safari grant/deny/retry; never claim verified physical hand catches. No Supabase data or active challenges changed.
+
 ## Audit — 2026-11-18 07:55 CST (independent release manager)
 
 - **New engineering commits:** `3f15d88f` preserves an invite token in Google OAuth callback URL when Safari sessionStorage is unavailable; `eebaaa55` adds invite/no-invite OAuth callback contract tests. These are hourly builder changes, not independently browser-validated. Latest searched commit is `eebaaa55`.
