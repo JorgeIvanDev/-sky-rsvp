@@ -1,0 +1,24 @@
+name: Motion collector end-to-end observation
+on:
+  push:
+    paths:
+      - 'cnidaria-motion-core.mjs'
+      - 'tests/collector-end-to-end-observation.test.mjs'
+      - '.github/workflows/collector-end-to-end-observation.yml'
+  pull_request:
+    paths:
+      - 'cnidaria-motion-core.mjs'
+      - 'tests/collector-end-to-end-observation.test.mjs'
+      - '.github/workflows/collector-end-to-end-observation.yml'
+  workflow_dispatch:
+jobs:
+  collector-observation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exercise actual collector through 350ms impact observation
+        run: node --test tests/collector-end-to-end-observation.test.mjs
