@@ -1,3 +1,10 @@
+## Audit — 2026-11-18 05:50 CST (independent release manager)
+
+- **New engineering HEAD:** `aa2148b0` (11:45:51 UTC), following `0933a062` short-Safari-viewport title scrolling fix and `8d1063d4` mobile title-route/accessibility tests. The existing builder owns these changes; this audit does not duplicate them. Latest commit message says CI wiring for mobile tests; actual execution not established.
+- **Exact-SHA checks:** GitHub combined status for `aa2148b0` returned `statuses: []`; commit workflow lookup returned `workflow_runs: []` (connector only exposes PR-triggered runs). Neither means CI green/red, nor proves Pages deployment. Direct HTTP retrieval of both deployed `direct-challenge.html` and `index.html?play=1` failed; **served revision remains unverified and release blocked**.
+- **Gauntlet source inspected:** `direct-challenge.html` still presents `▶ PLAY NOW` ahead of sign-in with href `./index.html?play=1`; initial incoming overlay has `hidden`. This is source-only evidence of a challenge-free entry point, not rendered signed-out or iPhone Safari verification. Existing handoff explicitly warns not to infer real browser behavior from Pages success.
+- **P0 next:** verify Pages deployment and exact-SHA CI for `aa2148b0` or descendant; implement browser-rendered signed-out Gauntlet → PLAY NOW → original engine test (plus authenticated-refresh fallback) against built output. Follow with physical iPhone Safari grant/deny/retry and in-page frame diagnostics. Preserve one shared toss engine, fail-closed sensor checks and explicit **unverified physical hand catch** language. No Supabase data or active challenges touched.
+
 ## Audit — 2026-11-18 04:59 CST (independent release manager)
 
 - **Fresh engineering HEAD:** `0b7e86c4` (10:38:19 UTC), following `172bc641` synthetic rebound/350ms closing-window/reset tests. Commit diff confirms motion workflow now executes `tests/motion-impact-coverage.test.mjs` on relevant pushes/PRs. Existing builder owns implementation; no duplicate engine changes made.
