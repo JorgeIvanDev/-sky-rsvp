@@ -147,12 +147,12 @@ export function createMotionTrace(options={}){
   if(!options||typeof options!=='object'||Array.isArray(options))throw Error('Invalid motion trace settings');
   const {maxSamples=1500}=options;
   if(!Number.isInteger(maxSamples)||maxSamples<1||maxSamples>100000)throw Error('Invalid motion trace capacity');
-  const samples=[];let first=null;
+  const samples=[];let first=null,overflowed=false;
   return {samples,add(sample){
     if(!sample||typeof sample!=='object'||Array.isArray(sample))return false;
     const {timestamp,magnitude,spin=0}=sample;
     if(!Number.isFinite(timestamp)||timestamp<0||timestamp>Number.MAX_SAFE_INTEGER||!Number.isFinite(magnitude)||magnitude<0||(!Number.isFinite(spin)||spin<0))return false;
-    if(samples.length>=maxSamples)return false;
+    if(samples.length>=maxSamples){overflowed=true;return false;}
     const origin=first===null?timestamp:first;
     const ms=Math.round(timestamp-origin);
     // Finite absolute timestamps can still overflow when subtracted. Never store
@@ -160,5 +160,5 @@ export function createMotionTrace(options={}){
     if(!Number.isSafeInteger(ms)||ms<0||(samples.length&&ms<=samples[samples.length-1].ms))return false;
     if(first===null)first=timestamp;
     samples.push({ms,m:magnitude,spin});return true;
-  },evaluate(){return replayObserved(samples)},reset(){samples.length=0;first=null}};
+  },evaluate(){return overflowed?{ok:false,reason:'motion trace capacity exceeded'}:replayObserved(samples)},reset(){samples.length=0;first=null;overflowed=false}};
 }
