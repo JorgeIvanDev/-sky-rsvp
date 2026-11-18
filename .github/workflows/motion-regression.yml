@@ -17,6 +17,7 @@ on:
       - 'cnidaria-observation-timeout.test.mjs'
       - 'motion-trace-overflow.test.mjs'
       - 'tests/motion-invalid-trace-regression.test.mjs'
+      - 'tests/motion-observation-boundaries.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   pull_request:
@@ -36,6 +37,7 @@ on:
       - 'cnidaria-observation-timeout.test.mjs'
       - 'motion-trace-overflow.test.mjs'
       - 'tests/motion-invalid-trace-regression.test.mjs'
+      - 'tests/motion-observation-boundaries.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   workflow_dispatch:
@@ -66,6 +68,9 @@ jobs:
       - name: Reject corrupted motion trace attempts until reset
         if: ${{ !cancelled() }}
         run: node --test tests/motion-invalid-trace-regression.test.mjs
+      - name: Enforce observation and sensor timestamp safety boundaries
+        if: ${{ !cancelled() }}
+        run: node --test tests/motion-observation-boundaries.test.mjs
       - name: Run motion regression checks
         if: ${{ !cancelled() }}
         run: node tests/motion-regression.js
