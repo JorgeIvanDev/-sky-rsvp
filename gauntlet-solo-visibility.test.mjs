@@ -20,3 +20,9 @@ test('PLAY NOW bypasses title redirect and reaches the original engine',()=>{
  assert.match(html, /href="\.\/index\.html\?play=1"[^>]*>▶ PLAY NOW/);
  assert.match(game,/q\.get\('play'\)!=='1'/);
 });
+
+test('full-page fallback bypasses title redirect after embedded motion permission failure',()=>{
+ assert.match(html, /id="original-engine-link" href="\.\/index\.html\?play=1"/);
+ const game=readFileSync(new URL('./index.html',import.meta.url),'utf8');
+ assert.match(game,/q\.get\('play'\)!=='1'/);
+});
