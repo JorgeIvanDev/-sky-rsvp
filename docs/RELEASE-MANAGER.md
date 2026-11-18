@@ -1,3 +1,11 @@
+## Release-manager audit — November 17, 2026, 23:56 CST (2026-11-18 05:56 UTC)
+
+- **HEAD `f6876e4e`:** GitHub Actions shows **success** for Motion regression tests and Pages build/deployment, both started 05:46:57 UTC. The preceding `bf50630b` and `3247c60b` motion runs failed; the latest test-alignment commit recovered CI. Other workflow suites were not all run on HEAD, so do not describe the entire matrix as green at this SHA.
+- **Latest engineering change:** `bf50630b` fails closed on invalid/nonmonotonic trace samples until reset; `1ce34585` adds recovery tests; `3247c60b` wires those into CI; `f6876e4e` aligns the overflow regression to the safety policy. Keep this fail-closed behavior; investigate any future failures without loosening safety checks.
+- **Logged-out discovery, source only:** `direct-challenge.html` contains a prominent `PLAY NOW` link to `./index.html?play=1` before Google sign-in. `index.html` explicitly bypasses its title redirect when `play=1`. This supports direct original-engine solo entry without an accepted challenge, but is not a rendered browser test. The in-page Gauntlet route is separate and remains a UX/permission risk.
+- **Live verification blocked:** direct fetch of the deployed Gauntlet URL failed in the available browser tool. A successful Pages workflow does **not** independently prove the live HTML SHA or iPhone motion behavior. No physical hand-catch verification claimed.
+- **P0 next:** add an actual logged-out browser journey test (Gauntlet -> visible PLAY NOW -> original game rendered, no challenge or auth), ideally served from built Pages artifacts; then test iPhone Safari motion permission grant/deny/retry and in-page Gauntlet frame. Treat hidden gameplay, stale served HTML, and false verified-catch language as release blockers.
+
 ## Release audit — November 17, 2026, 22:59 CST
 
 - **HEAD checked:** `b9901753a` (production motion replay harness alignment). GitHub Actions reports **Pages deployment success**, **Motion regression tests success**, and **CNIDARIA motion replay regression success** for this exact SHA. The immediately preceding commits `020cfbb1c` and `1edd6daf0` had failed motion suites, then the latest harness corrections restored green results. This confirms CI recovery on HEAD, not an independently tested handset.
