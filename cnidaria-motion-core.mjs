@@ -85,6 +85,9 @@ export function replayObserved(samples,options={}){
  // Include the first sample on/after the deadline: real sensors rarely land exactly at 350ms.
  const endIndex=samples.findIndex(s=>s.ms>=impactAt+observationMs);
  if(endIndex<0)return {ok:false,reason:'incomplete post-impact observation'};
+ // A very late closing frame is a sensor timeout, not evidence of continuous observation.
+ // Permit ordinary sampling jitter but never bridge a paused/backgrounded browser.
+ if(samples[endIndex].ms>impactAt+observationMs+100)return {ok:false,reason:'post-impact observation timeout'};
  const post=samples.slice(samples.findIndex(s=>s.ms>=impactAt),endIndex+1);
  for(let i=1;i<post.length;i++)if(post[i].ms-post[i-1].ms>maxGapMs)return {ok:false,reason:'post-impact sensor gap'};
  // A few widely spaced frames cannot establish a settled catch-like trajectory.
