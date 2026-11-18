@@ -1,3 +1,10 @@
+## Audit — 2026-11-18 07:55 CST (independent release manager)
+
+- **New engineering commits:** `3f15d88f` preserves an invite token in Google OAuth callback URL when Safari sessionStorage is unavailable; `eebaaa55` adds invite/no-invite OAuth callback contract tests. These are hourly builder changes, not independently browser-validated. Latest searched commit is `eebaaa55`.
+- **Gauntlet source checked:** `direct-challenge.html` still exposes prominent `▶ PLAY NOW` before Google login with `./index.html?play=1`; full-page fallback preserves `play=1` even after refresh and selected challenge. Catch estimate handoff requires `handCatchVerified===false`, `catchLike===true`, and `observed_350ms`. Source evidence only; not signed-out rendered play or verified physical catch.
+- **Exact-SHA release evidence:** workflow-run connector returned `workflow_runs: []` for `eebaaa55` but is limited to PR-triggered runs. Live Gauntlet and GitHub Actions API retrieval both failed. No CI conclusion, Pages deployment, or served-revision verification for these new commits. Prior verified Pages/OAuth success for `00c1e0e2` remains historical, not latest-head clearance.
+- **Release decision: BLOCKED.** No real iPhone Safari motion grant/deny/retry, iframe play, or signed-out Gauntlet click-through verified. Next P0: exact-SHA Pages and regression evidence for `eebaaa55` or descendant, then browser-driven signed-out Gauntlet -> PLAY NOW -> original engine and authenticated-refresh fallback test. Preserve single engine, fail-closed sensor diagnostics, and unverified catch language. No Supabase or active challenge mutations.
+
 ## Audit — 2026-11-18 06:59 CST (independent release manager)
 
 - **Engineering HEAD:** `00c1e0e2` (12:42:17 UTC), preceded by `5245eebb` OAuth invite-restoration/session contract tests. Existing hourly builder owns these; no duplicated engineering.
