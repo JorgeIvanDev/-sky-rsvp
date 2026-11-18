@@ -21,6 +21,7 @@ on:
       - 'tests/motion-observation-boundaries.test.mjs'
       - 'tests/motion-collector-integrity.test.mjs'
       - 'tests/motion-trace-tamper.test.mjs'
+      - 'tests/motion-impact-coverage.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   pull_request:
@@ -44,6 +45,7 @@ on:
       - 'tests/motion-observation-boundaries.test.mjs'
       - 'tests/motion-collector-integrity.test.mjs'
       - 'tests/motion-trace-tamper.test.mjs'
+      - 'tests/motion-impact-coverage.test.mjs'
       - 'index.html'
       - '.github/workflows/motion-regression.yml'
   workflow_dispatch:
@@ -83,6 +85,9 @@ jobs:
       - name: Reject in-place trace mutation and verify reset recovery
         if: ${{ !cancelled() }}
         run: node --test tests/motion-trace-tamper.test.mjs
+      - name: Check synthetic rebound and closing-frame coverage
+        if: ${{ !cancelled() }}
+        run: node --test tests/motion-impact-coverage.test.mjs
       - name: Run motion regression checks
         if: ${{ !cancelled() }}
         run: node tests/motion-regression.js
