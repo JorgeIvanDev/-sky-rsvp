@@ -1,0 +1,25 @@
+name: Mobile title entry regression
+on:
+  push:
+    paths:
+      - 'title.html'
+      - 'index.html'
+      - 'tests/title-mobile-entry.test.mjs'
+      - '.github/workflows/title-mobile-entry.yml'
+  pull_request:
+    paths:
+      - 'title.html'
+      - 'index.html'
+      - 'tests/title-mobile-entry.test.mjs'
+      - '.github/workflows/title-mobile-entry.yml'
+  workflow_dispatch:
+jobs:
+  title-entry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/title-mobile-entry.test.mjs
