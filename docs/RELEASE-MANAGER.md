@@ -2,6 +2,17 @@
 
 Last audit: 2026-11-17, America/Chicago. This file is a handoff for the hourly build. Do not treat a successful Pages job as proof of a working mobile experience.
 
+## Follow-up audit — November 17, 2026, 19:55 CST
+
+- **Latest HEAD at inspection:** `1e238de4` (`ci(motion): run observation timeout regression and trigger on its changes`). GitHub Actions shows **Motion regression tests: success** and **Pages build and deployment: success** for this exact commit. The previous `3288761d` motion regression also passed. Historical red checks in the older section below must NOT be reported as current HEAD status.
+- **Direct challenge regression:** last observed run on `fe927b00` completed **success**, including `gauntlet-solo-visibility.test.mjs` in the workflow. No Direct challenge regression run was reported for HEAD `1e238de4`, because that commit only changed motion test/CI paths. Do not claim the direct challenge suite ran at HEAD.
+- **Source-level first-time route:** `direct-challenge.html` places `▶ PLAY NOW` linking to `./index.html` before `id="google-login"`. This route has no accepted-challenge gate. `#play` is not initially hidden; the iframe path supports `./index.html?play=1` without an ID. Multiplayer submission stays disabled without a match. These are code/test assertions, NOT live-device verification.
+- **Source-level game handoff:** `index.html` only stores a Gauntlet beta estimate when a `gauntlet` UUID is present and the result is eligible; the stored object explicitly has `handCatchVerified:false`. The parent validates same-origin iframe message, selected challenge, freshness, and coverage. This remains an **unverified catch-like estimate**, never proof of a physical hand catch.
+- **Live verification:** external web fetch of `https://jorgeivandev.github.io/-sky-rsvp/direct-challenge.html` was unsuccessful. A successful Pages job proves the deployment workflow completed, NOT that a browser or iPhone successfully rendered and played the page.
+- **P0 remaining:** physically verify on iPhone Safari (logged out): open Gauntlet → PLAY NOW → enable sensors → play → retry; and separately test an accepted match using the in-page iframe, permission denial, and result review. If embedded motion permissions fail, make direct navigation the sole primary game path rather than shipping a dead button.
+- **P1:** one obvious primary Play action, no duplicate launch buttons or visible manual beta score entry in the first-time journey. Existing diagnostic and invite capabilities should remain available in an advanced/contextual section. Avoid redesigning the sensor engine while current replay checks are green.
+- **CI quality gap:** visibility tests assert HTML source order and route strings, not an actual rendered logged-out browser journey. Add a real browser smoke test (including DOM visibility and click-through) when browser tooling is available. Do not claim that static string checks establish user-facing behavior.
+
 ## Follow-up audit — November 17, 2026, 18:56 CST
 
 - **Green CI on `dba5d023`:** Pages deployment, motion regression, motion replay, RSVP smoke, wallet/RSVP, and security workflows all completed successfully on this commit. Earlier failures on `a982bd1f` and `04d64830` remain historical, not current HEAD failures. New commits need separate verification.
