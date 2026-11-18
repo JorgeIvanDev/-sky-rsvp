@@ -26,3 +26,9 @@ test('leaderboard has independent failed-initialization fallback',()=>{
  assert.match(game,/Scores failed to initialize/);
  assert.match(game,/document\.addEventListener\('visibilitychange'/);
 });
+
+test('intro links directly to live rankings and event invitations on small screens',()=>{
+ assert.match(title,/id="leaderboard-entry" href="\.\/index\.html\?play=1#leaderboard"/);
+ assert.match(title,/id="invitations-entry" href="\.\/index\.html\?play=1#myInvites"/);
+ assert.match(title,/Keep all four primary destinations reachable on small Safari screens/);
+});
